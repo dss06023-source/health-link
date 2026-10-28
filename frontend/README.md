@@ -9,7 +9,7 @@ npm install
 npm run dev          # http://localhost:5173 (모의 데이터로 동작)
 ```
 
-- `VITE_USE_API=1 npm run dev` 로 띄우면 `/api` 요청을 `http://localhost:8000`(backend/)으로 보냅니다.
+- 백엔드와 연결해 보려면 `backend/`에서 `uvicorn app.main:app --port 8000`을 먼저 띄우고, 여기서 `VITE_USE_API=1 npm run dev`로 실행합니다. `/api` 요청이 `http://localhost:8000`으로 전달되고, 해석은 같은 기준표로 화면에서, 추천·경고·변화 리포트 문구는 서버 응답을 그대로 씁니다. 왼쪽 아래 "시연 데이터 초기화"는 `POST /api/demo/reset`을 부릅니다.
 - `SINGLE=1 npm run build` 는 시연 링크용 단일 HTML 파일을 만듭니다.
 
 ## 화면

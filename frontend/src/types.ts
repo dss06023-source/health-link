@@ -80,6 +80,7 @@ export interface CheckupCenter {
   distanceKm: number
   slots: string[]
   tags: string[]
+  bookingUrl?: string
 }
 
 export interface CheckupTarget {

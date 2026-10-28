@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Route } from '../App'
-import { uploadCheckup } from '../api'
+import { USE_API, uploadCheckup } from '../api'
 import { interpret } from '../data/rules'
 import { useStore } from '../store'
 import type { CheckupItem } from '../types'
@@ -15,6 +15,7 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
   const [fileName, setFileName] = useState<string | null>(null)
   const [step, setStep] = useState(-1) // -1 대기, 0~3 진행, 4 완료
   const [items, setItems] = useState<CheckupItem[] | null>(null)
+  const [remoteId, setRemoteId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function start(file: File | null, name: string) {
@@ -22,7 +23,8 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
     try {
       const result = uploadCheckup(file)
       for (let i = 1; i <= 4; i++) { await new Promise((r) => setTimeout(r, 650)); setStep(i) }
-      setItems(await result)
+      const r = await result
+      setRemoteId(r.id); setItems(r.items)
     } catch (e) {
       setError(e instanceof Error ? e.message : '결과지를 읽지 못했습니다. 다시 시도해 주세요.')
       setStep(-1)
@@ -47,7 +49,7 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
           <div><b>여기로 끌어다 놓거나 파일을 고르세요</b><p className="small muted">JPG · PNG · PDF, 20MB 이하</p></div>
           <div className="row" style={{ justifyContent: 'center' }}>
             <button className="btn" onClick={() => input.current?.click()}><Icon name="upload" size={18} />파일 선택</button>
-            <button className="btn ghost" onClick={() => start(null, '2026_건강검진결과_샘플.pdf')}>샘플 결과지로 시연</button>
+            {!USE_API && <button className="btn ghost" onClick={() => start(null, '2026_건강검진결과_샘플.pdf')}>샘플 결과지로 시연</button>}
           </div>
           <input ref={input} id="up-file" type="file" accept="image/*,application/pdf" hidden
             onChange={(e) => { const f = e.target.files?.[0]; if (f) start(f, f.name); e.target.value = '' }} />
@@ -98,7 +100,7 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
                 </tbody>
               </table>
             </div>
-            <button className="btn" onClick={() => { s.addCheckup(items, 'ocr'); go('results') }}>확인하고 해석 보기</button>
+            <button className="btn" onClick={() => { s.addCheckup(items, 'ocr', remoteId); go('results') }}>확인하고 해석 보기</button>
           </>
         )}
       </section>

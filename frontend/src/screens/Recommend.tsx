@@ -12,10 +12,11 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
   const s = useStore()
   const p = s.profile!
   const items = interpret(latestCheckup(s).items, p.sex)
-  const recs = useMemo(() => recommend(items, p), [items, p])
+  const local = useMemo(() => recommend(items, p), [items, p])
+  const recs = s.remote?.recs ?? local
   const [off, setOff] = useState<string[]>([])
   const chosen = recs.filter((r) => !r.skipped && !off.includes(r.id))
-  const warnings = checkWarnings([...chosen.map((r) => r.name), ...s.supplements.filter((x) => !x.paused).map((x) => x.name)], p, items)
+  const warnings = s.remote?.warnings ?? checkWarnings([...chosen.map((r) => r.name), ...s.supplements.filter((x) => !x.paused).map((x) => x.name)], p, items)
   const nameOf = (code: string) => items.find((i) => i.code === code)?.name ?? code
   const already = chosen.filter((r) => s.supplements.some((x) => x.id === r.id)).length
   const weight = items.some((i) => (i.code === 'BMI' || i.code === 'WAIST') && i.status !== 'normal')
@@ -27,7 +28,7 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
       <div className="stack" style={{ gap: 20 }}>
         <section className="card">
           <div className="card-head">
-            <div><h2>추천 구성 {chosen.length}가지</h2><p className="small muted">하루 {chosen.length}회분 · 근거가 된 검진 항목을 함께 표시합니다</p></div>
+            <div><h2>추천 구성 {chosen.length}가지</h2><p className="small muted">근거가 된 검진 항목을 함께 표시합니다. 스위치로 빼거나 넣을 수 있습니다.</p></div>
           </div>
           <div className="stack">
             {recs.map((r, i) => {
@@ -64,7 +65,7 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
 
       <div className="stack" style={{ gap: 20 }}>
         <section className="card stack" style={{ gap: 14 }}>
-          <div className="card-head" style={{ marginBottom: 0 }}><h2>함께 먹으면 안 되는 조합</h2>
+          <div className="card-head" style={{ marginBottom: 0 }}><h2>함께 먹을 때 주의할 점</h2>
             <span className={`pill ${warnings.some((w) => w.level === 'danger') ? 'danger' : warnings.length ? 'caution' : 'normal'}`}>{warnings.length ? `${warnings.length}건` : '없음'}</span></div>
           {warnings.map((w) => <Notice key={w.title} w={w} />)}
           {!warnings.length && <p className="muted small">복용 약, 이미 먹는 영양제와 겹치거나 부딪히는 성분이 없습니다.</p>}
@@ -73,13 +74,14 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
         <section className="card stack" style={{ gap: 14 }}>
           <h2>추천에 쓴 정보</h2>
           <div className="field"><label>복용 중인 약</label>
-            <div className="chips">{MEDICATION_OPTIONS.map((m) => (
+            <div className="chips">{(s.remote?.medOptions ?? MEDICATION_OPTIONS).map((m) => (
               <button key={m} className="chip" aria-pressed={p.medications.includes(m)} onClick={() => s.setProfile({ ...p, medications: toggle(p.medications, m) })}>{m}</button>
             ))}</div></div>
-          <div className="field"><label>이미 먹는 영양제</label>
+          {!s.remote && <div className="field"><label>이미 먹는 영양제</label>
             <div className="chips">{SUPPLEMENT_OPTIONS.map((m) => (
               <button key={m} className="chip" aria-pressed={p.currentSupplements.includes(m)} onClick={() => s.setProfile({ ...p, currentSupplements: toggle(p.currentSupplements, m) })}>{m}</button>
-            ))}</div></div>
+            ))}</div></div>}
+          {s.remote?.notes.map((n) => <p key={n} className="small muted">{n}</p>)}
           <p className="small muted">음주 주 {p.lifestyle.drinkingPerWeek}회 · {p.lifestyle.smoking ? '흡연' : '비흡연'} · {p.lifestyle.lowOutdoor ? '주로 실내 생활' : '실외 활동 있음'}</p>
           <button className="btn" disabled={!chosen.length}
             onClick={() => { s.addSupplements(chosen); go('intake') }}>

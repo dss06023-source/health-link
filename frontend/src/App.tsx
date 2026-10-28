@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { StoreProvider, useStore } from './store'
 import { Icon } from './ui'
+import { USE_API } from './api'
 import type { IconName } from './ui'
 import Home from './screens/Home'
 import Upload from './screens/Upload'
@@ -37,6 +38,17 @@ function Shell() {
   const go = (r: Route) => { location.hash = r; setRoute(r); scrollTo({ top: 0 }) }
   const page = NAV.find((n) => n.id === route)!
 
+  if (USE_API && !store.profile) {
+    return (
+      <div className="main" style={{ display: 'grid', placeItems: 'start center' }}>
+        <section className="card stack" style={{ maxWidth: 520 }}>
+          <h2>{store.remoteError ? '서버에 연결하지 못했습니다' : '서버에서 불러오는 중입니다'}</h2>
+          <p className="muted">{store.remoteError ?? '잠시만 기다려 주세요.'}</p>
+          {store.remoteError && <p className="small muted">backend 폴더에서 <code>uvicorn app.main:app --port 8000</code>을 먼저 실행했는지 확인해 주세요.</p>}
+        </section>
+      </div>
+    )
+  }
   if (!store.profile) return <Onboarding onDone={() => go('home')} />
 
   return (
@@ -56,12 +68,13 @@ function Shell() {
           ))}
         </nav>
         <div className="side-foot">
-          <b className="small">시연 모드</b>
+          <b className="small">{USE_API ? '서버 연결 모드' : '시연 모드'}</b>
           <span className="small muted">가상 인물 {store.profile.name} 님의 데이터입니다.</span>
-          <div className="row">
+          {store.remoteError && <span className="small" style={{ color: 'var(--danger)' }}>{store.remoteError}</span>}
+          {USE_API ? <button className="btn ghost sm" onClick={() => { store.resetFull(); go('home') }}>시연 데이터 초기화</button> : <div className="row">
             <button className="btn ghost sm" onClick={() => { store.resetFresh() }}>처음부터</button>
             <button className="btn ghost sm" onClick={() => { store.resetFull(); go('home') }}>완성 상태</button>
-          </div>
+          </div>}
         </div>
       </aside>
       <main className="main">

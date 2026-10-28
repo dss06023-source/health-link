@@ -2,6 +2,9 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Checkup, CheckupItem, IntakeLog, Recommendation, Supplement, UserProfile } from './types'
 import { FOLLOWUP_ITEMS, OCR_RESULT, PAST_CHECKUP, SAMPLE_PROFILE } from './data/mock'
+import { USE_API } from './api'
+import { loadAll, remote } from './api/remote'
+import type { RemoteExtras } from './api/remote'
 
 export interface AppState {
   profile: UserProfile | null
@@ -66,7 +69,7 @@ function load(): AppState {
 
 interface Actions {
   setProfile: (p: UserProfile) => void
-  addCheckup: (items: CheckupItem[], source: Checkup['source']) => void
+  addCheckup: (items: CheckupItem[], source: Checkup['source'], remoteId?: number | null) => void
   addSupplements: (recs: Recommendation[]) => void
   updateSupplement: (id: string, patch: Partial<Supplement>) => void
   removeSupplement: (id: string) => void
@@ -77,13 +80,29 @@ interface Actions {
   resetFull: () => void
 }
 
-const Ctx = createContext<(AppState & Actions) | null>(null)
+interface Remote { remote: RemoteExtras | null; remoteError: string | null }
+const Ctx = createContext<(AppState & Actions & Remote) | null>(null)
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [s, set] = useState<AppState>(load)
-  useEffect(() => { try { localStorage.setItem(KEY, JSON.stringify(s)) } catch { /* 무시 */ } }, [s])
+  const [s, set] = useState<AppState>(USE_API ? freshDemo : load)
+  const [extras, setExtras] = useState<RemoteExtras | null>(null)
+  const [remoteError, setRemoteError] = useState<string | null>(null)
+  useEffect(() => { if (!USE_API) try { localStorage.setItem(KEY, JSON.stringify(s)) } catch { /* 무시 */ } }, [s])
 
-  const actions = useMemo<Actions>(() => ({
+  // 서버 연결 모드: 바꾼 뒤에는 서버 상태를 통째로 다시 읽는다(시연 규모라 충분히 빠르다).
+  const refresh = useMemo(() => async () => {
+    try {
+      const { state, extras: ex } = await loadAll()
+      set((x) => ({ ...x, ...state, followup: null }))
+      setExtras(ex); setRemoteError(null)
+    } catch (e) {
+      setRemoteError(e instanceof Error ? e.message : '서버에 연결하지 못했습니다.')
+    }
+  }, [])
+  useEffect(() => { if (USE_API) refresh() }, [refresh])
+  const run = (p: Promise<unknown>) => { p.then(refresh, (e) => setRemoteError(e instanceof Error ? e.message : String(e))) }
+
+  const local = useMemo<Actions>(() => ({
     setProfile: (p) => set((x) => ({ ...x, profile: p })),
     addCheckup: (items, source) => set((x) => {
       const now = new Date()
@@ -108,7 +127,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     resetFull: () => set(fullDemo()),
   }), [])
 
-  return <Ctx.Provider value={{ ...s, ...actions }}>{children}</Ctx.Provider>
+  const actions: Actions = !USE_API ? local : {
+    ...local,
+    setProfile: (p) => { local.setProfile(p); run(remote.saveProfile(p)) },
+    addCheckup: (items, source, remoteId) => { if (remoteId != null) run(remote.confirm(remoteId, items)); else local.addCheckup(items, source) },
+    addSupplements: (recs) => run(Promise.all(recs.map((r) => remote.addSupplement(r.id)))),
+    updateSupplement: (id, patch) => { local.updateSupplement(id, patch); run(remote.patchSupplement(id, patch)) },
+    removeSupplement: (id) => { local.removeSupplement(id); run(remote.removeSupplement(id)) },
+    toggleIntake: (date, id) => {
+      const supp = s.supplements.find((x) => x.id === id)
+      local.toggleIntake(date, id)
+      if (supp) run(remote.intake(id, supp.timing, !s.intake[date]?.[id], date))
+    },
+    resetFresh: () => run(remote.reset()),
+    resetFull: () => run(remote.reset()),
+  }
+
+  return <Ctx.Provider value={{ ...s, ...actions, remote: extras, remoteError }}>{children}</Ctx.Provider>
 }
 
 export function useStore() {

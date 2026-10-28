@@ -57,7 +57,7 @@ export default function Home({ go }: { go: (r: Route) => void }) {
         <button className="card stack" style={{ textAlign: 'left', cursor: 'pointer' }} onClick={() => go('results')}>
           <span className="muted small">최근 검진 · {last.date}</span>
           <span><b className="num" style={{ fontSize: '2rem', color: flagged ? 'var(--caution)' : 'var(--accent)' }}>{flagged}</b><span className="muted"> 개 항목 관리 필요</span></span>
-          <span className="small muted">14개 항목 중</span>
+          <span className="small muted">{last.items.length}개 항목 중</span>
         </button>
         <button className="card stack" style={{ textAlign: 'left', cursor: 'pointer' }} onClick={() => go('report')}>
           <span className="muted small">다음 확인</span>
@@ -78,6 +78,7 @@ export default function Home({ go }: { go: (r: Route) => void }) {
                 <div className="row"><b>{c.name}</b><span className="muted small num">{c.distanceKm}km</span>
                   {c.tags.map((t) => <span key={t} className="pill plain">{t}</span>)}</div>
                 <p className="small muted">{c.address}</p>
+                {c.bookingUrl && <div className="slots"><a className="chip" style={{ padding: '5px 12px', fontSize: '.82rem', textDecoration: 'none' }} href={c.bookingUrl} target="_blank" rel="noreferrer">예약 안내 열기</a></div>}
                 <div className="slots">{c.slots.map((sl) => (
                   <button key={sl} className="chip" style={{ padding: '5px 12px', fontSize: '.82rem' }} onClick={() => setPick({ c, slot: sl })}>{sl}</button>
                 ))}</div>

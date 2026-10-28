@@ -35,9 +35,11 @@ function Spark({ points, limit, labels }: { points: number[]; limit: number; lab
 export default function Report({ go }: { go: (r: Route) => void }) {
   const s = useStore()
   const p = s.profile!
-  const base = latestCheckup(s)
-  const prior = s.checkups.length > 1 ? s.checkups[s.checkups.length - 2] : null
-  const after = s.followup
+  // 중간 점검(가상)이 있으면 최신 검진과 비교하고, 없으면 최근 검진 2건을 비교한다.
+  const n = s.checkups.length
+  const after = s.followup ?? (s.remote && n >= 2 ? latestCheckup(s) : null)
+  const base = s.followup ? latestCheckup(s) : after ? s.checkups[n - 2] : latestCheckup(s)
+  const prior = s.followup ? (n > 1 ? s.checkups[n - 2] : null) : after && n > 2 ? s.checkups[n - 3] : null
 
   if (!after) {
     return (
@@ -45,16 +47,18 @@ export default function Report({ go }: { go: (r: Route) => void }) {
         <span className="pill plain">기준 검진 · {base.date}</span>
         <h2>복용 6개월 뒤 중간 점검 결과가 들어오면 여기서 비교합니다</h2>
         <p className="muted">다음 국가검진(2년 뒤)까지 기다리지 않도록, 약국·보건소 간이검사로 혈당과 지질을 중간에 확인하는 방식을 가정했습니다.</p>
-        <button className="btn" onClick={s.addFollowup}>중간 점검 결과 넣어 보기 (가상)</button>
+        {s.remote
+          ? <button className="btn" onClick={() => go('upload')}>새 결과지 등록하기</button>
+          : <button className="btn" onClick={s.addFollowup}>중간 점검 결과 넣어 보기 (가상)</button>}
       </section>
     )
   }
 
   const series: Checkup[] = [...(prior ? [prior] : []), base, after]
-  const labels = series.map((c) => (c === after ? '중간점검' : c.date.slice(0, 4)))
+  const labels = series.map((c) => (c === s.followup ? '중간점검' : c.date.slice(0, 4)))
   const iBase = interpret(base.items, p.sex)
   const iAfter = interpret(after.items, p.sex)
-  const rows = KEYS.map((k) => {
+  const rows = KEYS.filter((k) => series.every((c) => c.items.some((i) => i.code === k.code))).map((k) => {
     const b = iBase.find((i) => i.code === k.code)!
     const a = iAfter.find((i) => i.code === k.code)!
     const points = series.map((c) => c.items.find((i) => i.code === k.code)!.value)
@@ -104,7 +108,7 @@ export default function Report({ go }: { go: (r: Route) => void }) {
           <div key={r.code} className="compare-row">
             <div className="stack" style={{ gap: 4 }}>
               <b>{r.a.name}</b>
-              <span className="small muted">{r.a.unit} · 기준 {r.higherBetter ? `${r.limit} 이상` : `${r.limit} 미만`}</span>
+              <span className="small muted">{r.a.unit} · 기준 {r.a.rangeText}</span>
             </div>
             <div className="chart-cell" style={{ minWidth: 0 }}><Spark points={r.points} limit={r.limit} labels={labels} /></div>
             <div className="stack" style={{ gap: 6, alignItems: 'flex-end' }}>
@@ -119,7 +123,7 @@ export default function Report({ go }: { go: (r: Route) => void }) {
         ))}
       </section>
 
-      <p className="disclaimer">수치 변화에는 식사, 음주, 운동, 체중, 검사 시점이 함께 영향을 줍니다. 이 비교는 영양제의 효과를 증명하지 않으며, 생활 관리를 이어 가기 위한 참고 자료입니다.</p>
+      <p className="disclaimer">{s.remote?.compareNote ?? '수치 변화에는 식사, 음주, 운동, 체중, 검사 시점이 함께 영향을 줍니다. 이 비교는 영양제의 효과를 증명하지 않으며, 생활 관리를 이어 가기 위한 참고 자료입니다.'}</p>
       <div className="row">
         <button className="btn" onClick={() => go('recommend')}>추천 구성 다시 보기</button>
         <button className="btn ghost" onClick={() => go('intake')}>복용 관리로</button>
