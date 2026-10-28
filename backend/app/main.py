@@ -10,7 +10,7 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from . import db, logic, measure
+from . import db, logic, measure, options
 from . import reference as ref
 
 TIME_SLOTS = ["morning", "lunch", "evening", "bedtime"]
@@ -104,6 +104,10 @@ class UserUpdate(BaseModel):
     heightCm: Optional[float] = None
     lifestyle: Optional[dict] = None
     medications: Optional[list[str]] = None
+    currentSupplements: Optional[list[str]] = None
+    conditions: Optional[list[str]] = None
+    allergies: Optional[list[str]] = None
+    customAllergies: Optional[list[str]] = None
     consent: Optional[dict] = None
     location: Optional[dict] = None
 
@@ -125,15 +129,34 @@ def get_me():
 def update_me(body: UserUpdate):
     if body.gender and body.gender not in ("M", "F"):
         raise HTTPException(422, "gender는 M 또는 F입니다.")
+    errors = options.check_codes(body.currentSupplements, options.SUPPLEMENTS, "영양제")
+    errors += options.check_codes(body.conditions, options.CONDITIONS, "질환")
+    errors += options.check_codes(body.allergies, options.ALLERGIES, "알레르기")
+    lifestyle = None
+    if body.lifestyle is not None:
+        bad, lifestyle = options.check_lifestyle(body.lifestyle)
+        errors += bad
+    if errors:
+        raise HTTPException(422, "보기에 없는 값입니다. " + " / ".join(errors))
+    # 보기에 없는 약은 '직접 입력'으로 저장하고, 상호작용 규칙이 없다고 알린다.
     unknown = [m for m in body.medications or [] if m not in ref.MEDICATIONS]
     with db.connect() as conn:
         user = load_user(conn)
-        user.update(body.model_dump(exclude_none=True))
+        changes = body.model_dump(exclude_none=True)
+        if lifestyle is not None:
+            changes["lifestyle"] = {**user.get("lifestyle", {}), **lifestyle}
+        user.update(changes)
         conn.execute("UPDATE users SET data = ? WHERE id = 1", (json.dumps(user, ensure_ascii=False),))
     result = get_me()
     if unknown:
         result["unknownMedications"] = unknown
     return result
+
+
+@app.get("/api/options")
+def profile_options():
+    """개인정보 입력 화면의 보기. rules가 false인 보기는 저장만 하고 추천·경고에는 아직 쓰지 않는다."""
+    return options.catalog()
 
 
 @app.get("/api/medications")
@@ -296,6 +319,8 @@ def recommendations(checkupId: Optional[int] = None):
         user = load_user(conn)
         checkup = get_checkup(conn, resolve_checkup_id(conn, checkupId))
         active = [s["supplementId"] for s in active_supplements(conn)]
+    # 입력 화면에서 '먹고 있다'고 고른 영양제도 중복 점검에 넣는다(규칙표에 있는 것만).
+    active += [c for c in user.get("currentSupplements", []) if c in ref.SUPPLEMENTS and c not in active]
     result = logic.recommend(user, checkup["values"], active)
     return {"checkupId": checkup["id"], "checkupDate": checkup["date"], "medications": user.get("medications", []), **result}
 

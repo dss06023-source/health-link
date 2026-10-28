@@ -11,6 +11,7 @@ with TestClient(app) as c:
     put("GET /api/users/me", c.get("/api/users/me"))
     put("GET /api/checkup-centers", c.get("/api/checkup-centers"))
     put("GET /api/medications", c.get("/api/medications"))
+    put("GET /api/options", c.get("/api/options"))
     put("GET /api/recommendations (2024 검진)", c.get("/api/recommendations"))
     put("GET /api/supplements", c.get("/api/supplements"))
     put("GET /api/supplements/check", c.get("/api/supplements/check"))

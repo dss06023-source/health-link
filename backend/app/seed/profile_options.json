@@ -1,0 +1,82 @@
+{
+  "_about": "개인정보 입력 화면의 보기 목록(계획서 11장). 보기를 늘린 것이지 규칙을 늘린 것이 아니다. drugClass가 intake_rules.json의 상호작용 규칙에 있는 계열만 경고가 나오고, rules가 false인 보기는 저장만 한다. 새 보기용 규칙은 근거 확인 뒤 intake_rules.json에 넣는다.",
+  "medicationGroups": [
+    {"id": "antihypertensive", "label": "혈압약", "items": [
+      {"name": "암로디핀", "drugClass": "antihypertensive"},
+      {"name": "혈압약(기타)", "drugClass": "antihypertensive"}
+    ]},
+    {"id": "lipid", "label": "고지혈증약", "items": [
+      {"name": "아토르바스타틴", "drugClass": "statin"},
+      {"name": "로수바스타틴", "drugClass": "statin"},
+      {"name": "스타틴(기타)", "drugClass": "statin"},
+      {"name": "고지혈증약(스타틴 아님)", "drugClass": "lipid_other"}
+    ]},
+    {"id": "antidiabetic", "label": "당뇨약", "items": [
+      {"name": "메트포르민", "drugClass": "antidiabetic"},
+      {"name": "인슐린", "drugClass": "antidiabetic"},
+      {"name": "당뇨약(기타)", "drugClass": "antidiabetic"}
+    ]},
+    {"id": "anticoagulant", "label": "항응고·항혈소판제", "items": [
+      {"name": "와파린", "drugClass": "anticoagulant"},
+      {"name": "아스피린(저용량)", "drugClass": "anticoagulant"},
+      {"name": "항응고·항혈소판제(기타)", "drugClass": "anticoagulant"}
+    ]},
+    {"id": "thyroid", "label": "갑상선약", "items": [
+      {"name": "레보티록신", "drugClass": "thyroid"},
+      {"name": "갑상선약(기타)", "drugClass": "thyroid"}
+    ]},
+    {"id": "acid_suppressant", "label": "위산억제제", "items": [{"name": "위산억제제", "drugClass": "acid_suppressant"}]},
+    {"id": "osteoporosis", "label": "골다공증약", "items": [{"name": "골다공증약", "drugClass": "osteoporosis"}]},
+    {"id": "antibiotic", "label": "항생제", "items": [{"name": "항생제", "drugClass": "antibiotic"}]},
+    {"id": "antidepressant", "label": "항우울제", "items": [{"name": "항우울제", "drugClass": "antidepressant"}]},
+    {"id": "hormone", "label": "호르몬제·피임약", "items": [{"name": "호르몬제·피임약", "drugClass": "hormone"}]},
+    {"id": "anticonvulsant", "label": "항경련제", "items": [{"name": "항경련제", "drugClass": "anticonvulsant"}]}
+  ],
+  "supplements": [
+    {"id": "multivitamin", "name": "종합비타민"},
+    {"id": "vitamin_b", "name": "비타민B군"},
+    {"id": "vitamin_c", "name": "비타민C"},
+    {"id": "vitamin_d", "name": "비타민D"},
+    {"id": "vitamin_k", "name": "비타민K"},
+    {"id": "calcium", "name": "칼슘"},
+    {"id": "magnesium", "name": "마그네슘"},
+    {"id": "zinc", "name": "아연"},
+    {"id": "iron", "name": "철분"},
+    {"id": "folic_acid", "name": "엽산"},
+    {"id": "omega3", "name": "오메가-3"},
+    {"id": "probiotics", "name": "유산균"},
+    {"id": "lutein", "name": "루테인"},
+    {"id": "milk_thistle", "name": "밀크씨슬"},
+    {"id": "red_yeast_rice", "name": "홍국"},
+    {"id": "coq10", "name": "코엔자임Q10"}
+  ],
+  "lifestyle": [
+    {"key": "smoking", "label": "흡연", "type": "choice", "options": [
+      {"value": "never", "label": "안 함"}, {"value": "past", "label": "과거에 피움"}, {"value": "current", "label": "현재 피움"}]},
+    {"key": "drinkingPerWeek", "label": "음주 횟수(주)", "type": "number", "min": 0, "max": 7},
+    {"key": "drinksPerSession", "label": "1회 음주량(잔)", "type": "number", "min": 0, "max": 30},
+    {"key": "exercisePerWeek", "label": "운동 횟수(주)", "type": "number", "min": 0, "max": 7},
+    {"key": "lowSunlight", "label": "낮 시간 대부분 실내", "type": "boolean"},
+    {"key": "sleepHours", "label": "하루 수면 시간", "type": "number", "min": 0, "max": 16},
+    {"key": "diet", "label": "식습관", "type": "multi", "options": [
+      {"value": "skipBreakfast", "label": "아침을 자주 거름"}, {"value": "salty", "label": "짜게 먹음"},
+      {"value": "vegetarian", "label": "채식"}, {"value": "noDairy", "label": "유제품을 안 먹음"},
+      {"value": "eatOut", "label": "외식이 잦음"}]},
+    {"key": "pregnant", "label": "임신 중", "type": "boolean", "sex": "F"},
+    {"key": "breastfeeding", "label": "수유 중", "type": "boolean", "sex": "F"}
+  ],
+  "conditions": [
+    {"value": "hypertension", "label": "고혈압"},
+    {"value": "diabetes", "label": "당뇨"},
+    {"value": "dyslipidemia", "label": "이상지질혈증"},
+    {"value": "liver", "label": "간질환"},
+    {"value": "kidney", "label": "신장질환"},
+    {"value": "thyroid", "label": "갑상선질환"}
+  ],
+  "allergies": [
+    {"value": "shellfish", "label": "갑각류"},
+    {"value": "soy", "label": "대두"},
+    {"value": "milk", "label": "우유"}
+  ],
+  "conditionNote": "진단받은 질환은 의사에게 진단받은 것만 고릅니다. 건강잇다는 질환을 판단하지 않고, 영양제 주의 문구를 고르는 데만 씁니다."
+}

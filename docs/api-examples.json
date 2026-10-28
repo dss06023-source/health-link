@@ -7,14 +7,25 @@
       "gender": "M",
       "heightCm": 174,
       "lifestyle": {
-        "smoking": false,
+        "smoking": "never",
         "drinkingPerWeek": 2,
+        "drinksPerSession": 3,
         "exercisePerWeek": 1,
-        "lowSunlight": true
+        "lowSunlight": true,
+        "sleepHours": 6.5,
+        "diet": [
+          "eatOut"
+        ]
       },
       "medications": [
         "아토르바스타틴"
       ],
+      "currentSupplements": [],
+      "conditions": [
+        "dyslipidemia"
+      ],
+      "allergies": [],
+      "customAllergies": [],
       "consent": {
         "sensitiveData": true,
         "agreedAt": "2024-10-20"
@@ -135,8 +146,459 @@
       {
         "name": "암로디핀",
         "drugClass": "antihypertensive"
+      },
+      {
+        "name": "혈압약(기타)",
+        "drugClass": "antihypertensive"
+      },
+      {
+        "name": "스타틴(기타)",
+        "drugClass": "statin"
+      },
+      {
+        "name": "고지혈증약(스타틴 아님)",
+        "drugClass": "lipid_other"
+      },
+      {
+        "name": "인슐린",
+        "drugClass": "antidiabetic"
+      },
+      {
+        "name": "당뇨약(기타)",
+        "drugClass": "antidiabetic"
+      },
+      {
+        "name": "항응고·항혈소판제(기타)",
+        "drugClass": "anticoagulant"
+      },
+      {
+        "name": "갑상선약(기타)",
+        "drugClass": "thyroid"
+      },
+      {
+        "name": "위산억제제",
+        "drugClass": "acid_suppressant"
+      },
+      {
+        "name": "골다공증약",
+        "drugClass": "osteoporosis"
+      },
+      {
+        "name": "항생제",
+        "drugClass": "antibiotic"
+      },
+      {
+        "name": "항우울제",
+        "drugClass": "antidepressant"
+      },
+      {
+        "name": "호르몬제·피임약",
+        "drugClass": "hormone"
+      },
+      {
+        "name": "항경련제",
+        "drugClass": "anticonvulsant"
       }
     ]
+  },
+  "GET /api/options": {
+    "status": 200,
+    "body": {
+      "medicationGroups": [
+        {
+          "id": "antihypertensive",
+          "label": "혈압약",
+          "items": [
+            {
+              "name": "암로디핀",
+              "drugClass": "antihypertensive",
+              "rules": true
+            },
+            {
+              "name": "혈압약(기타)",
+              "drugClass": "antihypertensive",
+              "rules": true
+            }
+          ]
+        },
+        {
+          "id": "lipid",
+          "label": "고지혈증약",
+          "items": [
+            {
+              "name": "아토르바스타틴",
+              "drugClass": "statin",
+              "rules": true
+            },
+            {
+              "name": "로수바스타틴",
+              "drugClass": "statin",
+              "rules": true
+            },
+            {
+              "name": "스타틴(기타)",
+              "drugClass": "statin",
+              "rules": true
+            },
+            {
+              "name": "고지혈증약(스타틴 아님)",
+              "drugClass": "lipid_other",
+              "rules": false
+            }
+          ]
+        },
+        {
+          "id": "antidiabetic",
+          "label": "당뇨약",
+          "items": [
+            {
+              "name": "메트포르민",
+              "drugClass": "antidiabetic",
+              "rules": true
+            },
+            {
+              "name": "인슐린",
+              "drugClass": "antidiabetic",
+              "rules": true
+            },
+            {
+              "name": "당뇨약(기타)",
+              "drugClass": "antidiabetic",
+              "rules": true
+            }
+          ]
+        },
+        {
+          "id": "anticoagulant",
+          "label": "항응고·항혈소판제",
+          "items": [
+            {
+              "name": "와파린",
+              "drugClass": "anticoagulant",
+              "rules": true
+            },
+            {
+              "name": "아스피린(저용량)",
+              "drugClass": "anticoagulant",
+              "rules": true
+            },
+            {
+              "name": "항응고·항혈소판제(기타)",
+              "drugClass": "anticoagulant",
+              "rules": true
+            }
+          ]
+        },
+        {
+          "id": "thyroid",
+          "label": "갑상선약",
+          "items": [
+            {
+              "name": "레보티록신",
+              "drugClass": "thyroid",
+              "rules": true
+            },
+            {
+              "name": "갑상선약(기타)",
+              "drugClass": "thyroid",
+              "rules": true
+            }
+          ]
+        },
+        {
+          "id": "acid_suppressant",
+          "label": "위산억제제",
+          "items": [
+            {
+              "name": "위산억제제",
+              "drugClass": "acid_suppressant",
+              "rules": false
+            }
+          ]
+        },
+        {
+          "id": "osteoporosis",
+          "label": "골다공증약",
+          "items": [
+            {
+              "name": "골다공증약",
+              "drugClass": "osteoporosis",
+              "rules": false
+            }
+          ]
+        },
+        {
+          "id": "antibiotic",
+          "label": "항생제",
+          "items": [
+            {
+              "name": "항생제",
+              "drugClass": "antibiotic",
+              "rules": false
+            }
+          ]
+        },
+        {
+          "id": "antidepressant",
+          "label": "항우울제",
+          "items": [
+            {
+              "name": "항우울제",
+              "drugClass": "antidepressant",
+              "rules": false
+            }
+          ]
+        },
+        {
+          "id": "hormone",
+          "label": "호르몬제·피임약",
+          "items": [
+            {
+              "name": "호르몬제·피임약",
+              "drugClass": "hormone",
+              "rules": false
+            }
+          ]
+        },
+        {
+          "id": "anticonvulsant",
+          "label": "항경련제",
+          "items": [
+            {
+              "name": "항경련제",
+              "drugClass": "anticonvulsant",
+              "rules": false
+            }
+          ]
+        }
+      ],
+      "supplements": [
+        {
+          "id": "multivitamin",
+          "name": "종합비타민",
+          "rules": true
+        },
+        {
+          "id": "vitamin_b",
+          "name": "비타민B군",
+          "rules": false
+        },
+        {
+          "id": "vitamin_c",
+          "name": "비타민C",
+          "rules": false
+        },
+        {
+          "id": "vitamin_d",
+          "name": "비타민D",
+          "rules": true
+        },
+        {
+          "id": "vitamin_k",
+          "name": "비타민K",
+          "rules": false
+        },
+        {
+          "id": "calcium",
+          "name": "칼슘",
+          "rules": false
+        },
+        {
+          "id": "magnesium",
+          "name": "마그네슘",
+          "rules": false
+        },
+        {
+          "id": "zinc",
+          "name": "아연",
+          "rules": false
+        },
+        {
+          "id": "iron",
+          "name": "철분",
+          "rules": true
+        },
+        {
+          "id": "folic_acid",
+          "name": "엽산",
+          "rules": false
+        },
+        {
+          "id": "omega3",
+          "name": "오메가-3",
+          "rules": true
+        },
+        {
+          "id": "probiotics",
+          "name": "유산균",
+          "rules": false
+        },
+        {
+          "id": "lutein",
+          "name": "루테인",
+          "rules": false
+        },
+        {
+          "id": "milk_thistle",
+          "name": "밀크씨슬",
+          "rules": true
+        },
+        {
+          "id": "red_yeast_rice",
+          "name": "홍국",
+          "rules": true
+        },
+        {
+          "id": "coq10",
+          "name": "코엔자임Q10",
+          "rules": true
+        }
+      ],
+      "lifestyle": [
+        {
+          "key": "smoking",
+          "label": "흡연",
+          "type": "choice",
+          "options": [
+            {
+              "value": "never",
+              "label": "안 함"
+            },
+            {
+              "value": "past",
+              "label": "과거에 피움"
+            },
+            {
+              "value": "current",
+              "label": "현재 피움"
+            }
+          ]
+        },
+        {
+          "key": "drinkingPerWeek",
+          "label": "음주 횟수(주)",
+          "type": "number",
+          "min": 0,
+          "max": 7
+        },
+        {
+          "key": "drinksPerSession",
+          "label": "1회 음주량(잔)",
+          "type": "number",
+          "min": 0,
+          "max": 30
+        },
+        {
+          "key": "exercisePerWeek",
+          "label": "운동 횟수(주)",
+          "type": "number",
+          "min": 0,
+          "max": 7
+        },
+        {
+          "key": "lowSunlight",
+          "label": "낮 시간 대부분 실내",
+          "type": "boolean"
+        },
+        {
+          "key": "sleepHours",
+          "label": "하루 수면 시간",
+          "type": "number",
+          "min": 0,
+          "max": 16
+        },
+        {
+          "key": "diet",
+          "label": "식습관",
+          "type": "multi",
+          "options": [
+            {
+              "value": "skipBreakfast",
+              "label": "아침을 자주 거름"
+            },
+            {
+              "value": "salty",
+              "label": "짜게 먹음"
+            },
+            {
+              "value": "vegetarian",
+              "label": "채식"
+            },
+            {
+              "value": "noDairy",
+              "label": "유제품을 안 먹음"
+            },
+            {
+              "value": "eatOut",
+              "label": "외식이 잦음"
+            }
+          ]
+        },
+        {
+          "key": "pregnant",
+          "label": "임신 중",
+          "type": "boolean",
+          "sex": "F"
+        },
+        {
+          "key": "breastfeeding",
+          "label": "수유 중",
+          "type": "boolean",
+          "sex": "F"
+        }
+      ],
+      "conditions": [
+        {
+          "value": "hypertension",
+          "label": "고혈압",
+          "rules": false
+        },
+        {
+          "value": "diabetes",
+          "label": "당뇨",
+          "rules": false
+        },
+        {
+          "value": "dyslipidemia",
+          "label": "이상지질혈증",
+          "rules": false
+        },
+        {
+          "value": "liver",
+          "label": "간질환",
+          "rules": false
+        },
+        {
+          "value": "kidney",
+          "label": "신장질환",
+          "rules": false
+        },
+        {
+          "value": "thyroid",
+          "label": "갑상선질환",
+          "rules": false
+        }
+      ],
+      "allergies": [
+        {
+          "value": "shellfish",
+          "label": "갑각류"
+        },
+        {
+          "value": "soy",
+          "label": "대두"
+        },
+        {
+          "value": "milk",
+          "label": "우유"
+        }
+      ],
+      "conditionNote": "진단받은 질환은 의사에게 진단받은 것만 고릅니다. 건강잇다는 질환을 판단하지 않고, 영양제 주의 문구를 고르는 데만 씁니다.",
+      "customAllowed": [
+        "medications",
+        "allergies"
+      ]
+    }
   },
   "GET /api/recommendations (2024 검진)": {
     "status": 200,
@@ -648,7 +1110,7 @@
   "GET /api/intake-logs/today": {
     "status": 200,
     "body": {
-      "date": "2026-10-28",
+      "date": "2026-10-29",
       "items": [
         {
           "supplementId": 1,
@@ -829,6 +1291,30 @@
           "timeSlot": "morning",
           "supplementId": 4,
           "taken": false
+        },
+        {
+          "date": "2026-10-28",
+          "timeSlot": "morning",
+          "supplementId": 1,
+          "taken": true
+        },
+        {
+          "date": "2026-10-28",
+          "timeSlot": "morning",
+          "supplementId": 2,
+          "taken": false
+        },
+        {
+          "date": "2026-10-28",
+          "timeSlot": "morning",
+          "supplementId": 3,
+          "taken": true
+        },
+        {
+          "date": "2026-10-28",
+          "timeSlot": "morning",
+          "supplementId": 4,
+          "taken": true
         }
       ],
       "daily": [
@@ -871,12 +1357,12 @@
         {
           "date": "2026-10-28",
           "scheduled": 4,
-          "taken": 0,
-          "rate": 0.0
+          "taken": 3,
+          "rate": 0.75
         }
       ],
       "recordedFrom": "2026-10-22",
-      "rate": 0.71
+      "rate": 0.82
     }
   },
   "GET /api/reminders/settings": {
@@ -903,24 +1389,12 @@
           "time": "08:00",
           "items": [
             {
-              "supplementId": 1,
-              "name": "오메가-3"
-            },
-            {
               "supplementId": 2,
               "name": "밀크씨슬"
-            },
-            {
-              "supplementId": 3,
-              "name": "종합비타민"
-            },
-            {
-              "supplementId": 4,
-              "name": "비타민D"
             }
           ],
           "overdueMinutes": 30,
-          "message": "아침 복용 시간입니다: 오메가-3, 밀크씨슬 외 2개"
+          "message": "아침 복용 시간입니다: 밀크씨슬"
         }
       ],
       "next": null
@@ -986,9 +1460,50 @@
     "status": 200,
     "body": [
       {
+        "id": 61,
+        "type": "bp",
+        "measuredAt": "2026-10-01T07:30",
+        "values": {
+          "sbp": 124,
+          "dbp": 81
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "sbp": 124,
+          "dbp": 81
+        }
+      },
+      {
+        "id": 62,
+        "type": "weight",
+        "measuredAt": "2026-10-01T07:30",
+        "values": {
+          "weightKg": 73.9
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "bmi": 24.4
+        }
+      },
+      {
+        "id": 63,
+        "type": "glucose",
+        "measuredAt": "2026-10-01T07:30",
+        "values": {
+          "fbs": 99
+        },
+        "fasting": true,
+        "note": null,
+        "codes": {
+          "fbs": 99
+        }
+      },
+      {
         "id": 64,
         "type": "bp",
-        "measuredAt": "2026-10-07T07:30",
+        "measuredAt": "2026-10-08T07:30",
         "values": {
           "sbp": 129,
           "dbp": 84
@@ -1003,7 +1518,7 @@
       {
         "id": 65,
         "type": "weight",
-        "measuredAt": "2026-10-07T07:30",
+        "measuredAt": "2026-10-08T07:30",
         "values": {
           "weightKg": 74.5
         },
@@ -1016,7 +1531,7 @@
       {
         "id": 66,
         "type": "bp",
-        "measuredAt": "2026-10-14T07:30",
+        "measuredAt": "2026-10-15T07:30",
         "values": {
           "sbp": 127,
           "dbp": 83
@@ -1031,7 +1546,7 @@
       {
         "id": 67,
         "type": "weight",
-        "measuredAt": "2026-10-14T07:30",
+        "measuredAt": "2026-10-15T07:30",
         "values": {
           "weightKg": 74.2
         },
@@ -1044,7 +1559,7 @@
       {
         "id": 68,
         "type": "glucose",
-        "measuredAt": "2026-10-14T07:30",
+        "measuredAt": "2026-10-15T07:30",
         "values": {
           "fbs": 102
         },
@@ -1057,7 +1572,7 @@
       {
         "id": 69,
         "type": "bp",
-        "measuredAt": "2026-10-21T07:30",
+        "measuredAt": "2026-10-22T07:30",
         "values": {
           "sbp": 125,
           "dbp": 81
@@ -1072,7 +1587,7 @@
       {
         "id": 70,
         "type": "weight",
-        "measuredAt": "2026-10-21T07:30",
+        "measuredAt": "2026-10-22T07:30",
         "values": {
           "weightKg": 73.9
         },
@@ -1225,35 +1740,35 @@
               "value": 128
             },
             {
-              "date": "2026-09-02",
+              "date": "2026-09-03",
               "value": 126
             },
             {
-              "date": "2026-09-09",
+              "date": "2026-09-10",
               "value": 124
             },
             {
-              "date": "2026-09-16",
+              "date": "2026-09-17",
               "value": 128
             },
             {
-              "date": "2026-09-23",
+              "date": "2026-09-24",
               "value": 126
             },
             {
-              "date": "2026-09-30",
+              "date": "2026-10-01",
               "value": 124
             },
             {
-              "date": "2026-10-07",
+              "date": "2026-10-08",
               "value": 129
             },
             {
-              "date": "2026-10-14",
+              "date": "2026-10-15",
               "value": 127
             },
             {
-              "date": "2026-10-21",
+              "date": "2026-10-22",
               "value": 125
             },
             {
@@ -1354,35 +1869,35 @@
               "value": 83
             },
             {
-              "date": "2026-09-02",
+              "date": "2026-09-03",
               "value": 82
             },
             {
-              "date": "2026-09-09",
+              "date": "2026-09-10",
               "value": 80
             },
             {
-              "date": "2026-09-16",
+              "date": "2026-09-17",
               "value": 84
             },
             {
-              "date": "2026-09-23",
+              "date": "2026-09-24",
               "value": 82
             },
             {
-              "date": "2026-09-30",
+              "date": "2026-10-01",
               "value": 81
             },
             {
-              "date": "2026-10-07",
+              "date": "2026-10-08",
               "value": 84
             },
             {
-              "date": "2026-10-14",
+              "date": "2026-10-15",
               "value": 83
             },
             {
-              "date": "2026-10-21",
+              "date": "2026-10-22",
               "value": 81
             },
             {
@@ -1443,19 +1958,19 @@
               "value": 105
             },
             {
-              "date": "2026-09-02",
+              "date": "2026-09-03",
               "value": 101
             },
             {
-              "date": "2026-09-16",
+              "date": "2026-09-17",
               "value": 104
             },
             {
-              "date": "2026-09-30",
+              "date": "2026-10-01",
               "value": 99
             },
             {
-              "date": "2026-10-14",
+              "date": "2026-10-15",
               "value": 102
             }
           ],
@@ -1541,7 +2056,7 @@
             },
             {
               "date": "2026-06-15",
-              "value": 24.5
+              "value": 24.6
             },
             {
               "date": "2026-07-15",
@@ -1552,35 +2067,35 @@
               "value": 24.6
             },
             {
-              "date": "2026-09-02",
+              "date": "2026-09-03",
               "value": 24.5
             },
             {
-              "date": "2026-09-09",
+              "date": "2026-09-10",
               "value": 24.3
             },
             {
-              "date": "2026-09-16",
+              "date": "2026-09-17",
               "value": 24.6
             },
             {
-              "date": "2026-09-23",
+              "date": "2026-09-24",
               "value": 24.5
             },
             {
-              "date": "2026-09-30",
+              "date": "2026-10-01",
               "value": 24.4
             },
             {
-              "date": "2026-10-07",
+              "date": "2026-10-08",
               "value": 24.6
             },
             {
-              "date": "2026-10-14",
+              "date": "2026-10-15",
               "value": 24.5
             },
             {
-              "date": "2026-10-21",
+              "date": "2026-10-22",
               "value": 24.4
             }
           ],
@@ -1611,7 +2126,7 @@
       },
       "adherence": {
         "rate": 0.84,
-        "recordedFrom": "2026-08-29"
+        "recordedFrom": "2026-08-30"
       },
       "note": "가정 측정값은 측정 기기·시간·자세가 검진과 달라 참고용입니다. 영양제의 효과를 뜻하지 않습니다."
     }
@@ -1620,7 +2135,7 @@
     "status": 200,
     "body": {
       "id": 2,
-      "date": "2026-10-28",
+      "date": "2026-10-29",
       "source": "photo",
       "status": "pending_review",
       "fileName": "2026_건강검진결과.jpg",
@@ -1746,7 +2261,7 @@
     "status": 200,
     "body": {
       "id": 2,
-      "date": "2026-10-28",
+      "date": "2026-10-29",
       "source": "photo",
       "status": "confirmed",
       "fileName": "2026_건강검진결과.jpg",
@@ -1774,7 +2289,7 @@
               "value": 134
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-29",
               "value": 126
             }
           ]
@@ -1796,7 +2311,7 @@
               "value": 86
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-29",
               "value": 82
             }
           ]
@@ -1818,7 +2333,7 @@
               "value": 108
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-29",
               "value": 101
             }
           ]
@@ -1840,7 +2355,7 @@
               "value": 228
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-29",
               "value": 205
             }
           ]
@@ -1862,7 +2377,7 @@
               "value": 152
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-29",
               "value": 128
             }
           ]
@@ -1884,7 +2399,7 @@
               "value": 44
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-29",
               "value": 47
             }
           ]
@@ -1906,7 +2421,7 @@
               "value": 210
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-29",
               "value": 162
             }
           ]
@@ -1928,7 +2443,7 @@
               "value": 38
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-29",
               "value": 31
             }
           ]
@@ -1950,7 +2465,7 @@
               "value": 48
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-29",
               "value": 37
             }
           ]
@@ -1972,7 +2487,7 @@
               "value": 72
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-29",
               "value": 58
             }
           ]
@@ -1994,7 +2509,7 @@
               "value": 14.8
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-29",
               "value": 14.9
             }
           ]
@@ -2016,7 +2531,7 @@
               "value": 25.6
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-29",
               "value": 24.4
             }
           ]
@@ -2053,7 +2568,7 @@
     "body": [
       {
         "id": 2,
-        "date": "2026-10-28",
+        "date": "2026-10-29",
         "source": "photo",
         "status": "confirmed",
         "fileName": "2026_건강검진결과.jpg",
@@ -2083,7 +2598,7 @@
     "status": 200,
     "body": {
       "checkupId": 2,
-      "checkupDate": "2026-10-28",
+      "checkupDate": "2026-10-29",
       "medications": [
         "아토르바스타틴"
       ],
@@ -2443,7 +2958,7 @@
       },
       "to": {
         "id": 2,
-        "date": "2026-10-28"
+        "date": "2026-10-29"
       },
       "items": [
         {
@@ -2642,14 +3157,8 @@
       ],
       "adherence": {
         "rate": 0.84,
-        "recordedFrom": "2026-08-29",
+        "recordedFrom": "2026-08-30",
         "daily": [
-          {
-            "date": "2026-08-29",
-            "scheduled": 4,
-            "taken": 3,
-            "rate": 0.75
-          },
           {
             "date": "2026-08-30",
             "scheduled": 4,
@@ -3007,6 +3516,12 @@
           {
             "date": "2026-10-28",
             "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-29",
+            "scheduled": 4,
             "taken": 0,
             "rate": 0.0
           }
@@ -3096,35 +3611,35 @@
               "value": 128
             },
             {
-              "date": "2026-09-02",
+              "date": "2026-09-03",
               "value": 126
             },
             {
-              "date": "2026-09-09",
+              "date": "2026-09-10",
               "value": 124
             },
             {
-              "date": "2026-09-16",
+              "date": "2026-09-17",
               "value": 128
             },
             {
-              "date": "2026-09-23",
+              "date": "2026-09-24",
               "value": 126
             },
             {
-              "date": "2026-09-30",
+              "date": "2026-10-01",
               "value": 124
             },
             {
-              "date": "2026-10-07",
+              "date": "2026-10-08",
               "value": 129
             },
             {
-              "date": "2026-10-14",
+              "date": "2026-10-15",
               "value": 127
             },
             {
-              "date": "2026-10-21",
+              "date": "2026-10-22",
               "value": 125
             },
             {
@@ -3214,35 +3729,35 @@
               "value": 83
             },
             {
-              "date": "2026-09-02",
+              "date": "2026-09-03",
               "value": 82
             },
             {
-              "date": "2026-09-09",
+              "date": "2026-09-10",
               "value": 80
             },
             {
-              "date": "2026-09-16",
+              "date": "2026-09-17",
               "value": 84
             },
             {
-              "date": "2026-09-23",
+              "date": "2026-09-24",
               "value": 82
             },
             {
-              "date": "2026-09-30",
+              "date": "2026-10-01",
               "value": 81
             },
             {
-              "date": "2026-10-07",
+              "date": "2026-10-08",
               "value": 84
             },
             {
-              "date": "2026-10-14",
+              "date": "2026-10-15",
               "value": 83
             },
             {
-              "date": "2026-10-21",
+              "date": "2026-10-22",
               "value": 81
             },
             {
@@ -3292,19 +3807,19 @@
               "value": 105
             },
             {
-              "date": "2026-09-02",
+              "date": "2026-09-03",
               "value": 101
             },
             {
-              "date": "2026-09-16",
+              "date": "2026-09-17",
               "value": 104
             },
             {
-              "date": "2026-09-30",
+              "date": "2026-10-01",
               "value": 99
             },
             {
-              "date": "2026-10-14",
+              "date": "2026-10-15",
               "value": 102
             }
           ],
@@ -3379,7 +3894,7 @@
             },
             {
               "date": "2026-06-15",
-              "value": 24.5
+              "value": 24.6
             },
             {
               "date": "2026-07-15",
@@ -3390,35 +3905,35 @@
               "value": 24.6
             },
             {
-              "date": "2026-09-02",
+              "date": "2026-09-03",
               "value": 24.5
             },
             {
-              "date": "2026-09-09",
+              "date": "2026-09-10",
               "value": 24.3
             },
             {
-              "date": "2026-09-16",
+              "date": "2026-09-17",
               "value": 24.6
             },
             {
-              "date": "2026-09-23",
+              "date": "2026-09-24",
               "value": 24.5
             },
             {
-              "date": "2026-09-30",
+              "date": "2026-10-01",
               "value": 24.4
             },
             {
-              "date": "2026-10-07",
+              "date": "2026-10-08",
               "value": 24.6
             },
             {
-              "date": "2026-10-14",
+              "date": "2026-10-15",
               "value": 24.5
             },
             {
-              "date": "2026-10-21",
+              "date": "2026-10-22",
               "value": 24.4
             }
           ],
@@ -3445,7 +3960,7 @@
         "checkups",
         "prescriptions"
       ],
-      "connectedAt": "2026-10-28",
+      "connectedAt": "2026-10-29",
       "lastSyncAt": null,
       "provider": "건강정보 고속도로(가상)",
       "isDemoData": true
@@ -3459,8 +3974,8 @@
         "checkups",
         "prescriptions"
       ],
-      "connectedAt": "2026-10-28",
-      "lastSyncAt": "2026-10-28",
+      "connectedAt": "2026-10-29",
+      "lastSyncAt": "2026-10-29",
       "provider": "건강정보 고속도로(가상)",
       "isDemoData": true,
       "importedCheckups": [
