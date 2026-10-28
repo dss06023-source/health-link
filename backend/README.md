@@ -31,7 +31,10 @@ python -m pytest -q
 |---|---|
 | `app/main.py` | API 경로 |
 | `app/logic.py` | 해석·추천·중복 점검·변화 비교 계산 |
-| `app/reference.py` | 기준치, 영양제 목록, 추천·상호작용 규칙표 (내용 수정은 여기서) |
+| `app/reference.py` | `app/seed/` JSON을 읽어 판정 함수와 규칙표로 내보냄 |
+| `app/seed/checkup_criteria.json` | 검진 항목 판정 기준(건강검진 실시기준 별표 4와 대조) |
+| `app/seed/supplements.json` | 영양제 목록, 고시 1일 섭취량, 섭취 주의사항, 출처·검증 상태 |
+| `app/seed/intake_rules.json` | 추천·제외·주의·상한·복용 간격 규칙 (내용 수정은 seed/ 에서) |
 | `app/db.py` | 저장소와 가상 데이터 |
 | `scripts/make_examples.py` | `docs/api-examples.json` 재생성 (`python -m scripts.make_examples ../docs/api-examples.json`) |
 

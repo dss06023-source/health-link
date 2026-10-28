@@ -60,7 +60,8 @@ def test_interpretation_has_no_disease_words(client):
 def test_recommendation_excludes_statin_conflict_and_liver_caution(client):
     r = client.get("/api/recommendations").json()
     excluded = {e["supplementId"] for e in r["excluded"]}
-    assert excluded == {"red_yeast_rice", "garcinia"}
+    # 홍국: 스타틴 복용, 가르시니아·녹차추출물: ALT가 기준치 밖
+    assert excluded == {"red_yeast_rice", "garcinia", "green_tea"}
     ids = [x["supplementId"] for x in r["recommendations"]]
     assert "banaba" in ids and "omega3" in ids
     vit_d = next(x for x in r["recommendations"] if x["supplementId"] == "vitamin_d")
@@ -111,7 +112,8 @@ def test_compare_report(client):
     r = client.get("/api/reports/compare").json()
     ldl = next(i for i in r["items"] if i["code"] == "ldl")
     assert (ldl["beforeStatus"], ldl["afterStatus"], ldl["trend"]) == ("caution", "normal", "improved")
-    assert r["summary"]["improved"] == 9
+    # HDL 44→47(정상B 안에서 기준치 쪽으로), BMI 25.6→24.4(정상B→정상A)까지 10개
+    assert r["summary"]["improved"] == 10
     assert "효과를 뜻하지 않습니다" in r["note"]
     assert r["adherence"]["rate"] is not None
 
