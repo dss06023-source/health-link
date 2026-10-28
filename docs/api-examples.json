@@ -120,59 +120,47 @@
     "status": 200,
     "body": [
       {
-        "name": "아토르바스타틴",
+        "name": "혈압약",
+        "drugClass": "antihypertensive"
+      },
+      {
+        "name": "스타틴",
         "drugClass": "statin"
       },
       {
-        "name": "로수바스타틴",
-        "drugClass": "statin"
-      },
-      {
-        "name": "와파린",
-        "drugClass": "anticoagulant"
-      },
-      {
-        "name": "아스피린(저용량)",
-        "drugClass": "anticoagulant"
+        "name": "기타 고지혈증약",
+        "drugClass": "lipid_other"
       },
       {
         "name": "메트포르민",
         "drugClass": "antidiabetic"
       },
       {
-        "name": "레보티록신",
-        "drugClass": "thyroid"
-      },
-      {
-        "name": "암로디핀",
-        "drugClass": "antihypertensive"
-      },
-      {
-        "name": "혈압약(기타)",
-        "drugClass": "antihypertensive"
-      },
-      {
-        "name": "스타틴(기타)",
-        "drugClass": "statin"
-      },
-      {
-        "name": "고지혈증약(스타틴 아님)",
-        "drugClass": "lipid_other"
-      },
-      {
         "name": "인슐린",
         "drugClass": "antidiabetic"
       },
       {
-        "name": "당뇨약(기타)",
+        "name": "기타 당뇨약",
         "drugClass": "antidiabetic"
       },
       {
-        "name": "항응고·항혈소판제(기타)",
+        "name": "아스피린",
         "drugClass": "anticoagulant"
       },
       {
-        "name": "갑상선약(기타)",
+        "name": "와파린",
+        "drugClass": "anticoagulant"
+      },
+      {
+        "name": "클로피도그렐",
+        "drugClass": "anticoagulant"
+      },
+      {
+        "name": "기타 항응고제",
+        "drugClass": "anticoagulant"
+      },
+      {
+        "name": "레보티록신",
         "drugClass": "thyroid"
       },
       {
@@ -207,15 +195,10 @@
       "medicationGroups": [
         {
           "id": "antihypertensive",
-          "label": "혈압약",
+          "label": "혈압",
           "items": [
             {
-              "name": "암로디핀",
-              "drugClass": "antihypertensive",
-              "rules": true
-            },
-            {
-              "name": "혈압약(기타)",
+              "name": "혈압약",
               "drugClass": "antihypertensive",
               "rules": true
             }
@@ -223,25 +206,15 @@
         },
         {
           "id": "lipid",
-          "label": "고지혈증약",
+          "label": "콜레스테롤",
           "items": [
             {
-              "name": "아토르바스타틴",
+              "name": "스타틴",
               "drugClass": "statin",
               "rules": true
             },
             {
-              "name": "로수바스타틴",
-              "drugClass": "statin",
-              "rules": true
-            },
-            {
-              "name": "스타틴(기타)",
-              "drugClass": "statin",
-              "rules": true
-            },
-            {
-              "name": "고지혈증약(스타틴 아님)",
+              "name": "기타 고지혈증약",
               "drugClass": "lipid_other",
               "rules": false
             }
@@ -249,7 +222,7 @@
         },
         {
           "id": "antidiabetic",
-          "label": "당뇨약",
+          "label": "당뇨",
           "items": [
             {
               "name": "메트포르민",
@@ -262,7 +235,7 @@
               "rules": true
             },
             {
-              "name": "당뇨약(기타)",
+              "name": "기타 당뇨약",
               "drugClass": "antidiabetic",
               "rules": true
             }
@@ -270,20 +243,25 @@
         },
         {
           "id": "anticoagulant",
-          "label": "항응고·항혈소판제",
+          "label": "피를 묽게 하는 약",
           "items": [
+            {
+              "name": "아스피린",
+              "drugClass": "anticoagulant",
+              "rules": true
+            },
             {
               "name": "와파린",
               "drugClass": "anticoagulant",
               "rules": true
             },
             {
-              "name": "아스피린(저용량)",
+              "name": "클로피도그렐",
               "drugClass": "anticoagulant",
               "rules": true
             },
             {
-              "name": "항응고·항혈소판제(기타)",
+              "name": "기타 항응고제",
               "drugClass": "anticoagulant",
               "rules": true
             }
@@ -291,15 +269,10 @@
         },
         {
           "id": "thyroid",
-          "label": "갑상선약",
+          "label": "갑상선",
           "items": [
             {
               "name": "레보티록신",
-              "drugClass": "thyroid",
-              "rules": true
-            },
-            {
-              "name": "갑상선약(기타)",
               "drugClass": "thyroid",
               "rules": true
             }
@@ -307,7 +280,7 @@
         },
         {
           "id": "acid_suppressant",
-          "label": "위산억제제",
+          "label": "위장",
           "items": [
             {
               "name": "위산억제제",
@@ -318,7 +291,7 @@
         },
         {
           "id": "osteoporosis",
-          "label": "골다공증약",
+          "label": "뼈",
           "items": [
             {
               "name": "골다공증약",
@@ -328,42 +301,24 @@
           ]
         },
         {
-          "id": "antibiotic",
-          "label": "항생제",
+          "id": "other",
+          "label": "그 밖의 약",
           "items": [
             {
               "name": "항생제",
               "drugClass": "antibiotic",
               "rules": false
-            }
-          ]
-        },
-        {
-          "id": "antidepressant",
-          "label": "항우울제",
-          "items": [
+            },
             {
               "name": "항우울제",
               "drugClass": "antidepressant",
               "rules": false
-            }
-          ]
-        },
-        {
-          "id": "hormone",
-          "label": "호르몬제·피임약",
-          "items": [
+            },
             {
               "name": "호르몬제·피임약",
               "drugClass": "hormone",
               "rules": false
-            }
-          ]
-        },
-        {
-          "id": "anticonvulsant",
-          "label": "항경련제",
-          "items": [
+            },
             {
               "name": "항경련제",
               "drugClass": "anticonvulsant",
@@ -514,11 +469,11 @@
           "options": [
             {
               "value": "skipBreakfast",
-              "label": "아침을 자주 거름"
+              "label": "아침 거름"
             },
             {
               "value": "salty",
-              "label": "짜게 먹음"
+              "label": "짠 음식"
             },
             {
               "value": "vegetarian",
@@ -526,11 +481,11 @@
             },
             {
               "value": "noDairy",
-              "label": "유제품을 안 먹음"
+              "label": "유제품 안 먹음"
             },
             {
               "value": "eatOut",
-              "label": "외식이 잦음"
+              "label": "외식 잦음"
             }
           ]
         },

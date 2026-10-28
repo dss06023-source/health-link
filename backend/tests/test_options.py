@@ -15,12 +15,12 @@ def client(tmp_path, monkeypatch):
 def test_options_list_and_rule_flags(client):
     o = client.get("/api/options").json()
     groups = {g["id"]: g for g in o["medicationGroups"]}
-    assert len(groups) == 11
+    assert len(groups) == 8
     assert len(o["supplements"]) == 16
     items = {i["name"]: i for g in groups.values() for i in g["items"]}
     assert items["와파린"]["rules"] is True
     assert items["항우울제"]["rules"] is False
-    assert items["고지혈증약(스타틴 아님)"]["rules"] is False
+    assert items["기타 고지혈증약"]["rules"] is False
     sups = {s["id"]: s["rules"] for s in o["supplements"]}
     assert sups["omega3"] is True and sups["vitamin_c"] is False
     assert {c["rules"] for c in o["conditions"]} == {False}
@@ -28,9 +28,19 @@ def test_options_list_and_rule_flags(client):
 
 
 def test_group_items_feed_interaction_rules(client):
-    client.put("/api/users/me", json={"medications": ["항응고·항혈소판제(기타)"]})
+    client.put("/api/users/me", json={"medications": ["기타 항응고제"]})
     warnings = client.get("/api/supplements/check").json()["interactions"]
     assert any(w["supplementId"] == "omega3" and "항응고" in w["message"] for w in warnings)
+
+
+def test_medication_list_is_screen_options_only(client):
+    names = [m["name"] for m in client.get("/api/medications").json()]
+    assert "스타틴" in names and "클로피도그렐" in names and "아토르바스타틴" not in names
+
+
+def test_legacy_medication_names_still_have_rules(client):
+    me = client.put("/api/users/me", json={"medications": ["아토르바스타틴"]}).json()
+    assert "unknownMedications" not in me
 
 
 def test_profile_saves_new_fields(client):

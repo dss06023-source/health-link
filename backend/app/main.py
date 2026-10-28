@@ -161,8 +161,9 @@ def profile_options():
 
 @app.get("/api/medications")
 def list_medications():
-    """시연용 약 목록(상호작용 규칙이 있는 약만)."""
-    return [{"name": name, "drugClass": cls} for name, cls in ref.MEDICATIONS.items()]
+    """입력 화면의 약 보기. 예전 이름(마이데이터 처방명 등)은 목록에 없지만 저장·규칙에는 계속 쓰인다."""
+    return [{"name": i["name"], "drugClass": i["drugClass"]}
+            for g in ref.PROFILE_OPTIONS["medicationGroups"] for i in g["items"]]
 
 
 CENTERS = [

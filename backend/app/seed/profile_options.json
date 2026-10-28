@@ -1,37 +1,37 @@
 {
   "_about": "개인정보 입력 화면의 보기 목록(계획서 11장). 보기를 늘린 것이지 규칙을 늘린 것이 아니다. drugClass가 intake_rules.json의 상호작용 규칙에 있는 계열만 경고가 나오고, rules가 false인 보기는 저장만 한다. 새 보기용 규칙은 근거 확인 뒤 intake_rules.json에 넣는다.",
   "medicationGroups": [
-    {"id": "antihypertensive", "label": "혈압약", "items": [
-      {"name": "암로디핀", "drugClass": "antihypertensive"},
-      {"name": "혈압약(기타)", "drugClass": "antihypertensive"}
+    {"id": "antihypertensive", "label": "혈압", "items": [
+      {"name": "혈압약", "drugClass": "antihypertensive"}
     ]},
-    {"id": "lipid", "label": "고지혈증약", "items": [
-      {"name": "아토르바스타틴", "drugClass": "statin"},
-      {"name": "로수바스타틴", "drugClass": "statin"},
-      {"name": "스타틴(기타)", "drugClass": "statin"},
-      {"name": "고지혈증약(스타틴 아님)", "drugClass": "lipid_other"}
+    {"id": "lipid", "label": "콜레스테롤", "items": [
+      {"name": "스타틴", "drugClass": "statin"},
+      {"name": "기타 고지혈증약", "drugClass": "lipid_other"}
     ]},
-    {"id": "antidiabetic", "label": "당뇨약", "items": [
+    {"id": "antidiabetic", "label": "당뇨", "items": [
       {"name": "메트포르민", "drugClass": "antidiabetic"},
       {"name": "인슐린", "drugClass": "antidiabetic"},
-      {"name": "당뇨약(기타)", "drugClass": "antidiabetic"}
+      {"name": "기타 당뇨약", "drugClass": "antidiabetic"}
     ]},
-    {"id": "anticoagulant", "label": "항응고·항혈소판제", "items": [
+    {"id": "anticoagulant", "label": "피를 묽게 하는 약", "items": [
+      {"name": "아스피린", "drugClass": "anticoagulant"},
       {"name": "와파린", "drugClass": "anticoagulant"},
-      {"name": "아스피린(저용량)", "drugClass": "anticoagulant"},
-      {"name": "항응고·항혈소판제(기타)", "drugClass": "anticoagulant"}
+      {"name": "클로피도그렐", "drugClass": "anticoagulant"},
+      {"name": "기타 항응고제", "drugClass": "anticoagulant"}
     ]},
-    {"id": "thyroid", "label": "갑상선약", "items": [
-      {"name": "레보티록신", "drugClass": "thyroid"},
-      {"name": "갑상선약(기타)", "drugClass": "thyroid"}
+    {"id": "thyroid", "label": "갑상선", "items": [
+      {"name": "레보티록신", "drugClass": "thyroid"}
     ]},
-    {"id": "acid_suppressant", "label": "위산억제제", "items": [{"name": "위산억제제", "drugClass": "acid_suppressant"}]},
-    {"id": "osteoporosis", "label": "골다공증약", "items": [{"name": "골다공증약", "drugClass": "osteoporosis"}]},
-    {"id": "antibiotic", "label": "항생제", "items": [{"name": "항생제", "drugClass": "antibiotic"}]},
-    {"id": "antidepressant", "label": "항우울제", "items": [{"name": "항우울제", "drugClass": "antidepressant"}]},
-    {"id": "hormone", "label": "호르몬제·피임약", "items": [{"name": "호르몬제·피임약", "drugClass": "hormone"}]},
-    {"id": "anticonvulsant", "label": "항경련제", "items": [{"name": "항경련제", "drugClass": "anticonvulsant"}]}
+    {"id": "acid_suppressant", "label": "위장", "items": [{"name": "위산억제제", "drugClass": "acid_suppressant"}]},
+    {"id": "osteoporosis", "label": "뼈", "items": [{"name": "골다공증약", "drugClass": "osteoporosis"}]},
+    {"id": "other", "label": "그 밖의 약", "items": [
+      {"name": "항생제", "drugClass": "antibiotic"},
+      {"name": "항우울제", "drugClass": "antidepressant"},
+      {"name": "호르몬제·피임약", "drugClass": "hormone"},
+      {"name": "항경련제", "drugClass": "anticonvulsant"}
+    ]}
   ],
+  "_legacyMedications": "intake_rules.json의 medications(아토르바스타틴, 암로디핀 등 마이데이터 처방 이름)도 계속 받는다. 화면 보기에는 위 이름만 보인다.",
   "supplements": [
     {"id": "multivitamin", "name": "종합비타민"},
     {"id": "vitamin_b", "name": "비타민B군"},
@@ -59,9 +59,9 @@
     {"key": "lowSunlight", "label": "낮 시간 대부분 실내", "type": "boolean"},
     {"key": "sleepHours", "label": "하루 수면 시간", "type": "number", "min": 0, "max": 16},
     {"key": "diet", "label": "식습관", "type": "multi", "options": [
-      {"value": "skipBreakfast", "label": "아침을 자주 거름"}, {"value": "salty", "label": "짜게 먹음"},
-      {"value": "vegetarian", "label": "채식"}, {"value": "noDairy", "label": "유제품을 안 먹음"},
-      {"value": "eatOut", "label": "외식이 잦음"}]},
+      {"value": "skipBreakfast", "label": "아침 거름"}, {"value": "salty", "label": "짠 음식"},
+      {"value": "vegetarian", "label": "채식"}, {"value": "noDairy", "label": "유제품 안 먹음"},
+      {"value": "eatOut", "label": "외식 잦음"}]},
     {"key": "pregnant", "label": "임신 중", "type": "boolean", "sex": "F"},
     {"key": "breastfeeding", "label": "수유 중", "type": "boolean", "sex": "F"}
   ],
