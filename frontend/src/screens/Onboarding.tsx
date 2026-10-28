@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../store'
-import { Icon } from '../ui'
+import { Wordmark } from '../ui'
 import { MEDICATION_OPTIONS, SAMPLE_PROFILE, SUPPLEMENT_OPTIONS } from '../data/mock'
 import type { UserProfile } from '../types'
 
@@ -23,13 +23,10 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
   const life = (patch: Partial<UserProfile['lifestyle']>) => setP((x) => ({ ...x, lifestyle: { ...x.lifestyle, ...patch } }))
 
   return (
-    <div className="main" style={{ display: 'grid', placeItems: 'start center' }}>
-      <form className="card stack" style={{ maxWidth: 640, width: '100%', gap: 22 }}
+    <div className="main">
+      <form className="stack" style={{ maxWidth: 680, gap: 24 }}
         onSubmit={(e) => { e.preventDefault(); setProfile(p); onDone() }}>
-        <div className="row">
-          <span className="brand-mark"><Icon name="leaf" color="var(--accent-ink)" /></span>
-          <b style={{ fontSize: '1.2rem' }}>건강잇다</b>
-        </div>
+        <Wordmark />
         <div className="stack" style={{ gap: 6 }}>
           <h1>검진 알림을 받으려면 기본 정보가 필요합니다</h1>
           <p className="muted">출생연도로 올해 국가건강검진 대상인지 계산하고, 복용 약은 영양제 상호작용 확인에 씁니다.</p>
@@ -52,18 +49,18 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
             <input id="ob-drink" type="number" min={0} max={7} value={p.lifestyle.drinkingPerWeek} onChange={(e) => life({ drinkingPerWeek: Number(e.target.value) })} /></div>
         </div>
 
-        <div className="field"><label>복용 중인 약</label>
+        <div className="field"><span className="label">복용 중인 약</span>
           <Chips options={MEDICATION_OPTIONS} value={p.medications} onChange={(v) => upd({ medications: v })} /></div>
-        <div className="field"><label>이미 먹고 있는 영양제</label>
+        <div className="field"><span className="label">이미 먹고 있는 영양제</span>
           <Chips options={SUPPLEMENT_OPTIONS} value={p.currentSupplements} onChange={(v) => upd({ currentSupplements: v })} /></div>
-        <div className="field"><label>생활습관</label>
+        <div className="field"><span className="label">생활습관</span>
           <div className="chips">
             <button type="button" className="chip" aria-pressed={p.lifestyle.smoking} onClick={() => life({ smoking: !p.lifestyle.smoking })}>흡연</button>
             <button type="button" className="chip" aria-pressed={p.lifestyle.lowOutdoor} onClick={() => life({ lowOutdoor: !p.lifestyle.lowOutdoor })}>낮 시간 대부분 실내</button>
             <button type="button" className="chip" aria-pressed={p.lifestyle.exercisePerWeek >= 3} onClick={() => life({ exercisePerWeek: p.lifestyle.exercisePerWeek >= 3 ? 1 : 3 })}>주 3회 이상 운동</button>
           </div></div>
 
-        <button className="btn" type="submit">검진 대상 확인하기</button>
+        <div><button className="btn" type="submit">검진 대상 확인하기</button></div>
       </form>
     </div>
   )

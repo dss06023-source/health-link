@@ -2,7 +2,7 @@ import type { Route } from '../App'
 import { interpret, STATUS_LABEL } from '../data/rules'
 import { latestCheckup, useStore } from '../store'
 import type { Checkup, Status } from '../types'
-import { Disclaimer, StatusPill } from '../ui'
+import { Disclaimer, StatusText, Value } from '../ui'
 
 // 비교에 쓰는 핵심 항목과 정상 기준선. HDL만 높을수록 좋다.
 const KEYS: { code: string; limit: number; higherBetter?: boolean }[] = [
@@ -19,12 +19,12 @@ function Spark({ points, limit, labels }: { points: number[]; limit: number; lab
   const d = points.map((v, i) => `${i ? 'L' : 'M'}${x(i)},${y(v)}`).join(' ')
   return (
     <svg className="chart" viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', maxWidth: 560, height: 'auto', display: 'block', margin: '0 auto' }} role="img" aria-label={points.join(' → ')}>
-      <line x1={padX - 20} x2={W - padX + 20} y1={y(limit)} y2={y(limit)} stroke="var(--caution)" strokeDasharray="4 4" strokeWidth="1.2" />
+      <line x1={padX - 20} x2={W - padX + 20} y1={y(limit)} y2={y(limit)} stroke="var(--muted)" strokeDasharray="4 4" strokeWidth="1.2" />
       <path d={d} fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
       {points.map((v, i) => (
         <g key={i}>
           <circle cx={x(i)} cy={y(v)} r={i === points.length - 1 ? 5.5 : 4} fill={i === points.length - 1 ? 'var(--accent)' : 'var(--surface)'} stroke="var(--accent)" strokeWidth="2" />
-          <text x={x(i)} y={y(v) - 9} textAnchor="middle" style={{ fill: 'var(--fg)', fontWeight: 800 }}>{v}</text>
+          <text x={x(i)} y={y(v) - 9} textAnchor="middle" style={{ fill: 'var(--fg)', fontWeight: 600 }}>{v}</text>
           <text x={x(i)} y={H - 4} textAnchor="middle">{labels[i]}</text>
         </g>
       ))}
@@ -43,8 +43,8 @@ export default function Report({ go }: { go: (r: Route) => void }) {
 
   if (!after) {
     return (
-      <section className="card stack" style={{ alignItems: 'flex-start', gap: 14 }}>
-        <span className="pill plain">기준 검진 · {base.date}</span>
+      <section className="sec" style={{ alignItems: 'flex-start' }}>
+        <span className="muted small">기준 검진 · {base.date}</span>
         <h2>복용 6개월 뒤 중간 점검 결과가 들어오면 여기서 비교합니다</h2>
         <p className="muted">다음 국가검진(2년 뒤)까지 기다리지 않도록, 약국·보건소 간이검사로 혈당과 지질을 중간에 확인하는 방식을 가정했습니다.</p>
         {s.remote
@@ -79,51 +79,43 @@ export default function Report({ go }: { go: (r: Route) => void }) {
 
   return (
     <>
-      <section className="card">
-        <div className="grid-3" style={{ alignItems: 'center' }}>
-          <div className="stack" style={{ gap: 4 }}>
-            <span className="muted small">좋아진 항목</span>
-            <span><b className="num" style={{ fontSize: '2.2rem', color: 'var(--accent)' }}>{improved}</b><span className="muted"> / {rows.length}개</span></span>
-            <span className="small muted">{base.date} → {after.date}</span>
-          </div>
-          <div className="stack" style={{ gap: 4 }}>
-            <span className="muted small">판정이 나아진 항목</span>
-            <span><b className="num" style={{ fontSize: '2.2rem' }}>{statusUp.length}</b><span className="muted">개</span></span>
-            <span className="small muted">{statusUp.map((r) => r.a.name).join(', ') || '없음'}</span>
-          </div>
-          <div className="stack" style={{ gap: 4 }}>
-            <span className="muted small">같은 기간 복용률</span>
-            <span><b className="num" style={{ fontSize: '2.2rem' }}>{rate ?? '-'}</b><span className="muted">%</span></span>
-            <span className="small muted">{s.supplements.map((x) => x.name).join(' · ')}</span>
-          </div>
-        </div>
+      <section className="summary-lines">
+        <p className="lead">
+          {base.date} → {after.date}, 핵심 {rows.length}개 항목 중 <b>{improved}개</b>가 좋아졌습니다.
+          {statusUp.length > 0 && <> 판정이 나아진 항목은 <b>{statusUp.map((r) => r.a.name).join(', ')}</b>입니다.</>}
+        </p>
+        <p className="muted">같은 기간 복용률 <b className="num" style={{ color: 'var(--fg)' }}>{rate ?? '-'}%</b> · {s.supplements.map((x) => x.name).join(' · ')}</p>
       </section>
 
-      <section className="card">
-        <div className="card-head">
-          <div><h2>항목별 변화</h2><p className="small muted">점선은 정상 기준선입니다. {prior ? `${prior.date.slice(0, 4)}년 검진부터 함께 표시합니다.` : ''}</p></div>
-          <span className="pill plain">{after.label}</span>
+      <section className="sec">
+        <div className="sec-head">
+          <h2>항목별 변화</h2>
+          <p>{after.label} · 점선은 정상 기준선{prior ? ` · ${prior.date.slice(0, 4)}년 검진부터 표시` : ''}</p>
         </div>
-        {rows.map((r) => (
-          <div key={r.code} className="compare-row">
-            <div className="stack" style={{ gap: 4 }}>
-              <b>{r.a.name}</b>
-              <span className="small muted">{r.a.unit} · 기준 {r.a.rangeText}</span>
-            </div>
-            <div className="chart-cell" style={{ minWidth: 0 }}><Spark points={r.points} limit={r.limit} labels={labels} /></div>
-            <div className="stack" style={{ gap: 6, alignItems: 'flex-end' }}>
-              <span className={`num small`} style={{ color: r.better ? 'var(--accent)' : 'var(--danger)' }}>
-                {r.a.value - r.b.value > 0 ? '+' : ''}{Math.round((r.a.value - r.b.value) * 10) / 10}
-              </span>
-              {r.statusUp
-                ? <span className="small muted">{STATUS_LABEL[r.b.status]} → <StatusPill status={r.a.status} /></span>
-                : <StatusPill status={r.a.status} />}
-            </div>
-          </div>
-        ))}
+        <ul className="rows">
+          {rows.map((r) => {
+            const d = Math.round((r.a.value - r.b.value) * 10) / 10
+            return (
+              <li key={r.code} className="chg">
+                <div className="name"><b>{r.a.name}</b><small>{r.a.unit} · 기준 {r.a.rangeText}</small></div>
+                <div className="vals">
+                  <span className="old"><Value status={r.b.status} seed={r.code} faded>{r.b.value}</Value></span>
+                  <span className="arrow" aria-hidden="true">→</span>
+                  <span className="new"><Value status={r.a.status} seed={r.code + 'a'}>{r.a.value}</Value></span>
+                  <span className="delta">{d > 0 ? '+' : ''}{d}</span>
+                </div>
+                <div className="chart-cell" style={{ minWidth: 0 }}><Spark points={r.points} limit={r.limit} labels={labels} /></div>
+                <p className="verdict">
+                  <b>{r.better ? '좋아짐' : d === 0 ? '변화 없음' : '나빠짐'}</b>
+                  {' · '}{r.statusUp ? <>{STATUS_LABEL[r.b.status]} → <StatusText status={r.a.status} /></> : <StatusText status={r.a.status} />}
+                </p>
+              </li>
+            )
+          })}
+        </ul>
       </section>
 
-      <p className="disclaimer">{s.remote?.compareNote ?? '수치 변화에는 식사, 음주, 운동, 체중, 검사 시점이 함께 영향을 줍니다. 이 비교는 영양제의 효과를 증명하지 않으며, 생활 관리를 이어 가기 위한 참고 자료입니다.'}</p>
+      <div className="callout"><p className="small muted">{s.remote?.compareNote ?? '수치 변화에는 식사, 음주, 운동, 체중, 검사 시점이 함께 영향을 줍니다. 이 비교는 영양제의 효과를 증명하지 않으며, 생활 관리를 이어 가기 위한 참고 자료입니다.'}</p></div>
       <div className="row">
         <button className="btn" onClick={() => go('recommend')}>추천 구성 다시 보기</button>
         <button className="btn ghost" onClick={() => go('intake')}>복용 관리로</button>

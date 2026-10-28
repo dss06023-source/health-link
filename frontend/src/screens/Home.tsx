@@ -4,7 +4,7 @@ import { getCenters } from '../api'
 import { checkupTarget, interpret } from '../data/rules'
 import { latestCheckup, useStore, ymd } from '../store'
 import type { CheckupCenter } from '../types'
-import { Disclaimer, Icon } from '../ui'
+import { Disclaimer, Icon, PenLine } from '../ui'
 
 export default function Home({ go }: { go: (r: Route) => void }) {
   const s = useStore()
@@ -19,74 +19,70 @@ export default function Home({ go }: { go: (r: Route) => void }) {
   const today = ymd(new Date())
   const active = s.supplements.filter((x) => !x.paused)
   const takenToday = active.filter((x) => s.intake[today]?.[x.id]).length
+  const due = t.isTarget && !t.done
+  const odd = p.birthYear % 2 ? '홀수' : '짝수'
+
+  const todo: { done: boolean; title: string; sub: string; act?: { label: string; to: Route | '#centers' } }[] = [
+    due
+      ? { done: !!s.reservedCenter, title: s.reservedCenter ? `${s.reservedCenter.name} 예약 요청함` : '검진기관 예약하기', sub: s.reservedCenter ? s.reservedCenter.slot : '아래 목록에서 가까운 기관과 시간을 고릅니다.', act: s.reservedCenter ? undefined : { label: '기관 보기', to: '#centers' } }
+      : { done: true, title: `${t.done ? t.year : t.year - 1}년 검진 받음`, sub: `최근 결과 ${last.date}` },
+    { done: s.checkups.some((c) => c.source !== 'sample'), title: '결과지 등록하기', sub: '종이 결과지 사진이나 공단 PDF를 올리면 수치를 읽어 옵니다.', act: { label: '등록', to: 'upload' } },
+    { done: false, title: `결과 해석 확인 · 기준 벗어남 ${flagged}개`, sub: `${last.items.length}개 항목 중`, act: { label: '해석 보기', to: 'results' } },
+    { done: active.length > 0 && takenToday === active.length, title: `오늘 영양제 ${takenToday} / ${active.length}개 먹음`, sub: active.length ? '시간대별로 체크합니다.' : '추천을 받고 복용을 시작하면 여기에 표시됩니다.', act: { label: active.length ? '복용 체크' : '추천 받기', to: active.length ? 'intake' : 'recommend' } },
+    { done: !!s.followup, title: s.followup ? '중간 점검 결과 도착' : '복용 6개월 뒤 중간 점검', sub: s.followup ? `${s.followup.date} · 변화 리포트에서 비교합니다.` : '약국 간이검사(혈당·지질)로 변화를 미리 확인합니다.', act: { label: '리포트', to: 'report' } },
+  ]
 
   return (
     <>
-      <section className="card hero-alert">
+      <section className="notice">
+        <p className="headline">
+          {due ? <>{p.name} 님은 <PenLine>{t.year}년 일반건강검진 대상</PenLine>입니다. 아직 받지 않으셨습니다.</>
+            : t.done ? <>{t.year}년 검진을 받으셨습니다. 결과를 바탕으로 영양 구성을 관리하고 있습니다.</>
+              : <>{odd}년생은 {t.year + 1}년에 검진 대상입니다.</>}
+        </p>
         <div className="dday">
-          {t.isTarget && !t.done ? <div><b className="num">D-{t.daysLeft}</b><span className="small">12월 31일 마감</span></div>
-            : <div><b className="num">{t.done ? '완료' : t.year + 1}</b><span className="small">{t.done ? `${t.year}년 검진` : '다음 대상 연도'}</span></div>}
+          {due ? <><span className="big">D-{t.daysLeft}</span><span className="muted">12월 31일 마감</span></>
+            : <span className="muted">{t.done ? `${t.year}년 검진 완료` : `다음 대상 연도 ${t.year + 1}년`}</span>}
+          {t.extras.length > 0 && <span className="muted">· 올해 추가 검사: {t.extras.join(', ')}</span>}
         </div>
-        <div className="stack" style={{ gap: 8 }}>
-          <span className="row">
-            <span className={`pill ${t.isTarget && !t.done ? 'caution' : 'normal'}`}><span className="dot" />
-              {t.isTarget ? (t.done ? '올해 검진 완료' : '올해 검진 대상 · 미수검') : '올해는 대상 아님'}</span>
-            {t.extras.map((e) => <span key={e} className="pill plain">{e}</span>)}
-          </span>
-          <h2>{t.isTarget && !t.done
-            ? `${p.name} 님은 ${t.year}년 일반건강검진 대상입니다. 아직 받지 않으셨어요.`
-            : t.done ? `${t.year}년 검진을 받으셨습니다. 결과를 바탕으로 영양 구성을 관리하고 있어요.`
-              : `${p.birthYear % 2 ? '홀수' : '짝수'}년생은 ${t.year + 1}년에 검진 대상입니다.`}</h2>
-          <p className="muted">{p.birthYear % 2 ? '홀수' : '짝수'}년에 태어난 분은 {p.birthYear % 2 ? '홀수' : '짝수'}년에 무료로 받습니다. 비용은 건강보험이 부담합니다.</p>
-          {s.reservedCenter && <p><b>예약됨</b> · {s.reservedCenter.name} {s.reservedCenter.slot}</p>}
-        </div>
-        <div className="stack">
-          {t.isTarget && !t.done
-            ? <a className="btn" href="#centers">근처 검진기관 보기</a>
+        <p className="muted">{odd}년에 태어난 분은 {odd}년에 무료로 받습니다. 비용은 건강보험이 부담합니다.</p>
+        <div className="row">
+          {due ? <a className="btn" href="#centers" onClick={(e) => { e.preventDefault(); document.getElementById('centers')?.scrollIntoView({ behavior: 'smooth' }) }}>근처 검진기관 보기</a>
             : <button className="btn" onClick={() => go('results')}>검진 해석 보기</button>}
           <button className="btn ghost" onClick={() => go('upload')}>결과지 등록</button>
         </div>
       </section>
 
-      <div className="grid-3">
-        <button className="card stack" style={{ textAlign: 'left', cursor: 'pointer' }} onClick={() => go('intake')}>
-          <span className="muted small">오늘 복용</span>
-          <span><b className="num" style={{ fontSize: '2rem' }}>{takenToday}</b><span className="muted"> / {active.length}개</span></span>
-          <div className="bar"><i style={{ width: `${active.length ? (takenToday / active.length) * 100 : 0}%` }} /></div>
-        </button>
-        <button className="card stack" style={{ textAlign: 'left', cursor: 'pointer' }} onClick={() => go('results')}>
-          <span className="muted small">최근 검진 · {last.date}</span>
-          <span><b className="num" style={{ fontSize: '2rem', color: flagged ? 'var(--caution)' : 'var(--accent)' }}>{flagged}</b><span className="muted"> 개 항목 관리 필요</span></span>
-          <span className="small muted">{last.items.length}개 항목 중</span>
-        </button>
-        <button className="card stack" style={{ textAlign: 'left', cursor: 'pointer' }} onClick={() => go('report')}>
-          <span className="muted small">다음 확인</span>
-          <b style={{ fontSize: '1.15rem' }}>{s.followup ? '중간 점검 결과 도착' : '복용 6개월 뒤 중간 점검'}</b>
-          <span className="small muted">{s.followup ? `${s.followup.date} · 변화 리포트에서 비교` : '약국 간이검사(혈당·지질)로 변화를 미리 확인합니다'}</span>
-        </button>
-      </div>
-
-      <section className="card" id="centers">
-        <div className="card-head">
-          <div><h2>가까운 검진기관</h2><p className="muted small">{p.region} 기준 · 국민건강보험공단 지정 기관</p></div>
-          <span className="pill plain"><Icon name="pin" size={14} />거리순</span>
-        </div>
-        <div className="stack">
-          {centers.map((c) => (
-            <div key={c.id} className="center-row">
-              <div style={{ minWidth: 0 }}>
-                <div className="row"><b>{c.name}</b><span className="muted small num">{c.distanceKm}km</span>
-                  {c.tags.map((t) => <span key={t} className="pill plain">{t}</span>)}</div>
-                <p className="small muted">{c.address}</p>
-                {c.bookingUrl && <div className="slots"><a className="chip" style={{ padding: '5px 12px', fontSize: '.82rem', textDecoration: 'none' }} href={c.bookingUrl} target="_blank" rel="noreferrer">예약 안내 열기</a></div>}
-                <div className="slots">{c.slots.map((sl) => (
-                  <button key={sl} className="chip" style={{ padding: '5px 12px', fontSize: '.82rem' }} onClick={() => setPick({ c, slot: sl })}>{sl}</button>
-                ))}</div>
-              </div>
-            </div>
+      <section className="sec">
+        <div className="sec-head"><h2>할 일</h2><p>검진부터 변화 확인까지 순서대로</p></div>
+        <ol className="rows todo">
+          {todo.map((x) => (
+            <li key={x.title}>
+              <span className={`tick${x.done ? ' on' : ''}`} aria-label={x.done ? '완료' : '남음'}>{x.done && <Icon name="check" size={14} />}</span>
+              <div><b>{x.title}</b><small>{x.sub}</small></div>
+              {x.act && (x.act.to === '#centers'
+                ? <a className="go" href="#centers" onClick={(e) => { e.preventDefault(); document.getElementById('centers')?.scrollIntoView({ behavior: 'smooth' }) }}>{x.act.label}</a>
+                : <button className="go" onClick={() => go(x.act!.to as Route)}>{x.act.label}</button>)}
+            </li>
           ))}
-          {!centers.length && <p className="muted">검진기관을 불러오는 중입니다.</p>}
-        </div>
+        </ol>
+      </section>
+
+      <section className="sec" id="centers">
+        <div className="sec-head"><h2>가까운 검진기관</h2><p>{p.region} 기준 · 거리순 · 국민건강보험공단 지정 기관</p></div>
+        <ul className="rows">
+          {centers.map((c) => (
+            <li key={c.id} className="center">
+              <div className="row" style={{ gap: '4px 12px' }}><b>{c.name}</b><span className="num muted">{c.distanceKm}km</span></div>
+              <span className="meta">{c.address}{c.tags.length ? ` · ${c.tags.join(' · ')}` : ''}</span>
+              <div className="slots">
+                {c.slots.map((sl) => <button key={sl} className="chip" onClick={() => setPick({ c, slot: sl })}>{sl}</button>)}
+                {c.bookingUrl && <a className="chip" href={c.bookingUrl} target="_blank" rel="noreferrer">예약 안내 열기</a>}
+              </div>
+            </li>
+          ))}
+          {!centers.length && <li className="muted">검진기관을 불러오는 중입니다.</li>}
+        </ul>
       </section>
 
       <Disclaimer />
@@ -95,9 +91,7 @@ export default function Home({ go }: { go: (r: Route) => void }) {
         <div className="modal-back" onClick={() => setPick(null)}>
           <div className="modal" role="dialog" aria-modal="true" aria-labelledby="rsv-title" onClick={(e) => e.stopPropagation()}>
             <h2 id="rsv-title">예약을 요청할까요?</h2>
-            <div className="soft stack" style={{ gap: 4 }}>
-              <b>{pick.c.name}</b><span className="small muted">{pick.c.address}</span><span className="num">{pick.slot}</span>
-            </div>
+            <div className="picked"><b>{pick.c.name}</b><span className="small muted">{pick.c.address}</span><span className="num">{pick.slot}</span></div>
             <p className="small muted">시연에서는 실제 기관으로 예약이 전송되지 않습니다. 정식 서비스에서는 기관 예약 시스템과 연결됩니다.</p>
             <div className="row" style={{ justifyContent: 'flex-end' }}>
               <button className="btn ghost" onClick={() => setPick(null)}>취소</button>

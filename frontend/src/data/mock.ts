@@ -36,9 +36,9 @@ export const FOLLOWUP_ITEMS: CheckupItem[] =
   toItems({ SBP: 126, DBP: 81, FBS: 101, TC: 209, LDL: 137, HDL: 46, TG: 158, AST: 31, ALT: 37, GGT: 56, HB: 14.9, BMI: 25.3, WAIST: 89, EGFR: 89 })
 
 export const CENTERS: CheckupCenter[] = [
-  { id: 'h1', name: '마포연세내과의원', address: '서울 마포구 월드컵북로 21', distanceKm: 0.6, slots: ['11/3(화) 08:30', '11/4(수) 09:00', '11/6(금) 08:00'], tags: ['일반', '위내시경'] },
-  { id: 'h2', name: '한빛건강검진센터 홍대점', address: '서울 마포구 양화로 156', distanceKm: 1.4, slots: ['11/2(월) 08:00', '11/7(토) 08:30'], tags: ['일반', '위내시경', '대장'] },
-  { id: 'h3', name: '서울숲가정의학과', address: '서울 마포구 서강로 77', distanceKm: 2.1, slots: ['11/5(목) 09:30'], tags: ['일반'] },
+  { id: 'h1', name: '하늘내과의원(가상)', address: '서울 마포구 (시연용 주소)', distanceKm: 0.6, slots: ['11/3(화) 08:30', '11/4(수) 09:00', '11/6(금) 08:00'], tags: ['일반', '위내시경'] },
+  { id: 'h2', name: '초록건강검진센터(가상)', address: '서울 마포구 (시연용 주소)', distanceKm: 1.4, slots: ['11/2(월) 08:00', '11/7(토) 08:30'], tags: ['일반', '위내시경', '대장'] },
+  { id: 'h3', name: '잇다가정의학과(가상)', address: '서울 마포구 (시연용 주소)', distanceKm: 2.1, slots: ['11/5(목) 09:30'], tags: ['일반'] },
 ]
 
 export const MEDICATION_OPTIONS = ['아스피린', '와파린', '스타틴', '메트포르민', '레보티록신', '혈압약']

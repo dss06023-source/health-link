@@ -271,9 +271,9 @@ export function checkWarnings(names: string[], p: UserProfile, items: Interprete
   if (has('밀크씨슬') && p.lifestyle.drinkingPerWeek >= 2)
     w.push({ level: 'info', title: '간 수치는 절주가 먼저', detail: '주 2회 이상 음주하신다면 영양제보다 절주의 효과가 훨씬 큽니다.' })
   if (items.some((i) => i.status === 'danger' && ['SBP', 'FBS', 'LDL', 'EGFR'].includes(i.code)))
-    w.push({ level: 'caution', title: '진료가 먼저 필요한 항목이 있습니다', detail: '영양제는 치료를 대신하지 않습니다. 빨간색 항목은 병원에서 먼저 확인하세요.' })
+    w.push({ level: 'caution', title: '진료가 먼저 필요한 항목이 있습니다', detail: '영양제는 치료를 대신하지 않습니다. 질환의심 항목은 병원에서 먼저 확인하세요.' })
   return w
 }
 
 export const TIMING_LABEL: Record<Supplement['timing'], string> = { morning: '아침', lunch: '점심', evening: '저녁' }
-export const STATUS_LABEL: Record<Status, string> = { normal: '정상', caution: '주의', danger: '관리 필요' }
+export const STATUS_LABEL: Record<Status, string> = { normal: '정상', caution: '경계', danger: '질환의심' }
