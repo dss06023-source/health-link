@@ -379,5 +379,6 @@ td input {
   .manage .seg { grid-column: 1 / -1; grid-row: 2; justify-self: start; }
   .chg { grid-template-columns: minmax(0, 1fr) auto; }
   .chg .chart-cell, .chg .verdict { grid-column: 1 / -1; }
+  .toast { left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); max-width: none; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
