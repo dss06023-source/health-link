@@ -78,7 +78,7 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
         <section className="sec">
           <div className="sec-head"><h2>추천에 쓴 정보</h2></div>
           <div className="field"><span className="label">복용 중인 약</span>
-            <div className="chips">{(s.remote?.medOptions ?? MEDICATION_OPTIONS).map((m) => (
+            <div className="chips">{(s.remote?.medOptions ?? [...MEDICATION_OPTIONS, ...p.medications.filter((m) => !MEDICATION_OPTIONS.includes(m))]).map((m) => (
               <button key={m} className="chip" aria-pressed={p.medications.includes(m)} onClick={() => s.setProfile({ ...p, medications: toggle(p.medications, m) })}>{m}</button>
             ))}</div></div>
           {!s.remote && <div className="field"><span className="label">이미 먹는 영양제</span>
@@ -86,7 +86,7 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
               <button key={m} className="chip" aria-pressed={p.currentSupplements.includes(m)} onClick={() => s.setProfile({ ...p, currentSupplements: toggle(p.currentSupplements, m) })}>{m}</button>
             ))}</div></div>}
           {s.remote?.notes.map((n) => <p key={n} className="small muted">{n}</p>)}
-          <p className="small muted">음주 주 {p.lifestyle.drinkingPerWeek}회 · {p.lifestyle.smoking ? '흡연' : '비흡연'} · {p.lifestyle.lowOutdoor ? '주로 실내 생활' : '실외 활동 있음'}</p>
+          <p className="small muted">음주 주 {p.lifestyle.drinkingPerWeek}회 · {p.lifestyle.smokingStatus === 'past' ? '과거 흡연' : p.lifestyle.smoking ? '흡연' : '비흡연'} · {p.lifestyle.lowOutdoor ? '주로 실내 생활' : '실외 활동 있음'}{p.conditions?.length ? ` · 진단: ${p.conditions.join(', ')}` : ''}{p.allergies?.length ? ` · 알레르기: ${p.allergies.join(', ')}` : ''}</p>
         </section>
         <Disclaimer />
       </div>

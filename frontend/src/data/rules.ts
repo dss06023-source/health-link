@@ -226,8 +226,9 @@ const REC_RULES: RecRule[] = [
   {
     id: 'b12', name: '비타민B12', ingredient: '시아노코발라민', dose: '2.4µg', timing: 'morning',
     claim: '정상적인 엽산 대사에 필요',
-    reason: '메트포르민을 오래 복용하면 B12 흡수가 줄어들 수 있습니다.',
-    when: (_it, p) => (p.medications.includes('메트포르민') ? ['복용 약'] : null),
+    reason: '메트포르민·위산억제제를 오래 복용하거나 채식을 하면 B12가 부족해지기 쉽습니다.',
+    when: (_it, p) => (p.medications.some((m) => m === '메트포르민' || m === '위산억제제') ? ['복용 약']
+      : p.lifestyle.diet?.includes('채식') ? ['식습관'] : null),
   },
   {
     id: 'vitc', name: '비타민C', ingredient: '아스코르브산', dose: '100mg', timing: 'lunch',
@@ -238,7 +239,7 @@ const REC_RULES: RecRule[] = [
 ]
 
 // 사용자가 이미 먹는 영양제 이름 → 추천 id
-const ALREADY: Record<string, string> = { '오메가-3': 'omega3', '비타민D': 'vitd', '철분': 'iron' }
+const ALREADY: Record<string, string> = { '오메가-3': 'omega3', '비타민D': 'vitd', '철분': 'iron', '비타민B군': 'b12', '비타민C': 'vitc' }
 
 export function recommend(items: InterpretedItem[], p: UserProfile): Recommendation[] {
   return REC_RULES.flatMap((r) => {
@@ -258,7 +259,7 @@ export function checkWarnings(names: string[], p: UserProfile, items: Interprete
   const has = (n: string) => names.includes(n) || p.currentSupplements.includes(n)
   const med = (m: string) => p.medications.includes(m)
   const w: Warning[] = []
-  if (has('오메가-3') && (med('와파린') || med('아스피린')))
+  if (has('오메가-3') && (med('와파린') || med('아스피린') || med('클로피도그렐') || med('기타 항응고제')))
     w.push({ level: 'danger', title: '오메가-3 + 항응고·항혈소판제', detail: '피가 멈추는 시간이 길어질 수 있습니다. 복용 전 담당 의사나 약사와 상의하세요.' })
   if (p.currentSupplements.includes('홍국') && med('스타틴'))
     w.push({ level: 'danger', title: '홍국 + 스타틴', detail: '홍국에 스타틴과 같은 성분(모나콜린K)이 있어 작용이 겹칩니다. 둘 중 하나는 중단을 상의하세요.' })
@@ -270,6 +271,21 @@ export function checkWarnings(names: string[], p: UserProfile, items: Interprete
     w.push({ level: 'info', title: '비타민D 중복', detail: '종합비타민에도 비타민D가 들어 있습니다. 합친 양이 하루 4,000IU를 넘지 않는지 라벨을 확인하세요.' })
   if (has('밀크씨슬') && p.lifestyle.drinkingPerWeek >= 2)
     w.push({ level: 'info', title: '간 수치는 절주가 먼저', detail: '주 2회 이상 음주하신다면 영양제보다 절주의 효과가 훨씬 큽니다.' })
+  if (has('비타민K') && med('와파린'))
+    w.push({ level: 'danger', title: '비타민K + 와파린', detail: '비타민K는 와파린의 효과를 약하게 만듭니다. 시작하거나 끊기 전에 담당 의사와 상의하세요.' })
+  const minerals = ['칼슘', '철분', '마그네슘', '아연'].filter(has)
+  if (minerals.length && med('항생제'))
+    w.push({ level: 'caution', title: `${minerals.join('·')} + 항생제`, detail: '일부 항생제(테트라사이클린·퀴놀론 계열)는 미네랄과 함께 먹으면 흡수가 줄어듭니다. 2시간 이상 간격을 두고, 약사에게 확인하세요.' })
+  if (minerals.length && med('골다공증약'))
+    w.push({ level: 'caution', title: `${minerals.join('·')} + 골다공증약`, detail: '먹는 골다공증약은 다른 것과 함께 먹으면 흡수가 크게 줄어듭니다. 약을 먼저 먹고 최소 30분 뒤에 드세요.' })
+  if (has('칼슘') && med('레보티록신'))
+    w.push({ level: 'caution', title: '칼슘 + 갑상선약', detail: '함께 먹으면 갑상선약 흡수가 줄어듭니다. 4시간 이상 간격을 두세요.' })
+  if (has('마그네슘') && p.conditions?.includes('신장질환'))
+    w.push({ level: 'caution', title: '마그네슘 + 신장질환', detail: '콩팥 기능이 떨어져 있으면 마그네슘이 몸에 쌓일 수 있습니다. 복용 전 담당 의사와 상의하세요.' })
+  if (has('오메가-3') && p.allergies?.includes('갑각류'))
+    w.push({ level: 'caution', title: '갑각류 알레르기', detail: '크릴오일 등 일부 오메가-3 제품은 갑각류가 원료입니다. 원료를 확인하세요.' })
+  if (p.pregnant)
+    w.push({ level: 'caution', title: '임신·수유 중', detail: '임신·수유 중에는 필요한 영양소와 피해야 할 성분이 다릅니다. 영양제는 산부인과 의사와 상의한 뒤 시작하세요.' })
   if (items.some((i) => i.status === 'danger' && ['SBP', 'FBS', 'LDL', 'EGFR'].includes(i.code)))
     w.push({ level: 'caution', title: '진료가 먼저 필요한 항목이 있습니다', detail: '영양제는 치료를 대신하지 않습니다. 질환의심 항목은 병원에서 먼저 확인하세요.' })
   return w
