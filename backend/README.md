@@ -35,6 +35,8 @@ python -m pytest -q
 | `app/seed/checkup_criteria.json` | 검진 항목 판정 기준(건강검진 실시기준 별표 4와 대조) |
 | `app/seed/supplements.json` | 영양제 목록, 고시 1일 섭취량, 섭취 주의사항, 출처·검증 상태 |
 | `app/seed/intake_rules.json` | 추천·제외·주의·상한·복용 간격 규칙 (내용 수정은 seed/ 에서) |
+| `app/features.py` | 추가 기능 API: 마이데이터 가상 연동, 복용 알림, 중간 검사 기록·리포트 |
+| `app/measure.py` | 가정 측정값을 검진 항목 코드로 바꾸는 도우미 |
 | `app/db.py` | 저장소와 가상 데이터 |
 | `scripts/make_examples.py` | `docs/api-examples.json` 재생성 (`python -m scripts.make_examples ../docs/api-examples.json`) |
 

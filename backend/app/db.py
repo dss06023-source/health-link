@@ -3,7 +3,8 @@
 import json
 import os
 import sqlite3
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 DB_PATH = os.environ.get("HEALTH_ITDA_DB", os.path.join(os.path.dirname(__file__), "..", "data", "demo.db"))
 
@@ -37,6 +38,14 @@ CREATE TABLE IF NOT EXISTS intake_logs (
     taken INTEGER NOT NULL,
     UNIQUE (date, time_slot, supplement_id)
 );
+CREATE TABLE IF NOT EXISTS measurements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL,
+    measured_at TEXT NOT NULL,
+    item_values TEXT NOT NULL,
+    fasting INTEGER,
+    note TEXT
+);
 """
 
 DEMO_USER = {
@@ -48,6 +57,12 @@ DEMO_USER = {
     "medications": ["아토르바스타틴"],
     "consent": {"sensitiveData": True, "agreedAt": "2024-10-20"},
     "location": {"lat": 37.5665, "lng": 126.9780},
+    "reminders": {
+        "enabled": True,
+        "times": {"morning": "08:00", "lunch": "12:30", "evening": "19:00", "bedtime": "22:00"},
+        "snoozed": {},
+    },
+    "mydata": {"connected": False},
 }
 
 CHECKUP_2024 = {
@@ -62,9 +77,25 @@ CHECKUP_2026_SAMPLE = {
 }
 
 
+# 마이데이터(가상)로 가져오는 기록. 2024년 검진은 이미 있으므로 중복으로 건너뛴다.
+MYDATA_CHECKUPS = [
+    {"date": "2022-10-18", "institution": "가상내과의원", "values": {
+        "sbp": 131, "dbp": 84, "fbs": 104, "tc": 219, "ldl": 141, "hdl": 46,
+        "tg": 188, "ast": 35, "alt": 41, "ggt": 66, "hb": 15.0, "bmi": 25.1,
+    }},
+    {"date": "2024-10-15", "institution": "샘플건강검진센터", "values": CHECKUP_2024},
+]
+MYDATA_PRESCRIPTIONS = [
+    {"name": "아토르바스타틴", "dispensedAt": "2026-09-30", "days": 90, "institution": "가상내과의원"},
+    {"name": "암로디핀", "dispensedAt": "2026-09-30", "days": 90, "institution": "가상내과의원"},
+]
+MYDATA_PROVIDER = "건강정보 고속도로(가상)"
+
+
 def today():
     override = os.environ.get("DEMO_TODAY")
-    return date.fromisoformat(override) if override else date.today()
+    # 시연은 한국 시간 기준으로 날짜를 센다.
+    return date.fromisoformat(override) if override else datetime.now(ZoneInfo("Asia/Seoul")).date()
 
 
 def connect():
@@ -77,7 +108,7 @@ def connect():
 def init(reset=False):
     with connect() as conn:
         if reset:
-            for table in ("users", "checkups", "supplements", "intake_logs"):
+            for table in ("users", "checkups", "supplements", "intake_logs", "measurements"):
                 conn.execute(f"DROP TABLE IF EXISTS {table}")
         conn.executescript(SCHEMA)
         if conn.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0:
@@ -112,4 +143,37 @@ def seed(conn):
             conn.execute(
                 "INSERT INTO intake_logs (date, time_slot, supplement_id, taken) VALUES (?, ?, ?, ?)",
                 (day.isoformat(), "morning", supplement_id, int(taken)),
+            )
+    seed_measurements(conn, end)
+
+
+def seed_measurements(conn, end):
+    """2025년 1월부터 매달, 최근 8주는 매주 가정 측정 기록을 만든다. 2024 검진값에서 2026 샘플 값 쪽으로 서서히 움직인다."""
+    start = date(2025, 1, 15)
+    days = []
+    day = start
+    while day < end - timedelta(days=56):
+        days.append(day)
+        day = date(day.year + (day.month == 12), day.month % 12 + 1, 15)
+    days += [end - timedelta(days=d) for d in range(56, 0, -7)]
+    span = (end - start).days or 1
+    height_m = DEMO_USER["heightCm"] / 100
+    for n, day in enumerate(days):
+        t = (day - start).days / span
+        wobble = ((n * 5) % 7 - 3) / 3  # -1~1 사이의 정해진 흔들림
+
+        def lerp(a, b, spread):
+            return round(a + (b - a) * t + wobble * spread, 1)
+
+        at = f"{day.isoformat()}T07:30"
+        rows = [
+            ("bp", {"sbp": round(lerp(134, 126, 3)), "dbp": round(lerp(86, 82, 2))}, None),
+            ("weight", {"weightKg": round(lerp(25.6, 24.4, 0.15) * height_m ** 2, 1)}, None),
+        ]
+        if n % 2 == 0:
+            rows.append(("glucose", {"fbs": round(lerp(108, 101, 3))}, 1))
+        for kind, values, fasting in rows:
+            conn.execute(
+                "INSERT INTO measurements (type, measured_at, item_values, fasting) VALUES (?, ?, ?, ?)",
+                (kind, at, json.dumps(values), fasting),
             )
