@@ -84,3 +84,25 @@ def test_breastfeeding_excludes_avoided_supplement(client):
     body = client.get("/api/recommendations").json()
     assert "coq10" not in [r["supplementId"] for r in body["recommendations"]]
     assert "수유 중" in next(e for e in body["excluded"] if e["supplementId"] == "coq10")["message"]
+
+
+def _interactions(client, meds):
+    client.put("/api/users/me", json={"medications": meds})
+    body = client.get("/api/recommendations").json()
+    return [w for w in body["warnings"] if w["type"] == "interaction"]
+
+
+def test_antiplatelet_gets_omega3_but_not_coq10_warning(client):
+    found = {w["supplementId"] for w in _interactions(client, ["클로피도그렐"])}
+    assert "omega3" in found and "coq10" not in found
+
+
+def test_anticoagulant_gets_coq10_warning(client):
+    found = {w["supplementId"] for w in _interactions(client, ["와파린"])}
+    assert {"omega3", "coq10"} <= found
+
+
+def test_same_message_from_two_classes_is_merged(client):
+    omega = [w for w in _interactions(client, ["와파린", "아스피린"]) if w["supplementId"] == "omega3"
+             and "출혈" in w["message"]]
+    assert len(omega) == 1 and set(omega[0]["drugs"]) == {"와파린", "아스피린"}

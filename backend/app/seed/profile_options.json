@@ -14,9 +14,9 @@
       {"name": "기타 당뇨약", "drugClass": "antidiabetic"}
     ]},
     {"id": "anticoagulant", "label": "피를 묽게 하는 약", "items": [
-      {"name": "아스피린", "drugClass": "anticoagulant"},
+      {"name": "아스피린", "drugClass": "antiplatelet"},
       {"name": "와파린", "drugClass": "anticoagulant"},
-      {"name": "클로피도그렐", "drugClass": "anticoagulant"},
+      {"name": "클로피도그렐", "drugClass": "antiplatelet"},
       {"name": "기타 항응고제", "drugClass": "anticoagulant"}
     ]},
     {"id": "thyroid", "label": "갑상선", "items": [
