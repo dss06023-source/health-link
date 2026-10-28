@@ -35,7 +35,10 @@ python -m pytest -q
 | `app/seed/checkup_criteria.json` | 검진 항목 판정 기준(건강검진 실시기준 별표 4와 대조) |
 | `app/seed/supplements.json` | 영양제 목록, 고시 1일 섭취량, 섭취 주의사항, 출처·검증 상태 |
 | `app/seed/intake_rules.json` | 추천·제외·주의·상한·복용 간격 규칙 (내용 수정은 seed/ 에서) |
+| `app/seed/peer_stats.json` | 성별·연령대별 국가검진 판정 비율(공단 공개자료, 또래 비교용, 아직 API 미사용) |
+| `app/seed/source/` | `peer_stats.json`의 원자료 CSV |
 | `app/db.py` | 저장소와 가상 데이터 |
 | `scripts/make_examples.py` | `docs/api-examples.json` 재생성 (`python -m scripts.make_examples ../docs/api-examples.json`) |
+| `scripts/make_peer_stats.py` | `app/seed/peer_stats.json` 재생성 (`python -m scripts.make_peer_stats app/seed/source/nhis_checkup_judgment_2022_2023.csv app/seed/peer_stats.json`) |
 
 API 규격은 [`../docs/api.md`](../docs/api.md) 를 보세요.
