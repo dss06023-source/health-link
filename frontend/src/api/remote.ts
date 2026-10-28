@@ -1,5 +1,6 @@
 import type {
-  Checkup, CheckupCenter, CheckupItem, IntakeLog, Recommendation, Supplement, Timing, UserProfile, Warning,
+  Checkup, CheckupCenter, CheckupItem, IntakeLog, Measurement, MydataResult, MydataState, Recommendation, ReminderTimes,
+  Supplement, Timing, UserProfile, Warning,
 } from '../types'
 
 // backend/(FastAPI, docs/api.md) 응답을 화면이 쓰는 모양으로 바꾼다.
@@ -23,7 +24,7 @@ const toTiming = (slots: Slot[]): Timing => (slots[0] === 'bedtime' ? 'evening' 
 const firstEntry = (o: Record<string, string>) => Object.entries(o)[0] ?? ['', '']
 
 interface RUser {
-  name: string; birthYear: number; gender: 'M' | 'F'; medications: string[]; lastCheckupDate: string | null
+  name: string; birthYear: number; gender: 'M' | 'F'; heightCm?: number; medications: string[]; lastCheckupDate: string | null
   lifestyle: { smoking: boolean; drinkingPerWeek: number; exercisePerWeek: number; lowSunlight: boolean }
 }
 interface RCheckupRow { id: number; date: string; source: string; status: string }
@@ -64,13 +65,16 @@ export async function loadAll() {
   const today = new Date()
   const from = new Date(today); from.setDate(from.getDate() - 40)
   const iso = (d: Date) => d.toISOString().slice(0, 10)
-  const [user, rows, supps, logs, recs, meds] = await Promise.all([
+  const [user, rows, supps, logs, recs, meds, ms, reminder, mydata] = await Promise.all([
     call<RUser>('/api/users/me'),
     call<RCheckupRow[]>('/api/checkups'),
     call<RSupp[]>('/api/supplements'),
     call<{ logs: { date: string; supplementId: number; taken: boolean }[] }>(`/api/intake-logs?from=${iso(from)}&to=${iso(today)}`),
     call<RRecs>('/api/recommendations').catch(() => null),
     call<{ name: string }[]>('/api/medications'),
+    call<Measurement[]>('/api/measurements'),
+    call<{ times: Record<string, string> }>('/api/reminders/settings'),
+    call<MydataState>('/api/mydata'),
   ])
   const confirmed = rows.filter((r) => r.status === 'confirmed').sort((a, b) => a.date.localeCompare(b.date))
   const checkups = (await Promise.all(confirmed.map((r) => call<RCheckup>(`/api/checkups/${r.id}`)))).map(mapCheckup)
@@ -82,6 +86,7 @@ export async function loadAll() {
     lastCheckupYear: user.lastCheckupDate ? Number(user.lastCheckupDate.slice(0, 4)) : null,
     medications: user.medications, currentSupplements: [],
     lifestyle: { smoking: user.lifestyle.smoking, drinkingPerWeek: user.lifestyle.drinkingPerWeek, exercisePerWeek: user.lifestyle.exercisePerWeek, lowOutdoor: user.lifestyle.lowSunlight },
+    heightCm: user.heightCm,
   }
   const supplements: Supplement[] = supps.map((x) => {
     const [ing, amt] = firstEntry(x.ingredients)
@@ -110,7 +115,12 @@ export async function loadAll() {
     medOptions: meds.map((m) => m.name),
     compareNote: compare?.note ?? null,
   }
-  return { state: { profile, checkups, supplements, intake }, extras }
+  const measurements: Measurement[] = ms.map((m) => ({ id: String(m.id), type: m.type, measuredAt: m.measuredAt, values: m.values, fasting: m.fasting }))
+  const reminderTimes: ReminderTimes = { morning: reminder.times.morning, lunch: reminder.times.lunch, evening: reminder.times.evening }
+  return {
+    state: { profile, checkups, supplements, intake, measurements, reminderTimes, mydata: { connected: mydata.connected, lastSyncAt: mydata.lastSyncAt ?? null } },
+    extras,
+  }
 }
 
 export const remote = {
@@ -136,4 +146,29 @@ export const remote = {
   intake: (id: string, timing: Timing, taken: boolean, date: string) =>
     call('/api/intake-logs', json('POST', { supplementId: Number(id), timeSlot: timing, taken, date })),
   reset: () => call('/api/demo/reset', { method: 'POST' }),
+
+  // 중간 점검(가정 측정)
+  addMeasurement: (m: Omit<Measurement, 'id'>) =>
+    call('/api/measurements', json('POST', { type: m.type, values: m.values, measuredAt: m.measuredAt, fasting: m.fasting ?? undefined })),
+  removeMeasurement: (id: string) => call(`/api/measurements/${id}`, { method: 'DELETE' }),
+
+  // 복용 알림
+  saveReminderTimes: (times: ReminderTimes) => call('/api/reminders/settings', json('PUT', { times })),
+  dueReminders: () => call<{ due: { timeSlot: string; time: string; items: { supplementId: number; name: string }[] }[] }>('/api/reminders/due'),
+  snooze: (timing: Timing, minutes: number) => call('/api/reminders/snooze', json('POST', { timeSlot: timing, minutes })),
+
+  // 마이데이터(가상)
+  mydataConnect: () => call('/api/mydata/connect', json('POST', { agree: true })),
+  mydataDisconnect: () => call('/api/mydata/connect', { method: 'DELETE' }),
+  mydataSync: async (applyMedications: boolean): Promise<MydataResult> => {
+    const r = await call<{
+      importedCheckups: { date: string; institution: string }[]; skippedCheckups: { date: string }[]
+      prescriptions: { name: string; dispensedAt: string; institution: string; alreadyRegistered: boolean }[]
+    }>('/api/mydata/sync', json('POST', { applyMedications }))
+    return {
+      imported: r.importedCheckups,
+      skipped: r.skippedCheckups.map((x) => x.date),
+      prescriptions: r.prescriptions.map((p) => ({ name: p.name, dispensedAt: p.dispensedAt, institution: p.institution, registered: p.alreadyRegistered })),
+    }
+  },
 }

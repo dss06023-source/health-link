@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { notifySupported, requestNotify } from '../reminders'
 import { TIMING_LABEL } from '../data/rules'
 import { addDays, useStore, ymd } from '../store'
 import type { Supplement, Timing } from '../types'
@@ -12,7 +13,9 @@ export default function Intake() {
   const today = new Date()
   const key = ymd(today)
   const active = s.supplements.filter((x) => !x.paused)
-  const [times, setTimes] = useState<Record<Timing, string>>({ morning: '08:00', lunch: '12:30', evening: '19:30' })
+  const times = s.reminderTimes
+  const setTimes = s.setReminderTimes
+  const [perm, setPerm] = useState(() => (notifySupported() ? Notification.permission : 'unsupported'))
   const [toast, setToast] = useState<string | null>(null)
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 4500); return () => clearTimeout(t) }, [toast])
 
@@ -97,6 +100,13 @@ export default function Intake() {
           })}
         </div>
       </section>
+
+      <p className="small muted row" style={{ gap: 10 }}>
+        알림 시각이 지나도 체크하지 않으면 화면 아래에 알림이 뜹니다.
+        {perm === 'default' && <button className="btn ghost sm" onClick={async () => setPerm(await requestNotify())}><Icon name="bell" size={16} />브라우저 알림도 받기</button>}
+        {perm === 'granted' && <span>브라우저 알림 켜짐</span>}
+        {perm === 'denied' && <span>브라우저 알림이 막혀 있어 화면 안에서만 알립니다.</span>}
+      </p>
 
       <div className="cols" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)' }}>
         <section className="sec">

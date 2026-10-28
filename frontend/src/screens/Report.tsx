@@ -47,9 +47,12 @@ export default function Report({ go }: { go: (r: Route) => void }) {
         <span className="muted small">기준 검진 · {base.date}</span>
         <h2>복용 6개월 뒤 중간 점검 결과가 들어오면 여기서 비교합니다</h2>
         <p className="muted">다음 국가검진(2년 뒤)까지 기다리지 않도록, 약국·보건소 간이검사로 혈당과 지질을 중간에 확인하는 방식을 가정했습니다.</p>
-        {s.remote
-          ? <button className="btn" onClick={() => go('upload')}>새 결과지 등록하기</button>
-          : <button className="btn" onClick={s.addFollowup}>중간 점검 결과 넣어 보기 (가상)</button>}
+        <div className="row">
+          {s.remote
+            ? <button className="btn" onClick={() => go('upload')}>새 결과지 등록하기</button>
+            : <button className="btn" onClick={s.addFollowup}>중간 점검 결과 넣어 보기 (가상)</button>}
+          <button className="btn ghost" onClick={() => go('measure')}>집에서 잰 기록 보기</button>
+        </div>
       </section>
     )
   }

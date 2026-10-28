@@ -23,7 +23,7 @@ const pickSex = <T,>(v: BySex<T>, sex: Sex): T =>
   v && typeof v === 'object' && !Array.isArray(v) && 'M' in v ? (v as Record<Sex, T>)[sex] : (v as T)
 const hits = (b: Band, v: number) => (b.lt !== undefined ? v < b.lt : b.le !== undefined ? v <= b.le : true)
 
-function judge(code: string, v: number, sex: Sex): Status {
+export function judge(code: string, v: number, sex: Sex): Status {
   const c = CRITERIA[code.toLowerCase()]
   if (!c) return 'normal'
   if (c.low) {
