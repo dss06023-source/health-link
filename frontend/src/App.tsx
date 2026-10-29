@@ -135,7 +135,7 @@ function Shell() {
           {route === 'report' && <Report go={go} />}
         </div>
         <footer className="demo-foot">
-          <span><b>{USE_API ? '서버 연결 모드' : '시연 모드'}</b> · 가상 인물 {p.name} 님({new Date().getFullYear() - p.birthYear}세 · {p.sex === 'M' ? '남' : '여'})의 데이터입니다.
+          <span>{p.name}님({new Date().getFullYear() - p.birthYear}세 · {p.sex === 'M' ? '남' : '여'})의 데이터입니다.
             {store.remoteError && <span style={{ color: 'var(--danger)' }}> {store.remoteError}</span>}</span>
           {USE_API ? <button className="btn flat sm" onClick={() => { store.resetFull(); go('home') }}>시연 데이터 초기화</button> : <span className="row" style={{ gap: 4 }}>
             <button className="btn flat sm" onClick={() => { store.resetFresh() }}>처음부터</button>
