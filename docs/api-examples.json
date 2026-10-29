@@ -23,6 +23,19 @@
         "lat": 37.5665,
         "lng": 126.978
       },
+      "reminders": {
+        "enabled": true,
+        "times": {
+          "morning": "08:00",
+          "lunch": "12:30",
+          "evening": "19:00",
+          "bedtime": "22:00"
+        },
+        "snoozed": {}
+      },
+      "mydata": {
+        "connected": false
+      },
       "age": 40,
       "isTargetThisYear": true,
       "nextCheckupYear": 2026,
@@ -864,6 +877,743 @@
       ],
       "recordedFrom": "2026-10-22",
       "rate": 0.71
+    }
+  },
+  "GET /api/reminders/settings": {
+    "status": 200,
+    "body": {
+      "enabled": true,
+      "times": {
+        "morning": "08:00",
+        "lunch": "12:30",
+        "evening": "19:00",
+        "bedtime": "22:00"
+      }
+    }
+  },
+  "GET /api/reminders/due?at=2026-10-28T08:30": {
+    "status": 200,
+    "body": {
+      "now": "2026-10-28T08:30",
+      "enabled": true,
+      "due": [
+        {
+          "timeSlot": "morning",
+          "label": "아침",
+          "time": "08:00",
+          "items": [
+            {
+              "supplementId": 1,
+              "name": "오메가-3"
+            },
+            {
+              "supplementId": 2,
+              "name": "밀크씨슬"
+            },
+            {
+              "supplementId": 3,
+              "name": "종합비타민"
+            },
+            {
+              "supplementId": 4,
+              "name": "비타민D"
+            }
+          ],
+          "overdueMinutes": 30,
+          "message": "아침 복용 시간입니다: 오메가-3, 밀크씨슬 외 2개"
+        }
+      ],
+      "next": null
+    }
+  },
+  "POST /api/reminders/snooze": {
+    "status": 200,
+    "body": {
+      "timeSlot": "morning",
+      "snoozedUntil": "2026-10-28T09:00"
+    }
+  },
+  "GET /api/measurements/types": {
+    "status": 200,
+    "body": [
+      {
+        "type": "bp",
+        "label": "혈압",
+        "fields": {
+          "sbp": {
+            "min": 60,
+            "max": 250
+          },
+          "dbp": {
+            "min": 30,
+            "max": 150
+          }
+        }
+      },
+      {
+        "type": "glucose",
+        "label": "혈당",
+        "fields": {
+          "fbs": {
+            "min": 30,
+            "max": 600
+          }
+        }
+      },
+      {
+        "type": "weight",
+        "label": "체중",
+        "fields": {
+          "weightKg": {
+            "min": 20,
+            "max": 300
+          }
+        }
+      },
+      {
+        "type": "waist",
+        "label": "허리둘레",
+        "fields": {
+          "waist": {
+            "min": 40,
+            "max": 200
+          }
+        }
+      }
+    ]
+  },
+  "GET /api/measurements?from=2026-10-01": {
+    "status": 200,
+    "body": [
+      {
+        "id": 64,
+        "type": "bp",
+        "measuredAt": "2026-10-07T07:30",
+        "values": {
+          "sbp": 129,
+          "dbp": 84
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "sbp": 129,
+          "dbp": 84
+        }
+      },
+      {
+        "id": 65,
+        "type": "weight",
+        "measuredAt": "2026-10-07T07:30",
+        "values": {
+          "weightKg": 74.5
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "bmi": 24.6
+        }
+      },
+      {
+        "id": 66,
+        "type": "bp",
+        "measuredAt": "2026-10-14T07:30",
+        "values": {
+          "sbp": 127,
+          "dbp": 83
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "sbp": 127,
+          "dbp": 83
+        }
+      },
+      {
+        "id": 67,
+        "type": "weight",
+        "measuredAt": "2026-10-14T07:30",
+        "values": {
+          "weightKg": 74.2
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "bmi": 24.5
+        }
+      },
+      {
+        "id": 68,
+        "type": "glucose",
+        "measuredAt": "2026-10-14T07:30",
+        "values": {
+          "fbs": 102
+        },
+        "fasting": true,
+        "note": null,
+        "codes": {
+          "fbs": 102
+        }
+      },
+      {
+        "id": 69,
+        "type": "bp",
+        "measuredAt": "2026-10-21T07:30",
+        "values": {
+          "sbp": 125,
+          "dbp": 81
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "sbp": 125,
+          "dbp": 81
+        }
+      },
+      {
+        "id": 70,
+        "type": "weight",
+        "measuredAt": "2026-10-21T07:30",
+        "values": {
+          "weightKg": 73.9
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "bmi": 24.4
+        }
+      }
+    ]
+  },
+  "POST /api/measurements (혈압)": {
+    "status": 201,
+    "body": {
+      "id": 71,
+      "type": "bp",
+      "measuredAt": "2026-10-28T07:30",
+      "values": {
+        "sbp": 124.0,
+        "dbp": 80.0
+      },
+      "fasting": null,
+      "note": null,
+      "codes": {
+        "sbp": 124.0,
+        "dbp": 80.0
+      },
+      "judged": [
+        {
+          "code": "sbp",
+          "name": "수축기 혈압",
+          "group": "혈압",
+          "value": 124.0,
+          "unit": "mmHg",
+          "normalRange": "120 미만",
+          "status": "caution",
+          "direction": "high",
+          "explanation": "심장이 피를 내보낼 때 혈관에 걸리는 압력입니다. 기준치보다 조금 높습니다. 생활습관 점검을 권합니다.",
+          "consultDoctor": false
+        },
+        {
+          "code": "dbp",
+          "name": "이완기 혈압",
+          "group": "혈압",
+          "value": 80.0,
+          "unit": "mmHg",
+          "normalRange": "80 미만",
+          "status": "caution",
+          "direction": "high",
+          "explanation": "심장이 쉬는 동안 혈관에 남아 있는 압력입니다. 기준치보다 조금 높습니다. 생활습관 점검을 권합니다.",
+          "consultDoctor": false
+        }
+      ]
+    }
+  },
+  "GET /api/reports/interim": {
+    "status": 200,
+    "body": {
+      "baseline": {
+        "id": 1,
+        "date": "2024-10-15"
+      },
+      "windowDays": 30,
+      "items": [
+        {
+          "code": "sbp",
+          "name": "수축기 혈압",
+          "unit": "mmHg",
+          "checkupValue": 134,
+          "count": 29,
+          "points": [
+            {
+              "date": "2025-01-15",
+              "value": 131
+            },
+            {
+              "date": "2025-02-15",
+              "value": 136
+            },
+            {
+              "date": "2025-03-15",
+              "value": 133
+            },
+            {
+              "date": "2025-04-15",
+              "value": 131
+            },
+            {
+              "date": "2025-05-15",
+              "value": 136
+            },
+            {
+              "date": "2025-06-15",
+              "value": 133
+            },
+            {
+              "date": "2025-07-15",
+              "value": 131
+            },
+            {
+              "date": "2025-08-15",
+              "value": 128
+            },
+            {
+              "date": "2025-09-15",
+              "value": 133
+            },
+            {
+              "date": "2025-10-15",
+              "value": 131
+            },
+            {
+              "date": "2025-11-15",
+              "value": 128
+            },
+            {
+              "date": "2025-12-15",
+              "value": 133
+            },
+            {
+              "date": "2026-01-15",
+              "value": 130
+            },
+            {
+              "date": "2026-02-15",
+              "value": 128
+            },
+            {
+              "date": "2026-03-15",
+              "value": 126
+            },
+            {
+              "date": "2026-04-15",
+              "value": 130
+            },
+            {
+              "date": "2026-05-15",
+              "value": 128
+            },
+            {
+              "date": "2026-06-15",
+              "value": 126
+            },
+            {
+              "date": "2026-07-15",
+              "value": 130
+            },
+            {
+              "date": "2026-08-15",
+              "value": 128
+            },
+            {
+              "date": "2026-09-02",
+              "value": 126
+            },
+            {
+              "date": "2026-09-09",
+              "value": 124
+            },
+            {
+              "date": "2026-09-16",
+              "value": 128
+            },
+            {
+              "date": "2026-09-23",
+              "value": 126
+            },
+            {
+              "date": "2026-09-30",
+              "value": 124
+            },
+            {
+              "date": "2026-10-07",
+              "value": 129
+            },
+            {
+              "date": "2026-10-14",
+              "value": 127
+            },
+            {
+              "date": "2026-10-21",
+              "value": 125
+            },
+            {
+              "date": "2026-10-28",
+              "value": 124.0
+            }
+          ],
+          "recentAverage": 125.8,
+          "recentStatus": "caution",
+          "trend": "improved",
+          "change": -8.2
+        },
+        {
+          "code": "dbp",
+          "name": "이완기 혈압",
+          "unit": "mmHg",
+          "checkupValue": 86,
+          "count": 29,
+          "points": [
+            {
+              "date": "2025-01-15",
+              "value": 84
+            },
+            {
+              "date": "2025-02-15",
+              "value": 87
+            },
+            {
+              "date": "2025-03-15",
+              "value": 86
+            },
+            {
+              "date": "2025-04-15",
+              "value": 84
+            },
+            {
+              "date": "2025-05-15",
+              "value": 87
+            },
+            {
+              "date": "2025-06-15",
+              "value": 86
+            },
+            {
+              "date": "2025-07-15",
+              "value": 84
+            },
+            {
+              "date": "2025-08-15",
+              "value": 83
+            },
+            {
+              "date": "2025-09-15",
+              "value": 86
+            },
+            {
+              "date": "2025-10-15",
+              "value": 84
+            },
+            {
+              "date": "2025-11-15",
+              "value": 83
+            },
+            {
+              "date": "2025-12-15",
+              "value": 86
+            },
+            {
+              "date": "2026-01-15",
+              "value": 84
+            },
+            {
+              "date": "2026-02-15",
+              "value": 83
+            },
+            {
+              "date": "2026-03-15",
+              "value": 81
+            },
+            {
+              "date": "2026-04-15",
+              "value": 84
+            },
+            {
+              "date": "2026-05-15",
+              "value": 83
+            },
+            {
+              "date": "2026-06-15",
+              "value": 82
+            },
+            {
+              "date": "2026-07-15",
+              "value": 85
+            },
+            {
+              "date": "2026-08-15",
+              "value": 83
+            },
+            {
+              "date": "2026-09-02",
+              "value": 82
+            },
+            {
+              "date": "2026-09-09",
+              "value": 80
+            },
+            {
+              "date": "2026-09-16",
+              "value": 84
+            },
+            {
+              "date": "2026-09-23",
+              "value": 82
+            },
+            {
+              "date": "2026-09-30",
+              "value": 81
+            },
+            {
+              "date": "2026-10-07",
+              "value": 84
+            },
+            {
+              "date": "2026-10-14",
+              "value": 83
+            },
+            {
+              "date": "2026-10-21",
+              "value": 81
+            },
+            {
+              "date": "2026-10-28",
+              "value": 80.0
+            }
+          ],
+          "recentAverage": 81.8,
+          "recentStatus": "caution",
+          "trend": "improved",
+          "change": -4.2
+        },
+        {
+          "code": "fbs",
+          "name": "공복혈당",
+          "unit": "mg/dL",
+          "checkupValue": 108,
+          "count": 14,
+          "points": [
+            {
+              "date": "2025-01-15",
+              "value": 105
+            },
+            {
+              "date": "2025-03-15",
+              "value": 107
+            },
+            {
+              "date": "2025-05-15",
+              "value": 110
+            },
+            {
+              "date": "2025-07-15",
+              "value": 105
+            },
+            {
+              "date": "2025-09-15",
+              "value": 107
+            },
+            {
+              "date": "2025-11-15",
+              "value": 103
+            },
+            {
+              "date": "2026-01-15",
+              "value": 105
+            },
+            {
+              "date": "2026-03-15",
+              "value": 100
+            },
+            {
+              "date": "2026-05-15",
+              "value": 103
+            },
+            {
+              "date": "2026-07-15",
+              "value": 105
+            },
+            {
+              "date": "2026-09-02",
+              "value": 101
+            },
+            {
+              "date": "2026-09-16",
+              "value": 104
+            },
+            {
+              "date": "2026-09-30",
+              "value": 99
+            },
+            {
+              "date": "2026-10-14",
+              "value": 102
+            }
+          ],
+          "recentAverage": 100.5,
+          "recentStatus": "caution",
+          "trend": "improved",
+          "change": -7.5
+        },
+        {
+          "code": "bmi",
+          "name": "체질량지수(BMI)",
+          "unit": "kg/m²",
+          "checkupValue": 25.6,
+          "count": 28,
+          "points": [
+            {
+              "date": "2025-01-15",
+              "value": 25.5
+            },
+            {
+              "date": "2025-02-15",
+              "value": 25.6
+            },
+            {
+              "date": "2025-03-15",
+              "value": 25.5
+            },
+            {
+              "date": "2025-04-15",
+              "value": 25.3
+            },
+            {
+              "date": "2025-05-15",
+              "value": 25.5
+            },
+            {
+              "date": "2025-06-15",
+              "value": 25.4
+            },
+            {
+              "date": "2025-07-15",
+              "value": 25.2
+            },
+            {
+              "date": "2025-08-15",
+              "value": 25.1
+            },
+            {
+              "date": "2025-09-15",
+              "value": 25.3
+            },
+            {
+              "date": "2025-10-15",
+              "value": 25.1
+            },
+            {
+              "date": "2025-11-15",
+              "value": 24.9
+            },
+            {
+              "date": "2025-12-15",
+              "value": 25.1
+            },
+            {
+              "date": "2026-01-15",
+              "value": 25.0
+            },
+            {
+              "date": "2026-02-15",
+              "value": 24.8
+            },
+            {
+              "date": "2026-03-15",
+              "value": 24.7
+            },
+            {
+              "date": "2026-04-15",
+              "value": 24.9
+            },
+            {
+              "date": "2026-05-15",
+              "value": 24.7
+            },
+            {
+              "date": "2026-06-15",
+              "value": 24.5
+            },
+            {
+              "date": "2026-07-15",
+              "value": 24.7
+            },
+            {
+              "date": "2026-08-15",
+              "value": 24.6
+            },
+            {
+              "date": "2026-09-02",
+              "value": 24.5
+            },
+            {
+              "date": "2026-09-09",
+              "value": 24.3
+            },
+            {
+              "date": "2026-09-16",
+              "value": 24.6
+            },
+            {
+              "date": "2026-09-23",
+              "value": 24.5
+            },
+            {
+              "date": "2026-09-30",
+              "value": 24.4
+            },
+            {
+              "date": "2026-10-07",
+              "value": 24.6
+            },
+            {
+              "date": "2026-10-14",
+              "value": 24.5
+            },
+            {
+              "date": "2026-10-21",
+              "value": 24.4
+            }
+          ],
+          "recentAverage": 24.5,
+          "recentStatus": "normal",
+          "trend": "improved",
+          "change": -1.1
+        },
+        {
+          "code": "waist",
+          "name": "허리둘레",
+          "unit": "cm",
+          "checkupValue": null,
+          "count": 0,
+          "points": [],
+          "recentAverage": null,
+          "recentStatus": null,
+          "trend": null,
+          "change": null
+        }
+      ],
+      "summary": {
+        "improved": 4,
+        "same": 0,
+        "worsened": 0,
+        "measurementCount": 71,
+        "headline": "검진 이후 가정 측정 71건. 기준치에 가까워진 항목 4개, 멀어진 항목 0개입니다."
+      },
+      "adherence": {
+        "rate": 0.84,
+        "recordedFrom": "2026-08-29"
+      },
+      "note": "가정 측정값은 측정 기기·시간·자세가 검진과 달라 참고용입니다. 영양제의 효과를 뜻하지 않습니다."
     }
   },
   "POST /api/checkups/upload (사진)": {
@@ -2261,7 +3011,493 @@
             "rate": 0.0
           }
         ]
+      },
+      "measurements": {
+        "series": {
+          "sbp": [
+            {
+              "date": "2025-01-15",
+              "value": 131
+            },
+            {
+              "date": "2025-02-15",
+              "value": 136
+            },
+            {
+              "date": "2025-03-15",
+              "value": 133
+            },
+            {
+              "date": "2025-04-15",
+              "value": 131
+            },
+            {
+              "date": "2025-05-15",
+              "value": 136
+            },
+            {
+              "date": "2025-06-15",
+              "value": 133
+            },
+            {
+              "date": "2025-07-15",
+              "value": 131
+            },
+            {
+              "date": "2025-08-15",
+              "value": 128
+            },
+            {
+              "date": "2025-09-15",
+              "value": 133
+            },
+            {
+              "date": "2025-10-15",
+              "value": 131
+            },
+            {
+              "date": "2025-11-15",
+              "value": 128
+            },
+            {
+              "date": "2025-12-15",
+              "value": 133
+            },
+            {
+              "date": "2026-01-15",
+              "value": 130
+            },
+            {
+              "date": "2026-02-15",
+              "value": 128
+            },
+            {
+              "date": "2026-03-15",
+              "value": 126
+            },
+            {
+              "date": "2026-04-15",
+              "value": 130
+            },
+            {
+              "date": "2026-05-15",
+              "value": 128
+            },
+            {
+              "date": "2026-06-15",
+              "value": 126
+            },
+            {
+              "date": "2026-07-15",
+              "value": 130
+            },
+            {
+              "date": "2026-08-15",
+              "value": 128
+            },
+            {
+              "date": "2026-09-02",
+              "value": 126
+            },
+            {
+              "date": "2026-09-09",
+              "value": 124
+            },
+            {
+              "date": "2026-09-16",
+              "value": 128
+            },
+            {
+              "date": "2026-09-23",
+              "value": 126
+            },
+            {
+              "date": "2026-09-30",
+              "value": 124
+            },
+            {
+              "date": "2026-10-07",
+              "value": 129
+            },
+            {
+              "date": "2026-10-14",
+              "value": 127
+            },
+            {
+              "date": "2026-10-21",
+              "value": 125
+            },
+            {
+              "date": "2026-10-28",
+              "value": 124.0
+            }
+          ],
+          "dbp": [
+            {
+              "date": "2025-01-15",
+              "value": 84
+            },
+            {
+              "date": "2025-02-15",
+              "value": 87
+            },
+            {
+              "date": "2025-03-15",
+              "value": 86
+            },
+            {
+              "date": "2025-04-15",
+              "value": 84
+            },
+            {
+              "date": "2025-05-15",
+              "value": 87
+            },
+            {
+              "date": "2025-06-15",
+              "value": 86
+            },
+            {
+              "date": "2025-07-15",
+              "value": 84
+            },
+            {
+              "date": "2025-08-15",
+              "value": 83
+            },
+            {
+              "date": "2025-09-15",
+              "value": 86
+            },
+            {
+              "date": "2025-10-15",
+              "value": 84
+            },
+            {
+              "date": "2025-11-15",
+              "value": 83
+            },
+            {
+              "date": "2025-12-15",
+              "value": 86
+            },
+            {
+              "date": "2026-01-15",
+              "value": 84
+            },
+            {
+              "date": "2026-02-15",
+              "value": 83
+            },
+            {
+              "date": "2026-03-15",
+              "value": 81
+            },
+            {
+              "date": "2026-04-15",
+              "value": 84
+            },
+            {
+              "date": "2026-05-15",
+              "value": 83
+            },
+            {
+              "date": "2026-06-15",
+              "value": 82
+            },
+            {
+              "date": "2026-07-15",
+              "value": 85
+            },
+            {
+              "date": "2026-08-15",
+              "value": 83
+            },
+            {
+              "date": "2026-09-02",
+              "value": 82
+            },
+            {
+              "date": "2026-09-09",
+              "value": 80
+            },
+            {
+              "date": "2026-09-16",
+              "value": 84
+            },
+            {
+              "date": "2026-09-23",
+              "value": 82
+            },
+            {
+              "date": "2026-09-30",
+              "value": 81
+            },
+            {
+              "date": "2026-10-07",
+              "value": 84
+            },
+            {
+              "date": "2026-10-14",
+              "value": 83
+            },
+            {
+              "date": "2026-10-21",
+              "value": 81
+            },
+            {
+              "date": "2026-10-28",
+              "value": 80.0
+            }
+          ],
+          "fbs": [
+            {
+              "date": "2025-01-15",
+              "value": 105
+            },
+            {
+              "date": "2025-03-15",
+              "value": 107
+            },
+            {
+              "date": "2025-05-15",
+              "value": 110
+            },
+            {
+              "date": "2025-07-15",
+              "value": 105
+            },
+            {
+              "date": "2025-09-15",
+              "value": 107
+            },
+            {
+              "date": "2025-11-15",
+              "value": 103
+            },
+            {
+              "date": "2026-01-15",
+              "value": 105
+            },
+            {
+              "date": "2026-03-15",
+              "value": 100
+            },
+            {
+              "date": "2026-05-15",
+              "value": 103
+            },
+            {
+              "date": "2026-07-15",
+              "value": 105
+            },
+            {
+              "date": "2026-09-02",
+              "value": 101
+            },
+            {
+              "date": "2026-09-16",
+              "value": 104
+            },
+            {
+              "date": "2026-09-30",
+              "value": 99
+            },
+            {
+              "date": "2026-10-14",
+              "value": 102
+            }
+          ],
+          "bmi": [
+            {
+              "date": "2025-01-15",
+              "value": 25.5
+            },
+            {
+              "date": "2025-02-15",
+              "value": 25.6
+            },
+            {
+              "date": "2025-03-15",
+              "value": 25.5
+            },
+            {
+              "date": "2025-04-15",
+              "value": 25.3
+            },
+            {
+              "date": "2025-05-15",
+              "value": 25.5
+            },
+            {
+              "date": "2025-06-15",
+              "value": 25.4
+            },
+            {
+              "date": "2025-07-15",
+              "value": 25.2
+            },
+            {
+              "date": "2025-08-15",
+              "value": 25.1
+            },
+            {
+              "date": "2025-09-15",
+              "value": 25.3
+            },
+            {
+              "date": "2025-10-15",
+              "value": 25.1
+            },
+            {
+              "date": "2025-11-15",
+              "value": 24.9
+            },
+            {
+              "date": "2025-12-15",
+              "value": 25.1
+            },
+            {
+              "date": "2026-01-15",
+              "value": 25.0
+            },
+            {
+              "date": "2026-02-15",
+              "value": 24.8
+            },
+            {
+              "date": "2026-03-15",
+              "value": 24.7
+            },
+            {
+              "date": "2026-04-15",
+              "value": 24.9
+            },
+            {
+              "date": "2026-05-15",
+              "value": 24.7
+            },
+            {
+              "date": "2026-06-15",
+              "value": 24.5
+            },
+            {
+              "date": "2026-07-15",
+              "value": 24.7
+            },
+            {
+              "date": "2026-08-15",
+              "value": 24.6
+            },
+            {
+              "date": "2026-09-02",
+              "value": 24.5
+            },
+            {
+              "date": "2026-09-09",
+              "value": 24.3
+            },
+            {
+              "date": "2026-09-16",
+              "value": 24.6
+            },
+            {
+              "date": "2026-09-23",
+              "value": 24.5
+            },
+            {
+              "date": "2026-09-30",
+              "value": 24.4
+            },
+            {
+              "date": "2026-10-07",
+              "value": 24.6
+            },
+            {
+              "date": "2026-10-14",
+              "value": 24.5
+            },
+            {
+              "date": "2026-10-21",
+              "value": 24.4
+            }
+          ],
+          "waist": []
+        },
+        "count": 71,
+        "note": "가정 측정값은 측정 기기·시간·자세가 검진과 달라 참고용입니다. 영양제의 효과를 뜻하지 않습니다."
       }
+    }
+  },
+  "GET /api/mydata": {
+    "status": 200,
+    "body": {
+      "connected": false,
+      "provider": "건강정보 고속도로(가상)",
+      "isDemoData": true
+    }
+  },
+  "POST /api/mydata/connect": {
+    "status": 200,
+    "body": {
+      "connected": true,
+      "scopes": [
+        "checkups",
+        "prescriptions"
+      ],
+      "connectedAt": "2026-10-28",
+      "lastSyncAt": null,
+      "provider": "건강정보 고속도로(가상)",
+      "isDemoData": true
+    }
+  },
+  "POST /api/mydata/sync": {
+    "status": 200,
+    "body": {
+      "connected": true,
+      "scopes": [
+        "checkups",
+        "prescriptions"
+      ],
+      "connectedAt": "2026-10-28",
+      "lastSyncAt": "2026-10-28",
+      "provider": "건강정보 고속도로(가상)",
+      "isDemoData": true,
+      "importedCheckups": [
+        {
+          "id": 3,
+          "date": "2022-10-18",
+          "institution": "가상내과의원"
+        }
+      ],
+      "skippedCheckups": [
+        {
+          "date": "2024-10-15",
+          "reason": "이미 등록된 검진입니다."
+        }
+      ],
+      "prescriptions": [
+        {
+          "name": "아토르바스타틴",
+          "dispensedAt": "2026-09-30",
+          "days": 90,
+          "institution": "가상내과의원",
+          "drugClass": "statin",
+          "alreadyRegistered": true
+        },
+        {
+          "name": "암로디핀",
+          "dispensedAt": "2026-09-30",
+          "days": 90,
+          "institution": "가상내과의원",
+          "drugClass": "antihypertensive",
+          "alreadyRegistered": false
+        }
+      ],
+      "medications": [
+        "아토르바스타틴"
+      ],
+      "message": "검진 1건을 가져왔습니다. 처방 기록에 복용 약 목록에 없는 약이 있습니다(암로디핀). 추가하면 추천 경고에 반영됩니다."
     }
   }
 }

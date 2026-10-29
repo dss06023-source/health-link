@@ -10,7 +10,7 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from . import db, logic
+from . import db, logic, measure
 from . import reference as ref
 
 TIME_SLOTS = ["morning", "lunch", "evening", "bedtime"]
@@ -511,6 +511,7 @@ def compare_report(from_: Optional[int] = Query(None, alias="from"), to: Optiona
             before, after = get_checkup(conn, from_), get_checkup(conn, to)
         start, end = date.fromisoformat(before["date"]), date.fromisoformat(after["date"])
         intake = intake_history(conn, start, end)
+        records = measure.load(conn, user.get("heightCm"), before["date"], after["date"])
         during = [
             supplement_row(r) for r in conn.execute(
                 "SELECT * FROM supplements WHERE started_at <= ? AND (ended_at IS NULL OR ended_at >= ?)",
@@ -526,6 +527,7 @@ def compare_report(from_: Optional[int] = Query(None, alias="from"), to: Optiona
             {k: s[k] for k in ("id", "supplementId", "name", "startedAt", "endedAt")} for s in during
         ],
         "adherence": {"rate": intake["rate"], "recordedFrom": intake["recordedFrom"], "daily": intake["daily"]},
+        "measurements": {"series": measure.series(records), "count": len(records), "note": measure.NOTE},
     }
 
 
@@ -541,3 +543,9 @@ def demo_reset():
 @app.get("/api/health")
 def health():
     return {"ok": True}
+
+
+# 마이데이터·복용 알림·중간 검사. 위의 도우미 함수를 쓰므로 맨 끝에서 붙인다.
+from .features import router as features_router  # noqa: E402
+
+app.include_router(features_router)

@@ -118,6 +118,63 @@
 ```
 `trend`: 판정 등급이 바뀌면 그 방향, 등급이 같으면 기준치 쪽으로 움직였는지로 정합니다. 화면에는 `note` 를 함께 표시해 주세요(영양제 효과로 단정하는 표현 금지).
 
+응답에는 두 검진 사이의 가정 측정 기록도 들어 있습니다(그래프용): `"measurements": {"series": {"sbp": [{"date", "value"}], "dbp": [], "fbs": [], "bmi": [], "waist": []}, "count": 71, "note": "…"}`
+
+## 6-1. 중간 검사 (가정 측정)
+
+국가검진은 2년에 한 번이라 그 사이 변화를 가정용 혈압계·혈당계·체중계·줄자로 기록합니다.
+
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| GET | `/api/measurements/types` | 입력 종류와 허용 범위: `bp{sbp,dbp}`, `glucose{fbs}`, `weight{weightKg}`, `waist{waist}` |
+| POST | `/api/measurements` | 기록 `{type, values, measuredAt?: "YYYY-MM-DDTHH:MM", fasting?(혈당은 필수), note?}` → 201. 응답 `codes`(검진 항목으로 바꾼 값: 체중→`bmi`), `judged`(항목별 판정, 3번 형식) |
+| GET | `/api/measurements?from&to&type` | 기록 목록(오래된 순) |
+| DELETE | `/api/measurements/{id}` | 기록 삭제 |
+| GET | `/api/reports/interim?baselineId&days=30` | 중간 점검 리포트. 기준 검진(기본: 확정된 최신) 이후 측정의 최근 `days`일 평균을 검진 값과 비교 |
+
+`/api/reports/interim` 응답 핵심:
+```json
+{
+  "baseline": {"id": 1, "date": "2024-10-15"}, "windowDays": 30,
+  "items": [{"code": "sbp", "name": "수축기 혈압", "unit": "mmHg", "checkupValue": 134, "count": 29,
+             "recentAverage": 125.8, "recentStatus": "caution", "trend": "improved", "change": -8.2,
+             "points": [{"date": "2025-01-15", "value": 131}]}],
+  "summary": {"improved": 4, "same": 0, "worsened": 0, "measurementCount": 71, "headline": "검진 이후 가정 측정 71건. …"},
+  "adherence": {"rate": 0.84, "recordedFrom": "2026-08-29"},
+  "note": "가정 측정값은 측정 기기·시간·자세가 검진과 달라 참고용입니다. 영양제의 효과를 뜻하지 않습니다."
+}
+```
+- 비교 항목: `sbp`, `dbp`, `fbs`(공복일 때만), `bmi`(키는 사용자 정보의 `heightCm`), `waist`. 측정이 없는 항목은 `count: 0`, 나머지 값 `null`.
+- 식후 혈당(`fasting: false`)은 기록만 하고 공복혈당 기준으로 판정하지 않습니다.
+- 화면에는 `note` 를 꼭 함께 표시해 주세요.
+
+## 6-2. 복용 알림
+
+실제 휴대폰 푸시(서버 발송)는 시연 범위 밖입니다. 화면이 `/api/reminders/due` 를 1분마다 불러, 항목이 있으면 화면 안 알림이나 브라우저 알림(Notification API)을 띄우는 방식입니다.
+
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| GET | `/api/reminders/settings` | `{enabled, times: {morning: "08:00", lunch: "12:30", evening: "19:00", bedtime: "22:00"}}` |
+| PUT | `/api/reminders/settings` | 보낸 값만 변경 `{enabled?, times?: {slot: "HH:MM"}}` |
+| GET | `/api/reminders/due?at=` | 지금 보낼 알림. `at`(YYYY-MM-DDTHH:MM, 한국 시간) 생략 시 현재 시각. 응답 `{now, enabled, due[{timeSlot, label, time, items[{supplementId, name}], overdueMinutes, message}], next}` |
+| POST | `/api/reminders/snooze` | 미루기 `{timeSlot, minutes=30, at?}` → `{timeSlot, snoozedUntil}` |
+
+- 알림 시각이 지났고 그 시간대에 아직 체크하지 않은 영양제가 있으면 `due` 에 나옵니다. 복용 체크(`POST /api/intake-logs`)를 하면 사라집니다.
+- 일시정지한 영양제는 알림에서 빠집니다. `enabled: false` 면 `due` 는 항상 빈 배열입니다.
+
+## 6-3. 마이데이터 연동 (가상)
+
+실제 전송요구·인증은 하지 않고, 정해진 가상 기록을 가져옵니다. 제공처 이름은 `건강정보 고속도로(가상)`.
+
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| GET | `/api/mydata` | 연동 상태 `{connected, provider, scopes?, connectedAt?, lastSyncAt?}` |
+| POST | `/api/mydata/connect` | 전송 동의 `{agree: true, scopes?: ["checkups", "prescriptions"]}`. `agree: false` 면 422 |
+| DELETE | `/api/mydata/connect` | 연동 해제(가져온 기록은 남음) |
+| POST | `/api/mydata/sync` | 가져오기 `{applyMedications?: false}`. 동의 전이면 409 |
+
+`sync` 응답: `importedCheckups[{id, date, institution}]`(2022-10-18 검진 1건, `source: "mydata"`), `skippedCheckups`(이미 있는 2024-10-15), `prescriptions[{name, dispensedAt, days, institution, drugClass, alreadyRegistered}]`(아토르바스타틴, 암로디핀), `medications`(현재 복용 약), `message`. `applyMedications: true` 면 목록에 없는 처방 약을 복용 약에 추가합니다. 가져온 검진은 해석 화면 `history`(추이 그래프)에 바로 나타납니다.
+
 ## 7. 시연 도구
 
 | 메서드 | 경로 | 설명 |
@@ -132,6 +189,9 @@
 3. 해석: 12개 항목 중 7개 주의.
 4. 추천: 바나바잎·오메가-3 등. 홍국은 스타틴과 겹쳐 제외, 가르시니아는 간 수치 때문에 제외, 비타민D는 종합비타민과 성분 중복 안내.
 5. 복용 관리: 오늘 체크, 일시정지, 중복 성분 점검.
-6. 변화 리포트: 2024 → 2026 비교, 기간 복용률.
+6. 변화 리포트: 2024 → 2026 비교, 기간 복용률, 그 사이 가정 측정 그래프.
+7. 중간 점검(업로드 전에 보여 주기): 2024 검진 이후 혈압·혈당·체중 측정 70건(2025-01부터 매달, 최근 8주는 매주)의 최근 평균을 검진 값과 비교.
+8. 복용 알림: 아침 8시가 지나도 체크하지 않으면 알림, 30분 미루기.
+9. 마이데이터: 동의 → 가져오기 → 2022년 검진이 추이에 추가, 처방 기록의 암로디핀을 복용 약에 추가할지 안내.
 
 기준치·기능성 문구·상호작용은 시연용 표본이며 실제 서비스 전 전문가 확인이 필요합니다.
