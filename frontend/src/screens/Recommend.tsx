@@ -5,6 +5,11 @@ import { checkWarnings, interpret, recommend, TIMING_LABEL } from '../data/rules
 import { latestCheckup, useStore } from '../store'
 import { CautionList, Disclaimer, Value } from '../ui'
 
+// 기능성 문구는 고시 원문("~수 있음", "~에 필요")으로 저장하고, 화면에서만 합니다체로 바꾼다.
+function politeClaim(claim: string) {
+  return claim.replace(/필요, /g, '필요하며, ').replace(/있음$/, '있습니다.').replace(/필요$/, '필요합니다.')
+}
+
 export default function Recommend({ go }: { go: (r: Route) => void }) {
   const s = useStore()
   const p = s.profile!
@@ -44,7 +49,7 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
                   <div className="supp">
                     <b>{r.name}</b>
                     <span className="dose">{r.ingredient} {r.dose} · {TIMING_LABEL[r.timing]}</span>
-                    {r.skipped ? <span className="skip">{r.skipped}</span> : <span className="claim">기능성: {r.claim}</span>}
+                    {r.skipped ? <span className="skip">{r.skipped}</span> : <span className="claim">기능성: {politeClaim(r.claim)}</span>}
                   </div>
                   {!r.skipped && (
                     <button className="switch" role="switch" aria-checked={!isOff} aria-label={`${r.name} 포함`} onClick={() => setOff(toggle(off, r.id))} />
