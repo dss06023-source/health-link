@@ -1,7 +1,13 @@
-/* 페이퍼로지(OFL, github.com/Freesentation/paperlogy) 굵기 400 한 가지만 쓴다. */
+/* 페이퍼로지(OFL, github.com/Freesentation/paperlogy). 본문은 400, 제목·큰 수치는 700. */
 @font-face {
   font-family: 'Paperlogy';
   src: url('./fonts/Paperlogy-4Regular.woff2') format('woff2');
-  font-weight: 100 900;
+  font-weight: 100 549;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Paperlogy';
+  src: url('./fonts/Paperlogy-7Bold.woff2') format('woff2');
+  font-weight: 550 900;
   font-display: swap;
 }
