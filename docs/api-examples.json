@@ -6,6 +6,7 @@
       "birthYear": 1986,
       "gender": "M",
       "heightCm": 174,
+      "weightKg": 76.2,
       "lifestyle": {
         "smoking": "never",
         "drinkingPerWeek": 2,
@@ -20,7 +21,12 @@
       "medications": [
         "아토르바스타틴"
       ],
-      "currentSupplements": [],
+      "currentSupplements": [
+        "omega3",
+        "milk_thistle",
+        "multivitamin",
+        "vitamin_d"
+      ],
       "conditions": [
         "dyslipidemia"
       ],
@@ -29,6 +35,12 @@
       "consent": {
         "sensitiveData": true,
         "agreedAt": "2024-10-20"
+      },
+      "address": {
+        "sido": "서울특별시",
+        "sigungu": "중구",
+        "roadAddress": "서울특별시 중구 세종대로 110",
+        "detailAddress": ""
       },
       "location": {
         "lat": 37.5665,
@@ -49,9 +61,51 @@
       },
       "age": 40,
       "isTargetThisYear": true,
+      "targetReason": "parity",
       "nextCheckupYear": 2026,
       "checkupDue": true,
-      "message": "2026년 국가건강검진 대상자입니다. 아직 검진 기록이 없습니다. 연말 전에 받으세요.",
+      "message": "2026년 국가건강검진 대상자입니다. 아직 검진 기록이 없습니다. 연말 전에 받으십시오.",
+      "checkupItems": [
+        {
+          "id": "lipid",
+          "name": "이상지질혈증 검사(총·HDL·LDL 콜레스테롤, 중성지방)"
+        },
+        {
+          "id": "hepB",
+          "name": "B형간염 검사",
+          "note": "보균자·면역자는 제외"
+        },
+        {
+          "id": "depression",
+          "name": "정신건강검사(우울증)",
+          "note": "40~49세 중 1회"
+        },
+        {
+          "id": "lifestyle",
+          "name": "생활습관평가"
+        },
+        {
+          "id": "plaque",
+          "name": "치면세균막검사(구강검진)"
+        }
+      ],
+      "cancerScreenings": [
+        {
+          "id": "stomach",
+          "name": "위암",
+          "test": "위내시경",
+          "status": "target"
+        },
+        {
+          "id": "liver",
+          "name": "간암",
+          "test": "간초음파·혈액검사",
+          "status": "highRiskOnly",
+          "note": "고위험군만 대상: B형간염 표면항원 양성, C형간염 항체 양성, B·C형 간염에 의한 만성 간질환, 간경변증"
+        }
+      ],
+      "confirmTest": null,
+      "notes": [],
       "lastCheckupDate": "2024-10-15",
       "isDemoData": true
     }
@@ -346,12 +400,12 @@
         {
           "id": "vitamin_b",
           "name": "비타민B군",
-          "rules": false
+          "rules": true
         },
         {
           "id": "vitamin_c",
           "name": "비타민C",
-          "rules": false
+          "rules": true
         },
         {
           "id": "vitamin_d",
@@ -396,12 +450,12 @@
         {
           "id": "probiotics",
           "name": "유산균",
-          "rules": false
+          "rules": true
         },
         {
           "id": "lutein",
           "name": "루테인",
-          "rules": false
+          "rules": true
         },
         {
           "id": "milk_thistle",
@@ -568,7 +622,7 @@
   "GET /api/recommendations (2024 검진)": {
     "status": 200,
     "body": {
-      "checkupId": 1,
+      "checkupId": 2,
       "checkupDate": "2024-10-15",
       "medications": [
         "아토르바스타틴"
@@ -585,6 +639,7 @@
           "timeSlots": [
             "morning"
           ],
+          "timingReason": "식후 혈당이 오르는 것을 줄이려는 원료라 식사 전에 먹습니다.",
           "claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
           "dailyIntake": {
             "ingredient": "코로솔산",
@@ -593,8 +648,8 @@
             "unit": "mg"
           },
           "cautions": [
-            "어린이·임산부·수유부는 섭취를 피하세요.",
-            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+            "어린이·임산부·수유부는 섭취를 피하십시오.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하십시오."
           ],
           "priority": 1,
           "reasons": [
@@ -621,6 +676,7 @@
           "timeSlots": [
             "morning"
           ],
+          "timingReason": "기름에 녹는 성분이라 식사 직후에 먹어야 흡수가 잘 되고 비린 트림도 줄어듭니다. 식후라면 점심·저녁도 괜찮지만 잊지 않도록 아침으로 정했습니다.",
           "claim": "혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음",
           "dailyIntake": {
             "ingredient": "EPA·DHA",
@@ -629,9 +685,9 @@
             "unit": "mg"
           },
           "cautions": [
-            "항응고제·항혈소판제·혈압강하제 등 의약품을 먹고 있으면 전문가와 상담하세요.",
+            "항응고제·항혈소판제·혈압강하제 등 의약품을 먹고 있으면 전문가와 상담하십시오.",
             "사람에 따라 피부 관련 이상반응이 생길 수 있습니다.",
-            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하십시오."
           ],
           "priority": 1,
           "reasons": [
@@ -658,6 +714,7 @@
           "timeSlots": [
             "morning"
           ],
+          "timingReason": "기름에 녹는 성분이라 식후에 먹어야 흡수가 잘 됩니다.",
           "claim": "높은 혈압 감소에 도움을 줄 수 있음",
           "dailyIntake": {
             "ingredient": "코엔자임Q10",
@@ -666,9 +723,9 @@
             "unit": "mg"
           },
           "cautions": [
-            "수유부는 섭취를 피하세요.",
-            "항응고제를 먹고 있으면 전문가와 상담하세요.",
-            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+            "수유부는 섭취를 피하십시오.",
+            "항응고제를 먹고 있으면 전문가와 상담하십시오.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하십시오."
           ],
           "priority": 2,
           "reasons": [
@@ -702,6 +759,7 @@
           "timeSlots": [
             "lunch"
           ],
+          "timingReason": "식이섬유가 식사 중 당과 지방의 흡수를 늦추는 원리라 식사와 함께 물에 타서 먹습니다. 다른 끼니와 함께여도 되지만 점심으로 정했습니다.",
           "claim": "식후 혈당상승 억제·혈중 중성지질 개선에 도움을 줄 수 있음",
           "dailyIntake": {
             "ingredient": "식이섬유(난소화성말토덱스트린)",
@@ -710,8 +768,8 @@
             "unit": "g"
           },
           "cautions": [
-            "반드시 충분한 물과 함께 드세요.",
-            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+            "반드시 충분한 물과 함께 드십시오.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하십시오."
           ],
           "priority": 2,
           "reasons": [
@@ -745,6 +803,7 @@
           "timeSlots": [
             "morning"
           ],
+          "timingReason": "주성분 실리마린이 물에 잘 녹지 않아 식후에 먹어야 흡수에 유리하고 속도 덜 불편합니다.",
           "claim": "간 건강에 도움을 줄 수 있음",
           "dailyIntake": {
             "ingredient": "실리마린",
@@ -753,10 +812,10 @@
             "unit": "mg"
           },
           "cautions": [
-            "어린이·임산부·수유부는 섭취를 피하세요.",
-            "알레르기 반응이 나타나면 섭취를 멈추세요.",
-            "설사·위통·복부팽만 같은 위장 증상이 나타나면 섭취에 주의하세요.",
-            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+            "어린이·임산부·수유부는 섭취를 피하십시오.",
+            "알레르기 반응이 나타나면 섭취를 멈추십시오.",
+            "설사·위통·복부팽만 같은 위장 증상이 나타나면 섭취에 주의하십시오.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하십시오."
           ],
           "priority": 2,
           "reasons": [
@@ -791,6 +850,7 @@
             "morning",
             "evening"
           ],
+          "timingReason": "음식 속 콜레스테롤이 흡수되는 것을 막는 원리라 식사와 함께 먹어야 효과가 있습니다.",
           "claim": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
           "dailyIntake": {
             "ingredient": "식물스테롤",
@@ -827,7 +887,7 @@
               "drugs": [
                 "아토르바스타틴"
               ],
-              "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하세요."
+              "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하십시오."
             }
           ]
         },
@@ -842,6 +902,7 @@
           "timeSlots": [
             "morning"
           ],
+          "timingReason": "기름에 녹는 비타민이라 지방이 든 식사 뒤에 먹어야 흡수가 잘 됩니다.",
           "claim": "칼슘과 인이 흡수되고 이용되는데 필요, 뼈의 형성과 유지에 필요",
           "dailyIntake": {
             "ingredient": "비타민D",
@@ -850,8 +911,8 @@
             "unit": "μg"
           },
           "cautions": [
-            "고칼슘혈증이 있거나 의약품을 먹고 있으면 전문가와 상담하세요.",
-            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+            "고칼슘혈증이 있거나 의약품을 먹고 있으면 전문가와 상담하십시오.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하십시오."
           ],
           "priority": 3,
           "reasons": [],
@@ -866,7 +927,7 @@
               "drugs": [
                 "아토르바스타틴"
               ],
-              "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요."
+              "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하십시오."
             },
             {
               "type": "duplicate",
@@ -955,7 +1016,7 @@
           "drugs": [
             "아토르바스타틴"
           ],
-          "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하세요.",
+          "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하십시오.",
           "supplementId": "plant_sterol"
         },
         {
@@ -964,7 +1025,7 @@
           "drugs": [
             "아토르바스타틴"
           ],
-          "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요.",
+          "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하십시오.",
           "supplementId": "vitamin_d"
         },
         {
@@ -989,14 +1050,25 @@
           "message": "HDL 콜레스테롤을 올리는 기능성을 인정받은 건강기능식품 원료는 없습니다. 유산소 운동과 금연이 먼저입니다."
         }
       ],
-      "disclaimer": "이 추천은 검진 수치와 규칙표에 따른 참고 정보이며 진단이나 치료를 대신하지 않습니다. 복용 중인 약이 있거나 주의 항목이 있으면 의사·약사와 상담하세요."
+      "current": [
+        {
+          "supplementId": "multivitamin",
+          "name": "종합비타민",
+          "claim": "에너지 생성과 정상적인 면역기능에 필요",
+          "purpose": "영양 보충",
+          "status": "keep",
+          "message": "영양 보충을 위해 드신다면 계속 드셔도 됩니다. 입력하신 약·질환·검진 수치와 부딪히는 규칙이 없어 복용 관리에 함께 넣었습니다.",
+          "cautions": []
+        }
+      ],
+      "disclaimer": "이 추천은 검진 수치와 규칙표에 따른 참고 정보이며 진단이나 치료를 대신하지 않습니다. 복용 중인 약이 있거나 주의 항목이 있으면 의사·약사와 상담하십시오."
     }
   },
   "GET /api/supplements": {
     "status": 200,
     "body": [
       {
-        "id": 1,
+        "id": 5,
         "supplementId": "omega3",
         "name": "오메가-3",
         "ingredients": {
@@ -1007,13 +1079,22 @@
         "timeSlots": [
           "morning"
         ],
+        "recommendedSlots": [
+          "morning"
+        ],
+        "altSlots": [
+          "lunch",
+          "evening"
+        ],
+        "timingReason": "기름에 녹는 성분이라 식사 직후에 먹어야 흡수가 잘 되고 비린 트림도 줄어듭니다. 식후라면 점심·저녁도 괜찮지만 잊지 않도록 아침으로 정했습니다.",
+        "slotNote": null,
         "paused": false,
         "startedAt": "2024-11-01",
         "endedAt": null,
         "source": "recommendation"
       },
       {
-        "id": 2,
+        "id": 6,
         "supplementId": "milk_thistle",
         "name": "밀크씨슬",
         "ingredients": {
@@ -1024,13 +1105,22 @@
         "timeSlots": [
           "morning"
         ],
+        "recommendedSlots": [
+          "morning"
+        ],
+        "altSlots": [
+          "lunch",
+          "evening"
+        ],
+        "timingReason": "주성분 실리마린이 물에 잘 녹지 않아 식후에 먹어야 흡수에 유리하고 속도 덜 불편합니다.",
+        "slotNote": null,
         "paused": false,
         "startedAt": "2024-11-01",
         "endedAt": null,
         "source": "recommendation"
       },
       {
-        "id": 3,
+        "id": 7,
         "supplementId": "multivitamin",
         "name": "종합비타민",
         "ingredients": {
@@ -1044,13 +1134,21 @@
         "timeSlots": [
           "morning"
         ],
+        "recommendedSlots": [
+          "morning"
+        ],
+        "altSlots": [
+          "lunch"
+        ],
+        "timingReason": "기름에 녹는 비타민(A·D·E·K)이 들어 있어 식후에 먹어야 흡수가 잘 되고, 빈속에 먹을 때 생기는 메스꺼움도 줄어듭니다.",
+        "slotNote": null,
         "paused": false,
         "startedAt": "2023-03-01",
         "endedAt": null,
         "source": "manual"
       },
       {
-        "id": 4,
+        "id": 8,
         "supplementId": "vitamin_d",
         "name": "비타민D",
         "ingredients": {
@@ -1059,8 +1157,17 @@
         "dose": "1일 1회 1정",
         "claim": "칼슘과 인이 흡수되고 이용되는데 필요, 뼈의 형성과 유지에 필요",
         "timeSlots": [
+          "lunch"
+        ],
+        "recommendedSlots": [
           "morning"
         ],
+        "altSlots": [
+          "lunch",
+          "evening"
+        ],
+        "timingReason": "기름에 녹는 비타민이라 지방이 든 식사 뒤에 먹어야 흡수가 잘 됩니다.",
+        "slotNote": "아침에 먹을 것이 많아 점심으로 나눴습니다. 식사 뒤에 먹으면 되는 영양제라 시간대를 옮겨도 됩니다.",
         "paused": false,
         "startedAt": "2025-02-10",
         "endedAt": null,
@@ -1098,7 +1205,7 @@
           "drugs": [
             "아토르바스타틴"
           ],
-          "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요.",
+          "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하십시오.",
           "supplementId": "vitamin_d"
         }
       ],
@@ -1111,27 +1218,27 @@
       "date": "2026-10-30",
       "items": [
         {
-          "supplementId": 1,
+          "supplementId": 5,
           "name": "오메가-3",
           "timeSlot": "morning",
           "taken": false
         },
         {
-          "supplementId": 2,
+          "supplementId": 6,
           "name": "밀크씨슬",
           "timeSlot": "morning",
           "taken": false
         },
         {
-          "supplementId": 3,
+          "supplementId": 7,
           "name": "종합비타민",
           "timeSlot": "morning",
           "taken": false
         },
         {
-          "supplementId": 4,
+          "supplementId": 8,
           "name": "비타민D",
-          "timeSlot": "morning",
+          "timeSlot": "lunch",
           "taken": false
         }
       ],
@@ -1148,170 +1255,170 @@
       "logs": [
         {
           "date": "2026-10-22",
-          "timeSlot": "morning",
-          "supplementId": 1,
+          "timeSlot": "lunch",
+          "supplementId": 8,
           "taken": true
         },
         {
           "date": "2026-10-22",
           "timeSlot": "morning",
-          "supplementId": 2,
-          "taken": false
-        },
-        {
-          "date": "2026-10-22",
-          "timeSlot": "morning",
-          "supplementId": 3,
+          "supplementId": 5,
           "taken": true
         },
         {
           "date": "2026-10-22",
           "timeSlot": "morning",
-          "supplementId": 4,
+          "supplementId": 6,
+          "taken": false
+        },
+        {
+          "date": "2026-10-22",
+          "timeSlot": "morning",
+          "supplementId": 7,
+          "taken": true
+        },
+        {
+          "date": "2026-10-23",
+          "timeSlot": "lunch",
+          "supplementId": 8,
           "taken": true
         },
         {
           "date": "2026-10-23",
           "timeSlot": "morning",
-          "supplementId": 1,
+          "supplementId": 5,
           "taken": true
         },
         {
           "date": "2026-10-23",
           "timeSlot": "morning",
-          "supplementId": 2,
+          "supplementId": 6,
           "taken": true
         },
         {
           "date": "2026-10-23",
           "timeSlot": "morning",
-          "supplementId": 3,
+          "supplementId": 7,
           "taken": true
         },
         {
-          "date": "2026-10-23",
+          "date": "2026-10-24",
+          "timeSlot": "lunch",
+          "supplementId": 8,
+          "taken": false
+        },
+        {
+          "date": "2026-10-24",
           "timeSlot": "morning",
-          "supplementId": 4,
+          "supplementId": 5,
           "taken": true
         },
         {
           "date": "2026-10-24",
           "timeSlot": "morning",
-          "supplementId": 1,
+          "supplementId": 6,
           "taken": true
         },
         {
           "date": "2026-10-24",
           "timeSlot": "morning",
-          "supplementId": 2,
+          "supplementId": 7,
           "taken": true
-        },
-        {
-          "date": "2026-10-24",
-          "timeSlot": "morning",
-          "supplementId": 3,
-          "taken": true
-        },
-        {
-          "date": "2026-10-24",
-          "timeSlot": "morning",
-          "supplementId": 4,
-          "taken": false
         },
         {
           "date": "2026-10-25",
-          "timeSlot": "morning",
-          "supplementId": 1,
+          "timeSlot": "lunch",
+          "supplementId": 8,
           "taken": true
         },
         {
           "date": "2026-10-25",
           "timeSlot": "morning",
-          "supplementId": 2,
-          "taken": false
-        },
-        {
-          "date": "2026-10-25",
-          "timeSlot": "morning",
-          "supplementId": 3,
+          "supplementId": 5,
           "taken": true
         },
         {
           "date": "2026-10-25",
           "timeSlot": "morning",
-          "supplementId": 4,
+          "supplementId": 6,
+          "taken": false
+        },
+        {
+          "date": "2026-10-25",
+          "timeSlot": "morning",
+          "supplementId": 7,
+          "taken": true
+        },
+        {
+          "date": "2026-10-26",
+          "timeSlot": "lunch",
+          "supplementId": 8,
           "taken": true
         },
         {
           "date": "2026-10-26",
           "timeSlot": "morning",
-          "supplementId": 1,
+          "supplementId": 5,
           "taken": true
         },
         {
           "date": "2026-10-26",
           "timeSlot": "morning",
-          "supplementId": 2,
+          "supplementId": 6,
           "taken": true
         },
         {
           "date": "2026-10-26",
           "timeSlot": "morning",
-          "supplementId": 3,
+          "supplementId": 7,
           "taken": true
         },
         {
-          "date": "2026-10-26",
+          "date": "2026-10-27",
+          "timeSlot": "lunch",
+          "supplementId": 8,
+          "taken": false
+        },
+        {
+          "date": "2026-10-27",
           "timeSlot": "morning",
-          "supplementId": 4,
+          "supplementId": 5,
           "taken": true
         },
         {
           "date": "2026-10-27",
           "timeSlot": "morning",
-          "supplementId": 1,
+          "supplementId": 6,
           "taken": true
         },
         {
           "date": "2026-10-27",
           "timeSlot": "morning",
-          "supplementId": 2,
+          "supplementId": 7,
           "taken": true
         },
         {
-          "date": "2026-10-27",
-          "timeSlot": "morning",
-          "supplementId": 3,
+          "date": "2026-10-28",
+          "timeSlot": "lunch",
+          "supplementId": 8,
           "taken": true
         },
         {
-          "date": "2026-10-27",
+          "date": "2026-10-28",
           "timeSlot": "morning",
-          "supplementId": 4,
+          "supplementId": 5,
+          "taken": true
+        },
+        {
+          "date": "2026-10-28",
+          "timeSlot": "morning",
+          "supplementId": 6,
           "taken": false
         },
         {
           "date": "2026-10-28",
           "timeSlot": "morning",
-          "supplementId": 1,
-          "taken": true
-        },
-        {
-          "date": "2026-10-28",
-          "timeSlot": "morning",
-          "supplementId": 2,
-          "taken": false
-        },
-        {
-          "date": "2026-10-28",
-          "timeSlot": "morning",
-          "supplementId": 3,
-          "taken": true
-        },
-        {
-          "date": "2026-10-28",
-          "timeSlot": "morning",
-          "supplementId": 4,
+          "supplementId": 7,
           "taken": true
         }
       ],
@@ -1387,7 +1494,7 @@
           "time": "08:00",
           "items": [
             {
-              "supplementId": 2,
+              "supplementId": 6,
               "name": "밀크씨슬"
             }
           ],
@@ -1458,7 +1565,7 @@
     "status": 200,
     "body": [
       {
-        "id": 61,
+        "id": 131,
         "type": "bp",
         "measuredAt": "2026-10-02T07:30",
         "values": {
@@ -1473,7 +1580,7 @@
         }
       },
       {
-        "id": 62,
+        "id": 132,
         "type": "weight",
         "measuredAt": "2026-10-02T07:30",
         "values": {
@@ -1486,7 +1593,7 @@
         }
       },
       {
-        "id": 63,
+        "id": 133,
         "type": "glucose",
         "measuredAt": "2026-10-02T07:30",
         "values": {
@@ -1499,7 +1606,7 @@
         }
       },
       {
-        "id": 64,
+        "id": 134,
         "type": "bp",
         "measuredAt": "2026-10-09T07:30",
         "values": {
@@ -1514,7 +1621,7 @@
         }
       },
       {
-        "id": 65,
+        "id": 135,
         "type": "weight",
         "measuredAt": "2026-10-09T07:30",
         "values": {
@@ -1527,7 +1634,7 @@
         }
       },
       {
-        "id": 66,
+        "id": 136,
         "type": "bp",
         "measuredAt": "2026-10-16T07:30",
         "values": {
@@ -1542,7 +1649,7 @@
         }
       },
       {
-        "id": 67,
+        "id": 137,
         "type": "weight",
         "measuredAt": "2026-10-16T07:30",
         "values": {
@@ -1555,7 +1662,7 @@
         }
       },
       {
-        "id": 68,
+        "id": 138,
         "type": "glucose",
         "measuredAt": "2026-10-16T07:30",
         "values": {
@@ -1568,7 +1675,7 @@
         }
       },
       {
-        "id": 69,
+        "id": 139,
         "type": "bp",
         "measuredAt": "2026-10-23T07:30",
         "values": {
@@ -1583,7 +1690,7 @@
         }
       },
       {
-        "id": 70,
+        "id": 140,
         "type": "weight",
         "measuredAt": "2026-10-23T07:30",
         "values": {
@@ -1600,7 +1707,7 @@
   "POST /api/measurements (혈압)": {
     "status": 201,
     "body": {
-      "id": 71,
+      "id": 141,
       "type": "bp",
       "measuredAt": "2026-10-28T07:30",
       "values": {
@@ -1645,7 +1752,7 @@
     "status": 200,
     "body": {
       "baseline": {
-        "id": 1,
+        "id": 2,
         "date": "2024-10-15"
       },
       "windowDays": 30,
@@ -2132,7 +2239,7 @@
   "POST /api/checkups/upload (사진)": {
     "status": 200,
     "body": {
-      "id": 2,
+      "id": 3,
       "date": "2026-10-30",
       "source": "photo",
       "status": "pending_review",
@@ -2268,14 +2375,15 @@
             "unit": "mL/min/1.73m²"
           }
         ],
-        "message": "사진 인식 모델이 없는 서버라 견본 값을 보여 줍니다. 실제 결과지 값과 다릅니다."
+        "message": "사진 인식 모델이 없는 서버라 견본 값을 보여 줍니다. 실제 결과지 값과 다릅니다.",
+        "files": 1
       }
     }
   },
-  "PATCH /api/checkups/2 {confirm:true}": {
+  "PATCH /api/checkups/3 {confirm:true}": {
     "status": 200,
     "body": {
-      "id": 2,
+      "id": 3,
       "date": "2026-10-30",
       "source": "photo",
       "status": "confirmed",
@@ -2575,14 +2683,14 @@
         "hb": 14.9,
         "bmi": 24.4
       },
-      "disclaimer": "이 추천은 검진 수치와 규칙표에 따른 참고 정보이며 진단이나 치료를 대신하지 않습니다. 복용 중인 약이 있거나 주의 항목이 있으면 의사·약사와 상담하세요."
+      "disclaimer": "이 추천은 검진 수치와 규칙표에 따른 참고 정보이며 진단이나 치료를 대신하지 않습니다. 복용 중인 약이 있거나 주의 항목이 있으면 의사·약사와 상담하십시오."
     }
   },
   "GET /api/checkups": {
     "status": 200,
     "body": [
       {
-        "id": 2,
+        "id": 3,
         "date": "2026-10-30",
         "source": "photo",
         "status": "confirmed",
@@ -2595,7 +2703,7 @@
         }
       },
       {
-        "id": 1,
+        "id": 2,
         "date": "2024-10-15",
         "source": "pdf",
         "status": "confirmed",
@@ -2612,7 +2720,7 @@
   "GET /api/recommendations (2026 검진)": {
     "status": 200,
     "body": {
-      "checkupId": 2,
+      "checkupId": 3,
       "checkupDate": "2026-10-30",
       "medications": [
         "아토르바스타틴"
@@ -2629,6 +2737,7 @@
           "timeSlots": [
             "morning"
           ],
+          "timingReason": "식후 혈당이 오르는 것을 줄이려는 원료라 식사 전에 먹습니다.",
           "claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
           "dailyIntake": {
             "ingredient": "코로솔산",
@@ -2637,8 +2746,8 @@
             "unit": "mg"
           },
           "cautions": [
-            "어린이·임산부·수유부는 섭취를 피하세요.",
-            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+            "어린이·임산부·수유부는 섭취를 피하십시오.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하십시오."
           ],
           "priority": 1,
           "reasons": [
@@ -2665,6 +2774,7 @@
           "timeSlots": [
             "morning"
           ],
+          "timingReason": "기름에 녹는 성분이라 식사 직후에 먹어야 흡수가 잘 되고 비린 트림도 줄어듭니다. 식후라면 점심·저녁도 괜찮지만 잊지 않도록 아침으로 정했습니다.",
           "claim": "혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음",
           "dailyIntake": {
             "ingredient": "EPA·DHA",
@@ -2673,9 +2783,9 @@
             "unit": "mg"
           },
           "cautions": [
-            "항응고제·항혈소판제·혈압강하제 등 의약품을 먹고 있으면 전문가와 상담하세요.",
+            "항응고제·항혈소판제·혈압강하제 등 의약품을 먹고 있으면 전문가와 상담하십시오.",
             "사람에 따라 피부 관련 이상반응이 생길 수 있습니다.",
-            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하십시오."
           ],
           "priority": 1,
           "reasons": [
@@ -2702,6 +2812,7 @@
           "timeSlots": [
             "morning"
           ],
+          "timingReason": "기름에 녹는 성분이라 식후에 먹어야 흡수가 잘 됩니다.",
           "claim": "높은 혈압 감소에 도움을 줄 수 있음",
           "dailyIntake": {
             "ingredient": "코엔자임Q10",
@@ -2710,9 +2821,9 @@
             "unit": "mg"
           },
           "cautions": [
-            "수유부는 섭취를 피하세요.",
-            "항응고제를 먹고 있으면 전문가와 상담하세요.",
-            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+            "수유부는 섭취를 피하십시오.",
+            "항응고제를 먹고 있으면 전문가와 상담하십시오.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하십시오."
           ],
           "priority": 2,
           "reasons": [
@@ -2746,6 +2857,7 @@
           "timeSlots": [
             "lunch"
           ],
+          "timingReason": "식이섬유가 식사 중 당과 지방의 흡수를 늦추는 원리라 식사와 함께 물에 타서 먹습니다. 다른 끼니와 함께여도 되지만 점심으로 정했습니다.",
           "claim": "식후 혈당상승 억제·혈중 중성지질 개선에 도움을 줄 수 있음",
           "dailyIntake": {
             "ingredient": "식이섬유(난소화성말토덱스트린)",
@@ -2754,8 +2866,8 @@
             "unit": "g"
           },
           "cautions": [
-            "반드시 충분한 물과 함께 드세요.",
-            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+            "반드시 충분한 물과 함께 드십시오.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하십시오."
           ],
           "priority": 2,
           "reasons": [
@@ -2789,6 +2901,7 @@
           "timeSlots": [
             "morning"
           ],
+          "timingReason": "주성분 실리마린이 물에 잘 녹지 않아 식후에 먹어야 흡수에 유리하고 속도 덜 불편합니다.",
           "claim": "간 건강에 도움을 줄 수 있음",
           "dailyIntake": {
             "ingredient": "실리마린",
@@ -2797,10 +2910,10 @@
             "unit": "mg"
           },
           "cautions": [
-            "어린이·임산부·수유부는 섭취를 피하세요.",
-            "알레르기 반응이 나타나면 섭취를 멈추세요.",
-            "설사·위통·복부팽만 같은 위장 증상이 나타나면 섭취에 주의하세요.",
-            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+            "어린이·임산부·수유부는 섭취를 피하십시오.",
+            "알레르기 반응이 나타나면 섭취를 멈추십시오.",
+            "설사·위통·복부팽만 같은 위장 증상이 나타나면 섭취에 주의하십시오.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하십시오."
           ],
           "priority": 2,
           "reasons": [
@@ -2828,6 +2941,7 @@
             "morning",
             "evening"
           ],
+          "timingReason": "음식 속 콜레스테롤이 흡수되는 것을 막는 원리라 식사와 함께 먹어야 효과가 있습니다.",
           "claim": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
           "dailyIntake": {
             "ingredient": "식물스테롤",
@@ -2857,7 +2971,7 @@
               "drugs": [
                 "아토르바스타틴"
               ],
-              "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하세요."
+              "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하십시오."
             }
           ]
         },
@@ -2872,6 +2986,7 @@
           "timeSlots": [
             "morning"
           ],
+          "timingReason": "기름에 녹는 비타민이라 지방이 든 식사 뒤에 먹어야 흡수가 잘 됩니다.",
           "claim": "칼슘과 인이 흡수되고 이용되는데 필요, 뼈의 형성과 유지에 필요",
           "dailyIntake": {
             "ingredient": "비타민D",
@@ -2880,8 +2995,8 @@
             "unit": "μg"
           },
           "cautions": [
-            "고칼슘혈증이 있거나 의약품을 먹고 있으면 전문가와 상담하세요.",
-            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+            "고칼슘혈증이 있거나 의약품을 먹고 있으면 전문가와 상담하십시오.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하십시오."
           ],
           "priority": 3,
           "reasons": [],
@@ -2896,7 +3011,7 @@
               "drugs": [
                 "아토르바스타틴"
               ],
-              "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요."
+              "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하십시오."
             },
             {
               "type": "duplicate",
@@ -2950,7 +3065,7 @@
           "drugs": [
             "아토르바스타틴"
           ],
-          "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하세요.",
+          "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하십시오.",
           "supplementId": "plant_sterol"
         },
         {
@@ -2959,7 +3074,7 @@
           "drugs": [
             "아토르바스타틴"
           ],
-          "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요.",
+          "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하십시오.",
           "supplementId": "vitamin_d"
         },
         {
@@ -2984,18 +3099,29 @@
           "message": "HDL 콜레스테롤을 올리는 기능성을 인정받은 건강기능식품 원료는 없습니다. 유산소 운동과 금연이 먼저입니다."
         }
       ],
-      "disclaimer": "이 추천은 검진 수치와 규칙표에 따른 참고 정보이며 진단이나 치료를 대신하지 않습니다. 복용 중인 약이 있거나 주의 항목이 있으면 의사·약사와 상담하세요."
+      "current": [
+        {
+          "supplementId": "multivitamin",
+          "name": "종합비타민",
+          "claim": "에너지 생성과 정상적인 면역기능에 필요",
+          "purpose": "영양 보충",
+          "status": "keep",
+          "message": "영양 보충을 위해 드신다면 계속 드셔도 됩니다. 입력하신 약·질환·검진 수치와 부딪히는 규칙이 없어 복용 관리에 함께 넣었습니다.",
+          "cautions": []
+        }
+      ],
+      "disclaimer": "이 추천은 검진 수치와 규칙표에 따른 참고 정보이며 진단이나 치료를 대신하지 않습니다. 복용 중인 약이 있거나 주의 항목이 있으면 의사·약사와 상담하십시오."
     }
   },
   "GET /api/reports/compare": {
     "status": 200,
     "body": {
       "from": {
-        "id": 1,
+        "id": 2,
         "date": "2024-10-15"
       },
       "to": {
-        "id": 2,
+        "id": 3,
         "date": "2026-10-30"
       },
       "items": [
@@ -3165,28 +3291,28 @@
       "note": "검진 수치는 식사·운동·음주·약 등 여러 요인의 영향을 받습니다. 이 비교는 영양제의 효과를 뜻하지 않습니다.",
       "supplementsDuring": [
         {
-          "id": 1,
+          "id": 5,
           "supplementId": "omega3",
           "name": "오메가-3",
           "startedAt": "2024-11-01",
           "endedAt": null
         },
         {
-          "id": 2,
+          "id": 6,
           "supplementId": "milk_thistle",
           "name": "밀크씨슬",
           "startedAt": "2024-11-01",
           "endedAt": null
         },
         {
-          "id": 3,
+          "id": 7,
           "supplementId": "multivitamin",
           "name": "종합비타민",
           "startedAt": "2023-03-01",
           "endedAt": null
         },
         {
-          "id": 4,
+          "id": 8,
           "supplementId": "vitamin_d",
           "name": "비타민D",
           "startedAt": "2025-02-10",
@@ -4018,7 +4144,7 @@
       "isDemoData": true,
       "importedCheckups": [
         {
-          "id": 3,
+          "id": 4,
           "date": "2022-10-18",
           "institution": "가상내과의원"
         }
@@ -4056,7 +4182,7 @@
   "POST /api/checkups/upload (글자 있는 PDF)": {
     "status": 200,
     "body": {
-      "id": 4,
+      "id": 5,
       "date": "2026-10-30",
       "source": "pdf",
       "status": "pending_review",
@@ -4203,7 +4329,8 @@
           }
         ],
         "missing": [],
-        "message": "인식한 수치를 확인해 주세요. 틀린 값은 고친 뒤 확정하세요."
+        "message": "인식한 수치를 확인해 주십시오. 틀린 값은 고친 뒤 확정하십시오.",
+        "files": 1
       }
     }
   }
