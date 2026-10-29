@@ -65,7 +65,7 @@ const toLabel = (m: Map<string, string>, values: string[] = []) => {
 }
 interface RCheckupRow { id: number; date: string; source: string; status: string }
 interface RCheckup { id: number; date: string; source: string; items: { code: string; name: string; value: number; unit: string }[] }
-interface RSupp { id: number; supplementId: string; name: string; ingredients: Record<string, string>; timeSlots: Slot[]; recommendedSlots?: Slot[]; timingReason?: string; paused: boolean; startedAt: string }
+interface RSupp { id: number; supplementId: string; name: string; ingredients: Record<string, string>; timeSlots: Slot[]; recommendedSlots?: Slot[]; altSlots?: Slot[]; timingReason?: string; slotNote?: string | null; paused: boolean; startedAt: string }
 interface RReason { code: string; name: string; value: number; unit: string }
 interface RWarning { level: 'info' | 'caution'; message: string; type: string; ingredient?: string; drugs?: string[] }
 interface RRec {
@@ -146,7 +146,8 @@ export async function loadAll() {
   const supplements: Supplement[] = supps.map((x) => {
     const [ing, amt] = firstEntry(x.ingredients)
     return { id: String(x.id), name: x.name, ingredient: ing, dose: amt, timing: toTiming(x.timeSlots), paused: x.paused, startDate: x.startedAt,
-      recommendedTiming: x.recommendedSlots && toTiming(x.recommendedSlots), timingReason: x.timingReason }
+      recommendedTiming: x.recommendedSlots && toTiming(x.recommendedSlots), timingReason: x.timingReason,
+      altTimings: x.altSlots?.map((slot) => toTiming([slot])), slotNote: x.slotNote }
   })
   const intake: IntakeLog = {}
   for (const l of logs.logs) (intake[l.date] ??= {})[String(l.supplementId)] = l.taken

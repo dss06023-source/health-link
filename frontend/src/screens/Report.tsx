@@ -10,6 +10,10 @@ const KEYS: { code: string; limit: number; higherBetter?: boolean }[] = [
   { code: 'GGT', limit: 63 }, { code: 'TC', limit: 200 }, { code: 'SBP', limit: 120 }, { code: 'HDL', limit: 60, higherBetter: true },
 ]
 const RANK: Record<Status, number> = { normal: 0, caution: 1, danger: 2 }
+type Tone = '' | 'toward' | 'worse' | 'slightly-worse'
+const TONE_TITLE: Record<Tone, string | undefined> = {
+  '': undefined, toward: '정상 범위 쪽으로 움직였습니다', worse: '판정이 나빠졌습니다', 'slightly-worse': '판정은 같지만 수치가 나빠졌습니다',
+}
 
 function Spark({ points, limit, labels }: { points: number[]; limit: number; labels: string[] }) {
   const W = 320, H = 84, padX = 34, top = 16, bottom = 22
@@ -66,7 +70,13 @@ export default function Report({ go }: { go: (r: Route) => void }) {
     const a = iAfter.find((i) => i.code === k.code)!
     const points = series.map((c) => c.items.find((i) => i.code === k.code)!.value)
     const better = k.higherBetter ? a.value > b.value : a.value < b.value
-    return { ...k, b, a, points, better, statusUp: RANK[a.status] < RANK[b.status] }
+    // 변화량 색(2026-10-29 사용자 결정): 경계·이상이던 수치가 정상 쪽으로 움직이면 파랑,
+    // 판정이 한 단계 이상 나빠지면 빨강, 판정은 같은데 수치만 나빠지면 갈색.
+    const worse = a.value !== b.value && !better
+    const tone: Tone = b.status !== 'normal' && better ? 'toward'
+      : worse && RANK[a.status] > RANK[b.status] ? 'worse'
+      : worse ? 'slightly-worse' : ''
+    return { ...k, b, a, points, better, tone, statusUp: RANK[a.status] < RANK[b.status] }
   })
   const improved = rows.filter((r) => r.better).length
   const statusUp = rows.filter((r) => r.statusUp)
@@ -102,7 +112,7 @@ export default function Report({ go }: { go: (r: Route) => void }) {
                   <span className="old"><Value status={r.b.status} faded>{r.b.value}</Value></span>
                   <span className="arrow" aria-hidden="true">→</span>
                   <span className="new"><Value status={r.a.status}>{r.a.value}</Value></span>
-                  <span className="delta">{d > 0 ? '+' : ''}{d}</span>
+                  <span className={`delta ${r.tone}`} title={TONE_TITLE[r.tone]}>{d > 0 ? '+' : ''}{d}</span>
                 </div>
                 <div className="chart-cell" style={{ minWidth: 0 }}><Spark points={r.points} limit={r.limit} labels={labels} /></div>
                 <p className="verdict">

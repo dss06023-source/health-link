@@ -5,6 +5,7 @@ import math
 import os
 import re
 import threading
+from collections import Counter
 from pathlib import Path
 from contextlib import asynccontextmanager
 from datetime import date, datetime, timedelta
@@ -70,8 +71,36 @@ def confirmed_checkups(conn):
     return [checkup_row(r) for r in rows]
 
 
+SLOT_LABELS = {"morning": "아침", "lunch": "점심", "evening": "저녁", "bedtime": "자기 전"}
+
+
+def slot_note(info, slots):
+    """권장 시간대가 붐벼 altSlots로 옮겨 둔 경우의 안내."""
+    if slots == info["timeSlots"] or not set(slots) <= set(info.get("altSlots", [])):
+        return None
+    return ref.SLOT_BALANCE["note"].format(**{"from": SLOT_LABELS[info["timeSlots"][0]], "to": SLOT_LABELS[slots[0]]})
+
+
+def default_slots(conn, catalog_id):
+    """복용 관리에 넣을 때의 시간대. 권장 시간대가 한도만큼 차 있으면 altSlots 중 덜 붐비는 곳으로 옮긴다.
+    한도는 먹는 영양제가 많으면(새로 넣는 것 포함 manyFrom개 이상) maxPerSlotMany, 아니면 maxPerSlot."""
+    info = ref.SUPPLEMENTS[catalog_id]
+    slots, alts = info["timeSlots"], info.get("altSlots", [])
+    if len(slots) != 1 or not alts:
+        return slots
+    active = active_supplements(conn, include_paused=False)
+    rule = ref.SLOT_BALANCE
+    limit = rule["maxPerSlotMany"] if len(active) + 1 >= rule["manyFrom"] else rule["maxPerSlot"]
+    counts = Counter(slot for s in active for slot in s["timeSlots"])
+    if counts[slots[0]] < limit:
+        return slots
+    best = min(alts, key=lambda slot: (counts[slot], alts.index(slot)))
+    return [best] if counts[best] < counts[slots[0]] else slots
+
+
 def supplement_row(row):
     info = ref.SUPPLEMENTS[row["catalog_id"]]
+    slots = json.loads(row["time_slots"])
     return {
         "id": row["id"],
         "supplementId": row["catalog_id"],
@@ -79,9 +108,11 @@ def supplement_row(row):
         "ingredients": info["ingredients"],
         "dose": info["dose"],
         "claim": info["claim"],
-        "timeSlots": json.loads(row["time_slots"]),
+        "timeSlots": slots,
         "recommendedSlots": info["timeSlots"],  # 권장 시간대와 그 이유(사용자가 시간대를 바꿀 때 보여 준다)
+        "altSlots": info.get("altSlots", []),  # 붐빌 때 옮겨도 되는 시간대. 여기로 옮길 때는 다시 묻지 않는다.
         "timingReason": info["timingReason"],
+        "slotNote": slot_note(info, slots),
         "paused": bool(row["paused"]),
         "startedAt": row["started_at"],
         "endedAt": row["ended_at"],
@@ -122,7 +153,7 @@ def sync_supplements(conn, wanted):
         if cid in SYNCED_SUPPLEMENTS and cid not in active:
             conn.execute(
                 "INSERT INTO supplements (user_id, catalog_id, time_slots, started_at, source) VALUES (?, ?, ?, ?, 'manual')",
-                (db.uid(), cid, json.dumps(ref.SUPPLEMENTS[cid]["timeSlots"]), db.today().isoformat()),
+                (db.uid(), cid, json.dumps(default_slots(conn, cid)), db.today().isoformat()),
             )
 
 
@@ -683,7 +714,7 @@ def add_supplement(body: SupplementCreate):
     with db.connect() as conn:
         if any(s["supplementId"] == body.supplementId for s in active_supplements(conn)):
             raise HTTPException(409, "이미 복용 중인 영양제입니다.")
-        slots = body.timeSlots or ref.SUPPLEMENTS[body.supplementId]["timeSlots"]
+        slots = body.timeSlots or default_slots(conn, body.supplementId)
         cur = conn.execute(
             "INSERT INTO supplements (user_id, catalog_id, time_slots, started_at, source) VALUES (?, ?, ?, ?, ?)",
             (db.uid(), body.supplementId, json.dumps(slots), db.today().isoformat(), body.source),

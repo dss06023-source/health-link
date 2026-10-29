@@ -43,7 +43,7 @@ export default function Intake() {
   const changeTiming = (x: Supplement, to: Timing) => {
     if (to === x.timing) return
     const guide = guideOf(x)
-    if (guide && guide.timing !== to) setMoving({ x, to, guide })
+    if (guide && guide.timing !== to && !x.altTimings?.includes(to)) setMoving({ x, to, guide })
     else s.updateSupplement(x.id, { timing: to })
   }
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 4500); return () => clearTimeout(t) }, [toast])
@@ -162,6 +162,7 @@ export default function Intake() {
                   {guideOf(x) && (
                     <p className="small timing-why"><b>{TIMING_LABEL[guideOf(x)!.timing]} 권장</b> · {guideOf(x)!.reason}</p>
                   )}
+                  {x.slotNote && x.timing !== guideOf(x)?.timing && <p className="small muted" style={{ margin: '4px 0 0' }}>{x.slotNote}</p>}
                   {conflicts.filter((c) => c.name === x.name).map((c) => <p key={c.name} className="small" style={{ margin: '4px 0 0', color: 'var(--danger)' }}>{c.message.replace(' 드시고 있다고 하셔서 복용 관리에는 넣어 두었습니다.', '')}</p>)}
                 </div>
                 <div className="seg" role="group" aria-label={`${x.name} 복용 시간대`}>

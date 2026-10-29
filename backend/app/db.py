@@ -288,24 +288,24 @@ def seed(conn, user_id):
         ("omega3", ["morning"], "2024-11-01", "recommendation"),
         ("milk_thistle", ["morning"], "2024-11-01", "recommendation"),
         ("multivitamin", ["morning"], "2023-03-01", "manual"),
-        ("vitamin_d", ["morning"], "2025-02-10", "manual"),
+        ("vitamin_d", ["lunch"], "2025-02-10", "manual"),  # 아침에 셋이 있어 점심으로 나눔(intake_rules slotBalance)
     ]
-    ids = []
+    ids = []  # (복용 목록 id, 시간대)
     for catalog_id, slots, started, source in plan:
         cur = conn.execute(
             "INSERT INTO supplements (user_id, catalog_id, time_slots, started_at, source) VALUES (?, ?, ?, ?, ?)",
             (user_id, catalog_id, json.dumps(slots), started, source),
         )
-        ids.append(cur.lastrowid)
+        ids.append((cur.lastrowid, slots[0]))
     # 최근 60일 복용 기록. 정해진 패턴으로 약 85%를 먹은 것으로 만든다.
     end = today()
     for offset in range(60, 0, -1):
         day = end - timedelta(days=offset)
-        for n, supplement_id in enumerate(ids):
+        for n, (supplement_id, slot) in enumerate(ids):
             taken = (day.toordinal() * 7 + n * 3) % 20 >= 3
             conn.execute(
                 "INSERT INTO intake_logs (user_id, date, time_slot, supplement_id, taken) VALUES (?, ?, ?, ?, ?)",
-                (user_id, day.isoformat(), "morning", supplement_id, int(taken)),
+                (user_id, day.isoformat(), slot, supplement_id, int(taken)),
             )
     seed_measurements(conn, end, user_id)
 

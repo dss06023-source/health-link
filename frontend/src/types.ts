@@ -113,6 +113,8 @@ export interface Supplement {
   startDate: string
   recommendedTiming?: Timing // 권장 시간대와 그 이유. 사용자가 시간대를 바꿀 때 확인 창에 쓴다.
   timingReason?: string
+  altTimings?: Timing[] // 권장 시간대가 붐빌 때 옮겨도 되는 시간대. 여기로 바꿀 때는 다시 묻지 않는다.
+  slotNote?: string | null // 붐벼서 altTimings로 나눠 둔 경우의 안내
 }
 
 // 날짜(YYYY-MM-DD) → 영양제 id → 복용 여부

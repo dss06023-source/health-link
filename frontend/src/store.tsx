@@ -5,7 +5,7 @@ import type {
 } from './types'
 import { FOLLOWUP_ITEMS, MYDATA_CHECKUP, MYDATA_INSTITUTION, MYDATA_PRESCRIPTIONS, OCR_RESULT, PAST_CHECKUP, SAMPLE_PROFILE, SUPPLEMENT_OPTIONS } from './data/mock'
 import { seededMeasurements } from './data/measure'
-import { CURRENT_INFO } from './data/rules'
+import { CURRENT_INFO, balanceTiming } from './data/rules'
 import { USE_API } from './api'
 import { AuthError, auth, loadAll, remote } from './api/remote'
 import type { Account, RemoteExtras } from './api/remote'
@@ -56,13 +56,13 @@ function syncCurrent(x: AppState): AppState {
   const p = x.profile
   if (!p) return x
   const add = p.currentSupplements.filter((n) => CURRENT_INFO[n] && !x.supplements.some((m) => m.name === n || m.id === CURRENT_INFO[n].id))
-  return {
-    ...x,
-    supplements: [
-      ...x.supplements,
-      ...add.map((n) => { const i = CURRENT_INFO[n]; return { id: i.id, name: n, ingredient: i.ingredient, dose: i.dose, timing: i.timing, paused: false, startDate: ymd(new Date()) } }),
-    ],
+  const supplements = [...x.supplements]
+  for (const n of add) {
+    const i = CURRENT_INFO[n]
+    supplements.push({ id: i.id, name: n, ingredient: i.ingredient, dose: i.dose, paused: false, startDate: ymd(new Date()),
+      recommendedTiming: i.timing, ...balanceTiming(i.id, i.timing, supplements) })
   }
+  return { ...x, supplements }
 }
 
 function fullDemo(): AppState {
@@ -208,16 +208,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const c: Checkup = { id: `c${Date.now()}`, date: ymd(now), source, label: `${now.getFullYear()} 일반건강검진`, items }
       return { ...x, checkups: [...x.checkups, c], profile: x.profile && { ...x.profile, lastCheckupYear: now.getFullYear() } }
     }),
-    addSupplements: (recs) => set((x) => ({
-      ...x,
-      profile: x.profile && { ...x.profile, currentSupplements: withTaking(x.profile.currentSupplements, recs.map((r) => ({ name: r.name } as Supplement))) },
-      supplements: [
-        ...x.supplements,
-        ...recs.filter((r) => !x.supplements.some((s) => s.id === r.id)).map((r) => ({
-          id: r.id, name: r.name, ingredient: r.ingredient, dose: r.dose, timing: r.timing, paused: false, startDate: ymd(new Date()),
-        })),
-      ],
-    })),
+    addSupplements: (recs) => set((x) => {
+      const supplements = [...x.supplements]
+      for (const r of recs.filter((r) => !x.supplements.some((s) => s.id === r.id))) {
+        supplements.push({ id: r.id, name: r.name, ingredient: r.ingredient, dose: r.dose, paused: false, startDate: ymd(new Date()),
+          recommendedTiming: r.timing, ...balanceTiming(r.id, r.timing, supplements) })
+      }
+      return {
+        ...x,
+        profile: x.profile && { ...x.profile, currentSupplements: withTaking(x.profile.currentSupplements, recs.map((r) => ({ name: r.name } as Supplement))) },
+        supplements,
+      }
+    }),
     updateSupplement: (id, patch) => set((x) => ({ ...x, supplements: x.supplements.map((s) => (s.id === id ? { ...s, ...patch } : s)) })),
     removeSupplement: (id) => set((x) => {
       const name = x.supplements.find((m) => m.id === id)?.name
@@ -266,7 +268,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ...local,
     setProfile: (p) => { local.setProfile(p); setAccount((a) => a && { ...a, onboarded: true }); run(remote.saveProfile(p)) },
     addCheckup: (items, source, remoteId) => { if (remoteId != null) run(remote.confirm(remoteId, items)); else local.addCheckup(items, source) },
-    addSupplements: (recs) => run(Promise.all(recs.map((r) => remote.addSupplement(r.id)))),
+    // 서버가 앞서 넣은 것까지 세어 시간대를 나누므로 하나씩 차례로 넣는다.
+    addSupplements: (recs) => run(recs.reduce<Promise<unknown>>((p, r) => p.then(() => remote.addSupplement(r.id)), Promise.resolve())),
     updateSupplement: (id, patch) => { local.updateSupplement(id, patch); run(remote.patchSupplement(id, patch)) },
     removeSupplement: (id) => { local.removeSupplement(id); run(remote.removeSupplement(id)) },
     // 체크는 화면에 바로 반영하고 저장 요청만 보낸다(전체 다시 불러오기 없음). 실패하면 되돌린다.
