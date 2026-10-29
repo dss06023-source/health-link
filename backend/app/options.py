@@ -10,6 +10,8 @@ OPTIONS = ref.PROFILE_OPTIONS
 RULE_CLASSES = {r["drugClass"] for r in ref.INTERACTIONS} | {
     t.partition(":")[2] for r in ref.SPACING_RULES for t in (r["a"], r["b"]) if t.startswith("drug:")
 }
+RULE_SUPPLEMENTS = set(ref.SUPPLEMENTS) | {r["supplement"] for r in ref.INTERACTIONS}
+RULE_CONDITIONS = {c for r in ref.DIAGNOSIS_CAUTIONS for c in r["conditions"]}
 LIFESTYLE = {f["key"]: f for f in OPTIONS["lifestyle"]}
 CONDITIONS = {o["value"] for o in OPTIONS["conditions"]}
 ALLERGIES = {o["value"] for o in OPTIONS["allergies"]}
@@ -24,9 +26,9 @@ def catalog():
             {**g, "items": [{**i, "rules": i["drugClass"] in RULE_CLASSES} for i in g["items"]]}
             for g in OPTIONS["medicationGroups"]
         ],
-        "supplements": [{**s, "rules": s["id"] in ref.SUPPLEMENTS} for s in OPTIONS["supplements"]],
+        "supplements": [{**s, "rules": s["id"] in RULE_SUPPLEMENTS} for s in OPTIONS["supplements"]],
         "lifestyle": OPTIONS["lifestyle"],
-        "conditions": [{**c, "rules": False} for c in OPTIONS["conditions"]],
+        "conditions": [{**c, "rules": c["value"] in RULE_CONDITIONS} for c in OPTIONS["conditions"]],
         "allergies": OPTIONS["allergies"],
         "conditionNote": OPTIONS["conditionNote"],
         "customAllowed": ["medications", "allergies"],

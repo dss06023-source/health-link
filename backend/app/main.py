@@ -348,10 +348,12 @@ def check_supplements():
         user = load_user(conn)
         active = active_supplements(conn, include_paused=False)
     ids = [s["supplementId"] for s in active]
+    # 입력 화면에서 '먹고 있다'고 고른 영양제(규칙표 밖의 칼슘·비타민K 등 포함)도 약과의 상호작용을 본다.
+    taking = ids + [c for c in user.get("currentSupplements", []) if c not in ids]
     meds = user.get("medications", [])
     classes = logic.medication_classes(meds)
     interactions = [
-        dict(w, supplementId=cid) for cid in ids for w in logic.interaction_warnings(cid, classes, meds)
+        dict(w, supplementId=cid) for cid in taking for w in logic.interaction_warnings(cid, classes, meds)
     ]
     duplicates = logic.ingredient_overlaps(ids)
     return {

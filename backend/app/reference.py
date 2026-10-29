@@ -109,6 +109,8 @@ LIFESTYLE_RULES = _rules["lifestyle"]
 # level: avoid(추천 제외) / caution(추천하되 경고)
 INTERACTIONS = _rules["interactions"]
 CONDITION_CAUTIONS = _rules["conditionCautions"]
+# 사용자가 고른 진단받은 질환(user.conditions)에 따른 주의
+DIAGNOSIS_CAUTIONS = _rules["diagnosisCautions"]
 LIFE_STAGE_LABELS = _rules["lifeStage"]["labels"]
 NOT_TOGETHER = _rules["notTogether"]
 SPACING_RULES = _rules["spacing"]
