@@ -25,7 +25,7 @@
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
-| POST | `/api/checkups/upload` | multipart `file`(PDF 또는 이미지). 결과지에서 수치를 읽어 `status: "pending_review"` 검진을 만들고 `ocr{engine, fields[{code, name, value, unit, confidence, needsReview}], missing[{code, name, unit}], message}` 를 돌려줌. `engine`: `pdf-text`(글자 있는 PDF를 바로 읽음), `ocr`(사진·스캔 PDF를 무료 OCR로 읽음), `mock`(서버에 OCR 모델이 없어 견본 값). 인식 점수가 낮거나 값이 사람 범위를 벗어나거나 항목 이름을 추정한 경우 `needsReview: true`. 수치를 하나도 못 찾으면 422 |
+| POST | `/api/checkups/upload` | multipart `file`(PDF 또는 이미지) 또는 `files`(여러 개, 최대 4개 — 넘으면 422). 여러 장이면 장마다 읽어 합치고, 같은 항목은 더 확실하게 읽은 값을 씀. `ocr.files`에 장 수. 결과지에서 수치를 읽어 `status: "pending_review"` 검진을 만들고 `ocr{engine, fields[{code, name, value, unit, confidence, needsReview}], missing[{code, name, unit}], message}` 를 돌려줌. `engine`: `pdf-text`(글자 있는 PDF를 바로 읽음), `ocr`(사진·스캔 PDF를 무료 OCR로 읽음), `mock`(서버에 OCR 모델이 없어 견본 값). 인식 점수가 낮거나 값이 사람 범위를 벗어나거나 항목 이름을 추정한 경우 `needsReview: true`. 수치를 하나도 못 찾으면 422 |
 | PATCH | `/api/checkups/{id}` | 사용자가 확인·수정. `{values?: {code: number}, date?: "YYYY-MM-DD", confirm: true}` → 해석 상세(아래 3번 형식) 반환 |
 | DELETE | `/api/checkups/{id}` | 잘못 올린 결과 삭제 |
 | GET | `/api/checkups` | 검진 목록(최신순) `[{id, date, source(pdf/photo), status, fileName, summary}]` |

@@ -108,3 +108,26 @@ def test_blood_pressure_with_scattered_digits():
     items += [(188, 157, 10, "/", 1.0, 193), (200, 157, 10, "8", 1.0, 205), (206, 157, 10, "2", 1.0, 211),
               (223, 157, 10, "mmHg", 1.0, 243)]
     assert values(ocr.parse_items(items)) == {"sbp": 126, "dbp": 82}
+
+
+def test_upload_several_pages_merges_values(client, monkeypatch):
+    # 장마다 다른 항목이 나오고, 같은 항목은 더 확실하게 읽은 값을 쓴다.
+    pages = iter([({"tc": (205.0, 0.95), "hdl": (40.0, 0.5)}, "ocr"), ({"hdl": (47.0, 0.99), "egfr": (92.0, 0.97)}, "ocr")])
+    monkeypatch.setattr(ocr, "read", lambda data, is_pdf: next(pages))
+    pic = (FIXTURES / "sample_sheet.png").read_bytes()
+    r = client.post("/api/checkups/upload", files=[("files", ("1.png", pic, "image/png")), ("files", ("2.png", pic, "image/png"))])
+    body = r.json()
+    assert body["values"] == {"tc": 205, "hdl": 47, "egfr": 92}
+    assert body["ocr"]["files"] == 2 and body["fileName"] == "1.png, 2.png"
+
+
+def test_upload_pdf_pages_together(client):
+    pdf = (FIXTURES / "sample_sheet.pdf").read_bytes()
+    r = client.post("/api/checkups/upload", files=[("files", ("1.pdf", pdf, "application/pdf")), ("files", ("2.pdf", pdf, "application/pdf"))])
+    assert r.json()["ocr"]["missing"] == [] and r.json()["ocr"]["engine"] == "pdf-text"
+
+
+def test_upload_at_most_four_files(client):
+    pdf = (FIXTURES / "sample_sheet.pdf").read_bytes()
+    r = client.post("/api/checkups/upload", files=[("files", (f"{i}.pdf", pdf, "application/pdf")) for i in range(5)])
+    assert r.status_code == 422 and "4장" in r.json()["detail"]

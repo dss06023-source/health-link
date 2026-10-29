@@ -169,8 +169,8 @@ export const remote = {
     (await call<{ id: number | string; name: string; address: string; distanceKm: number; bookingUrl: string; tags?: string[] }[]>('/api/checkup-centers'))
       .map((c) => ({ id: String(c.id), name: c.name, address: c.address, distanceKm: c.distanceKm, slots: [], tags: c.tags ?? [], bookingUrl: c.bookingUrl })),
   // 못 찾은 항목은 missing, 다시 볼 값은 needsReview로 온다. 수치를 하나도 못 찾으면 422(detail에 안내 문구).
-  upload: async (file: File): Promise<UploadResult> => {
-    const body = new FormData(); body.append('file', file)
+  upload: async (files: File[]): Promise<UploadResult> => {
+    const body = new FormData(); files.forEach((f) => body.append('files', f))
     const r = await call<{ id: number; ocr: { engine?: string; fields: (CheckupItem & { needsReview?: boolean })[]; missing?: CheckupItem[]; message?: string | null } }>('/api/checkups/upload', { method: 'POST', body })
     const item = (f: Pick<CheckupItem, 'code' | 'name' | 'unit'>, value: number) => ({ code: f.code.toUpperCase(), name: f.name, value, unit: f.unit })
     return {
