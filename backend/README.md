@@ -58,7 +58,10 @@ python -m pytest -q
 | `scripts/make_sample_sheet.py` | 시험용 가상 결과지 만들기 |
 | `app/features.py` | 추가 기능 API: 마이데이터 가상 연동, 복용 알림, 중간 검사 기록·리포트 |
 | `app/measure.py` | 가정 측정값을 검진 항목 코드로 바꾸는 도우미 |
+| `app/seed/peer_stats.json` | 성별·연령대별 국가검진 판정 비율(공단 공개자료, 또래 비교용, 아직 API 미사용) |
+| `app/seed/source/` | `peer_stats.json`의 원자료 CSV |
 | `app/db.py` | 저장소와 가상 데이터 |
 | `scripts/make_examples.py` | `docs/api-examples.json` 재생성 (`python -m scripts.make_examples ../docs/api-examples.json`) |
+| `scripts/make_peer_stats.py` | `app/seed/peer_stats.json` 재생성 (`python -m scripts.make_peer_stats app/seed/source/nhis_checkup_judgment_2022_2023.csv app/seed/peer_stats.json`) |
 
 API 규격은 [`../docs/api.md`](../docs/api.md) 를 보세요.

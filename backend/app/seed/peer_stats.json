@@ -1,0 +1,1229 @@
+{
+ "_about": "국가 일반건강검진 수검자 중 성별·연령대(5세)별 판정 비율(%). 공단이 건강검진 실시기준 별표 4로 판정한 결과를 직역(공교·지역·직장) 합산했다. 또래 비교 문구용이며 아직 API에서 쓰지 않는다.",
+ "_source": {
+  "name": "국민건강보험공단_직역별 성별 연령별 건강검진정보 (공공데이터포털 15144521, 2025-07-16 등록, 이용허락범위 제한 없음)",
+  "url": "https://www.data.go.kr/data/15144521/fileData.do",
+  "year": 2023,
+  "raw": "app/seed/source/nhis_checkup_judgment_2022_2023.csv (원본 CP949 → UTF-8)"
+ },
+ "_fields": {
+  "normalA": "모든 항목이 정상A인 사람",
+  "anyCaution": "정상B(경계) 항목이 하나 이상인 사람. 질환의심 항목이 함께 있을 수 있다",
+  "anySuspect": "일반질환의심(고혈압·당뇨 제외) 항목이 하나 이상인 사람",
+  "anyBpDmSuspect": "고혈압 또는 당뇨병 질환의심인 사람",
+  "anyTreated": "고혈압·당뇨병·이상지질혈증·폐결핵으로 이미 약물 치료 중인 사람(유질환자)",
+  "groups": "항목 그룹별 caution=정상B, danger=질환의심, treated=유질환자 비율. 그룹끼리 겹친다"
+ },
+ "_notes": [
+  "원자료는 사람 단위 판정 집계라 항목(TG, LDL 등)별 비율은 없다. 지질은 총콜레스테롤·LDL·HDL·중성지방 중 하나 이상이다.",
+  "지질 검사는 남 24세·여 40세부터 4년마다 한다. 분모에 그해 지질 검사를 받지 않은 수검자도 들어 있어 지질 비율은 실제 유병률보다 낮고, 연령대마다 검사 차례가 달라 연령대끼리 비교할 수 없다.",
+  "비만은 원자료에 질환의심 열이 없어 정상B(비만관리)만 있다.",
+  "신장기능 정상B는 이 앱에 없는 요단백(약양성) 판정에서 나온 것으로 보인다(추정)."
+ ],
+ "bands": {
+  "M": {
+   "19세이하": {
+    "examinees": 6827,
+    "normalA": 22.8,
+    "anyCaution": 70.9,
+    "anySuspect": 26.6,
+    "anyBpDmSuspect": 4.7,
+    "anyTreated": 0.9,
+    "groups": {
+     "혈압": {
+      "caution": 44.5,
+      "danger": 3.9,
+      "treated": 0.3
+     },
+     "혈당": {
+      "caution": 15.5,
+      "danger": 0.9,
+      "treated": 0.5
+     },
+     "지질": {
+      "caution": 0.1,
+      "danger": 0.0,
+      "treated": 0.0
+     },
+     "간기능": {
+      "caution": 5.4,
+      "danger": 10.4
+     },
+     "신장기능": {
+      "caution": 4.0,
+      "danger": 2.6
+     },
+     "빈혈": {
+      "caution": 1.2,
+      "danger": 0.3
+     },
+     "비만": {
+      "caution": 20.2
+     }
+    }
+   },
+   "20~24세": {
+    "examinees": 247786,
+    "normalA": 16.8,
+    "anyCaution": 76.9,
+    "anySuspect": 31.8,
+    "anyBpDmSuspect": 5.5,
+    "anyTreated": 1.1,
+    "groups": {
+     "혈압": {
+      "caution": 44.5,
+      "danger": 4.9,
+      "treated": 0.7
+     },
+     "혈당": {
+      "caution": 13.6,
+      "danger": 0.7,
+      "treated": 0.4
+     },
+     "지질": {
+      "caution": 21.4,
+      "danger": 7.2,
+      "treated": 0.1
+     },
+     "간기능": {
+      "caution": 7.0,
+      "danger": 14.5
+     },
+     "신장기능": {
+      "caution": 5.3,
+      "danger": 2.8
+     },
+     "빈혈": {
+      "caution": 0.7,
+      "danger": 0.2
+     },
+     "비만": {
+      "caution": 23.0
+     }
+    }
+   },
+   "25~29세": {
+    "examinees": 649532,
+    "normalA": 14.4,
+    "anyCaution": 78.7,
+    "anySuspect": 37.0,
+    "anyBpDmSuspect": 7.0,
+    "anyTreated": 1.4,
+    "groups": {
+     "혈압": {
+      "caution": 47.6,
+      "danger": 6.2,
+      "treated": 0.9
+     },
+     "혈당": {
+      "caution": 18.0,
+      "danger": 1.0,
+      "treated": 0.4
+     },
+     "지질": {
+      "caution": 16.2,
+      "danger": 7.6,
+      "treated": 0.3
+     },
+     "간기능": {
+      "caution": 8.6,
+      "danger": 18.4
+     },
+     "신장기능": {
+      "caution": 5.6,
+      "danger": 2.6
+     },
+     "빈혈": {
+      "caution": 0.8,
+      "danger": 0.2
+     },
+     "비만": {
+      "caution": 27.6
+     }
+    }
+   },
+   "30~34세": {
+    "examinees": 898634,
+    "normalA": 11.4,
+    "anyCaution": 80.5,
+    "anySuspect": 44.8,
+    "anyBpDmSuspect": 9.8,
+    "anyTreated": 3.3,
+    "groups": {
+     "혈압": {
+      "caution": 48.1,
+      "danger": 8.5,
+      "treated": 2.2
+     },
+     "혈당": {
+      "caution": 23.3,
+      "danger": 1.8,
+      "treated": 0.9
+     },
+     "지질": {
+      "caution": 12.4,
+      "danger": 8.3,
+      "treated": 0.8
+     },
+     "간기능": {
+      "caution": 10.3,
+      "danger": 23.3
+     },
+     "신장기능": {
+      "caution": 6.5,
+      "danger": 3.3
+     },
+     "빈혈": {
+      "caution": 0.8,
+      "danger": 0.2
+     },
+     "비만": {
+      "caution": 29.5
+     }
+    }
+   },
+   "35~39세": {
+    "examinees": 765119,
+    "normalA": 8.4,
+    "anyCaution": 82.4,
+    "anySuspect": 51.4,
+    "anyBpDmSuspect": 13.0,
+    "anyTreated": 8.0,
+    "groups": {
+     "혈압": {
+      "caution": 47.8,
+      "danger": 10.8,
+      "treated": 5.5
+     },
+     "혈당": {
+      "caution": 28.6,
+      "danger": 3.0,
+      "treated": 2.3
+     },
+     "지질": {
+      "caution": 12.4,
+      "danger": 10.7,
+      "treated": 2.2
+     },
+     "간기능": {
+      "caution": 11.6,
+      "danger": 27.0
+     },
+     "신장기능": {
+      "caution": 6.6,
+      "danger": 3.6
+     },
+     "빈혈": {
+      "caution": 1.0,
+      "danger": 0.3
+     },
+     "비만": {
+      "caution": 30.3
+     }
+    }
+   },
+   "40~44세": {
+    "examinees": 1140331,
+    "normalA": 5.4,
+    "anyCaution": 84.4,
+    "anySuspect": 57.6,
+    "anyBpDmSuspect": 15.1,
+    "anyTreated": 15.7,
+    "groups": {
+     "혈압": {
+      "caution": 44.3,
+      "danger": 12.0,
+      "treated": 11.1
+     },
+     "혈당": {
+      "caution": 31.3,
+      "danger": 4.1,
+      "treated": 4.5
+     },
+     "지질": {
+      "caution": 20.1,
+      "danger": 21.0,
+      "treated": 5.1
+     },
+     "간기능": {
+      "caution": 12.3,
+      "danger": 28.4
+     },
+     "신장기능": {
+      "caution": 6.8,
+      "danger": 4.6
+     },
+     "빈혈": {
+      "caution": 1.0,
+      "danger": 0.4
+     },
+     "비만": {
+      "caution": 29.9
+     }
+    }
+   },
+   "45~49세": {
+    "examinees": 898764,
+    "normalA": 5.8,
+    "anyCaution": 82.3,
+    "anySuspect": 53.5,
+    "anyBpDmSuspect": 15.8,
+    "anyTreated": 24.6,
+    "groups": {
+     "혈압": {
+      "caution": 40.4,
+      "danger": 11.7,
+      "treated": 17.8
+     },
+     "혈당": {
+      "caution": 34.0,
+      "danger": 5.2,
+      "treated": 7.5
+     },
+     "지질": {
+      "caution": 12.2,
+      "danger": 13.0,
+      "treated": 8.3
+     },
+     "간기능": {
+      "caution": 12.5,
+      "danger": 26.7
+     },
+     "신장기능": {
+      "caution": 6.0,
+      "danger": 5.0
+     },
+     "빈혈": {
+      "caution": 1.3,
+      "danger": 0.5
+     },
+     "비만": {
+      "caution": 30.3
+     }
+    }
+   },
+   "50~54세": {
+    "examinees": 1137151,
+    "normalA": 5.1,
+    "anyCaution": 81.2,
+    "anySuspect": 51.6,
+    "anyBpDmSuspect": 15.9,
+    "anyTreated": 32.8,
+    "groups": {
+     "혈압": {
+      "caution": 36.9,
+      "danger": 11.1,
+      "treated": 24.2
+     },
+     "혈당": {
+      "caution": 34.6,
+      "danger": 5.9,
+      "treated": 10.7
+     },
+     "지질": {
+      "caution": 10.6,
+      "danger": 10.4,
+      "treated": 11.2
+     },
+     "간기능": {
+      "caution": 12.4,
+      "danger": 24.5
+     },
+     "신장기능": {
+      "caution": 5.9,
+      "danger": 5.6
+     },
+     "빈혈": {
+      "caution": 1.5,
+      "danger": 0.6
+     },
+     "비만": {
+      "caution": 29.6
+     }
+    }
+   },
+   "55~59세": {
+    "examinees": 857040,
+    "normalA": 4.0,
+    "anyCaution": 80.5,
+    "anySuspect": 50.9,
+    "anyBpDmSuspect": 15.7,
+    "anyTreated": 40.7,
+    "groups": {
+     "혈압": {
+      "caution": 34.3,
+      "danger": 10.2,
+      "treated": 30.5
+     },
+     "혈당": {
+      "caution": 34.8,
+      "danger": 6.6,
+      "treated": 14.2
+     },
+     "지질": {
+      "caution": 12.4,
+      "danger": 10.6,
+      "treated": 13.1
+     },
+     "간기능": {
+      "caution": 12.0,
+      "danger": 21.2
+     },
+     "신장기능": {
+      "caution": 5.2,
+      "danger": 6.0
+     },
+     "빈혈": {
+      "caution": 2.1,
+      "danger": 0.8
+     },
+     "비만": {
+      "caution": 28.0
+     }
+    }
+   },
+   "60~64세": {
+    "examinees": 942051,
+    "normalA": 2.5,
+    "anyCaution": 80.6,
+    "anySuspect": 54.8,
+    "anyBpDmSuspect": 14.8,
+    "anyTreated": 49.5,
+    "groups": {
+     "혈압": {
+      "caution": 30.8,
+      "danger": 9.3,
+      "treated": 37.8
+     },
+     "혈당": {
+      "caution": 32.9,
+      "danger": 6.4,
+      "treated": 18.2
+     },
+     "지질": {
+      "caution": 20.3,
+      "danger": 14.6,
+      "treated": 16.7
+     },
+     "간기능": {
+      "caution": 11.9,
+      "danger": 19.2
+     },
+     "신장기능": {
+      "caution": 4.9,
+      "danger": 7.7
+     },
+     "빈혈": {
+      "caution": 2.9,
+      "danger": 1.3
+     },
+     "비만": {
+      "caution": 25.8
+     }
+    }
+   },
+   "65~69세": {
+    "examinees": 615495,
+    "normalA": 2.3,
+    "anyCaution": 78.7,
+    "anySuspect": 55.7,
+    "anyBpDmSuspect": 13.7,
+    "anyTreated": 56.9,
+    "groups": {
+     "혈압": {
+      "caution": 27.5,
+      "danger": 8.7,
+      "treated": 44.5
+     },
+     "혈당": {
+      "caution": 31.0,
+      "danger": 5.9,
+      "treated": 21.9
+     },
+     "지질": {
+      "caution": 13.9,
+      "danger": 8.4,
+      "treated": 19.1
+     },
+     "간기능": {
+      "caution": 11.3,
+      "danger": 16.7
+     },
+     "신장기능": {
+      "caution": 4.8,
+      "danger": 9.3
+     },
+     "빈혈": {
+      "caution": 4.3,
+      "danger": 2.1
+     },
+     "비만": {
+      "caution": 24.6
+     }
+    }
+   },
+   "70~74세": {
+    "examinees": 454369,
+    "normalA": 1.7,
+    "anyCaution": 77.0,
+    "anySuspect": 60.0,
+    "anyBpDmSuspect": 12.9,
+    "anyTreated": 63.1,
+    "groups": {
+     "혈압": {
+      "caution": 24.4,
+      "danger": 8.4,
+      "treated": 50.5
+     },
+     "혈당": {
+      "caution": 29.1,
+      "danger": 5.2,
+      "treated": 25.4
+     },
+     "지질": {
+      "caution": 10.2,
+      "danger": 5.5,
+      "treated": 21.0
+     },
+     "간기능": {
+      "caution": 10.6,
+      "danger": 14.1
+     },
+     "신장기능": {
+      "caution": 5.2,
+      "danger": 12.6
+     },
+     "빈혈": {
+      "caution": 6.6,
+      "danger": 3.9
+     },
+     "비만": {
+      "caution": 22.8
+     }
+    }
+   },
+   "75~79세": {
+    "examinees": 215725,
+    "normalA": 1.1,
+    "anyCaution": 78.3,
+    "anySuspect": 66.8,
+    "anyBpDmSuspect": 13.0,
+    "anyTreated": 66.1,
+    "groups": {
+     "혈압": {
+      "caution": 21.9,
+      "danger": 8.8,
+      "treated": 54.6
+     },
+     "혈당": {
+      "caution": 28.5,
+      "danger": 4.8,
+      "treated": 26.1
+     },
+     "지질": {
+      "caution": 19.2,
+      "danger": 9.5,
+      "treated": 21.3
+     },
+     "간기능": {
+      "caution": 9.4,
+      "danger": 11.4
+     },
+     "신장기능": {
+      "caution": 5.4,
+      "danger": 15.9
+     },
+     "빈혈": {
+      "caution": 9.8,
+      "danger": 6.6
+     },
+     "비만": {
+      "caution": 21.0
+     }
+    }
+   },
+   "80~84세": {
+    "examinees": 154116,
+    "normalA": 0.7,
+    "anyCaution": 80.4,
+    "anySuspect": 74.1,
+    "anyBpDmSuspect": 13.6,
+    "anyTreated": 66.6,
+    "groups": {
+     "혈압": {
+      "caution": 20.1,
+      "danger": 9.5,
+      "treated": 56.3
+     },
+     "혈당": {
+      "caution": 28.5,
+      "danger": 4.8,
+      "treated": 25.1
+     },
+     "지질": {
+      "caution": 23.5,
+      "danger": 10.9,
+      "treated": 19.0
+     },
+     "간기능": {
+      "caution": 7.9,
+      "danger": 9.5
+     },
+     "신장기능": {
+      "caution": 5.6,
+      "danger": 20.3
+     },
+     "빈혈": {
+      "caution": 13.6,
+      "danger": 11.5
+     },
+     "비만": {
+      "caution": 18.4
+     }
+    }
+   },
+   "85세이상": {
+    "examinees": 40860,
+    "normalA": 0.7,
+    "anyCaution": 78.4,
+    "anySuspect": 78.9,
+    "anyBpDmSuspect": 14.5,
+    "anyTreated": 65.4,
+    "groups": {
+     "혈압": {
+      "caution": 17.7,
+      "danger": 9.7,
+      "treated": 57.6
+     },
+     "혈당": {
+      "caution": 28.4,
+      "danger": 5.4,
+      "treated": 21.0
+     },
+     "지질": {
+      "caution": 14.0,
+      "danger": 6.3,
+      "treated": 15.0
+     },
+     "간기능": {
+      "caution": 6.4,
+      "danger": 7.1
+     },
+     "신장기능": {
+      "caution": 5.1,
+      "danger": 26.1
+     },
+     "빈혈": {
+      "caution": 17.6,
+      "danger": 20.6
+     },
+     "비만": {
+      "caution": 14.5
+     }
+    }
+   }
+  },
+  "F": {
+   "19세이하": {
+    "examinees": 3828,
+    "normalA": 32.5,
+    "anyCaution": 61.0,
+    "anySuspect": 19.1,
+    "anyBpDmSuspect": 2.5,
+    "anyTreated": 0.3,
+    "groups": {
+     "혈압": {
+      "caution": 23.7,
+      "danger": 1.5,
+      "treated": 0.0
+     },
+     "혈당": {
+      "caution": 11.7,
+      "danger": 1.1,
+      "treated": 0.3
+     },
+     "지질": {
+      "caution": 0.0,
+      "danger": 0.0,
+      "treated": 0.1
+     },
+     "간기능": {
+      "caution": 2.1,
+      "danger": 4.0
+     },
+     "신장기능": {
+      "caution": 5.8,
+      "danger": 5.3
+     },
+     "빈혈": {
+      "caution": 10.3,
+      "danger": 1.2
+     },
+     "비만": {
+      "caution": 15.9
+     }
+    }
+   },
+   "20~24세": {
+    "examinees": 341213,
+    "normalA": 36.0,
+    "anyCaution": 57.7,
+    "anySuspect": 16.8,
+    "anyBpDmSuspect": 2.0,
+    "anyTreated": 0.5,
+    "groups": {
+     "혈압": {
+      "caution": 23.0,
+      "danger": 1.6,
+      "treated": 0.1
+     },
+     "혈당": {
+      "caution": 8.3,
+      "danger": 0.5,
+      "treated": 0.3
+     },
+     "지질": {
+      "caution": 0.1,
+      "danger": 0.0,
+      "treated": 0.1
+     },
+     "간기능": {
+      "caution": 2.5,
+      "danger": 4.1
+     },
+     "신장기능": {
+      "caution": 6.4,
+      "danger": 4.7
+     },
+     "빈혈": {
+      "caution": 8.3,
+      "danger": 1.0
+     },
+     "비만": {
+      "caution": 11.8
+     }
+    }
+   },
+   "25~29세": {
+    "examinees": 599207,
+    "normalA": 37.5,
+    "anyCaution": 56.1,
+    "anySuspect": 17.1,
+    "anyBpDmSuspect": 2.5,
+    "anyTreated": 0.8,
+    "groups": {
+     "혈압": {
+      "caution": 23.6,
+      "danger": 2.0,
+      "treated": 0.3
+     },
+     "혈당": {
+      "caution": 9.7,
+      "danger": 0.6,
+      "treated": 0.4
+     },
+     "지질": {
+      "caution": 0.2,
+      "danger": 0.1,
+      "treated": 0.2
+     },
+     "간기능": {
+      "caution": 3.0,
+      "danger": 5.0
+     },
+     "신장기능": {
+      "caution": 6.8,
+      "danger": 3.9
+     },
+     "빈혈": {
+      "caution": 7.1,
+      "danger": 0.8
+     },
+     "비만": {
+      "caution": 11.4
+     }
+    }
+   },
+   "30~34세": {
+    "examinees": 704236,
+    "normalA": 34.9,
+    "anyCaution": 57.9,
+    "anySuspect": 19.7,
+    "anyBpDmSuspect": 3.5,
+    "anyTreated": 1.5,
+    "groups": {
+     "혈압": {
+      "caution": 24.6,
+      "danger": 2.8,
+      "treated": 0.7
+     },
+     "혈당": {
+      "caution": 11.9,
+      "danger": 0.8,
+      "treated": 0.7
+     },
+     "지질": {
+      "caution": 0.3,
+      "danger": 0.1,
+      "treated": 0.4
+     },
+     "간기능": {
+      "caution": 3.7,
+      "danger": 6.2
+     },
+     "신장기능": {
+      "caution": 7.0,
+      "danger": 3.6
+     },
+     "빈혈": {
+      "caution": 8.1,
+      "danger": 1.1
+     },
+     "비만": {
+      "caution": 12.5
+     }
+    }
+   },
+   "35~39세": {
+    "examinees": 525030,
+    "normalA": 30.2,
+    "anyCaution": 61.4,
+    "anySuspect": 23.4,
+    "anyBpDmSuspect": 5.0,
+    "anyTreated": 3.1,
+    "groups": {
+     "혈압": {
+      "caution": 26.9,
+      "danger": 4.1,
+      "treated": 1.7
+     },
+     "혈당": {
+      "caution": 15.0,
+      "danger": 1.2,
+      "treated": 1.2
+     },
+     "지질": {
+      "caution": 0.3,
+      "danger": 0.1,
+      "treated": 0.8
+     },
+     "간기능": {
+      "caution": 4.3,
+      "danger": 7.4
+     },
+     "신장기능": {
+      "caution": 6.7,
+      "danger": 3.5
+     },
+     "빈혈": {
+      "caution": 10.5,
+      "danger": 2.2
+     },
+     "비만": {
+      "caution": 13.9
+     }
+    }
+   },
+   "40~44세": {
+    "examinees": 924009,
+    "normalA": 16.9,
+    "anyCaution": 73.9,
+    "anySuspect": 32.5,
+    "anyBpDmSuspect": 6.5,
+    "anyTreated": 6.2,
+    "groups": {
+     "혈압": {
+      "caution": 29.8,
+      "danger": 5.3,
+      "treated": 3.8
+     },
+     "혈당": {
+      "caution": 17.6,
+      "danger": 1.6,
+      "treated": 1.9
+     },
+     "지질": {
+      "caution": 25.9,
+      "danger": 10.4,
+      "treated": 2.0
+     },
+     "간기능": {
+      "caution": 5.0,
+      "danger": 8.5
+     },
+     "신장기능": {
+      "caution": 6.3,
+      "danger": 3.7
+     },
+     "빈혈": {
+      "caution": 12.2,
+      "danger": 3.6
+     },
+     "비만": {
+      "caution": 14.5
+     }
+    }
+   },
+   "45~49세": {
+    "examinees": 736271,
+    "normalA": 15.9,
+    "anyCaution": 72.9,
+    "anySuspect": 33.6,
+    "anyBpDmSuspect": 8.2,
+    "anyTreated": 11.8,
+    "groups": {
+     "혈압": {
+      "caution": 32.0,
+      "danger": 6.5,
+      "treated": 7.8
+     },
+     "혈당": {
+      "caution": 20.5,
+      "danger": 2.1,
+      "treated": 3.0
+     },
+     "지질": {
+      "caution": 17.2,
+      "danger": 9.1,
+      "treated": 4.2
+     },
+     "간기능": {
+      "caution": 5.6,
+      "danger": 9.3
+     },
+     "신장기능": {
+      "caution": 5.2,
+      "danger": 3.9
+     },
+     "빈혈": {
+      "caution": 12.4,
+      "danger": 4.2
+     },
+     "비만": {
+      "caution": 16.0
+     }
+    }
+   },
+   "50~54세": {
+    "examinees": 1086550,
+    "normalA": 11.1,
+    "anyCaution": 75.4,
+    "anySuspect": 38.2,
+    "anyBpDmSuspect": 9.5,
+    "anyTreated": 20.8,
+    "groups": {
+     "혈압": {
+      "caution": 33.0,
+      "danger": 7.4,
+      "treated": 13.6
+     },
+     "혈당": {
+      "caution": 23.9,
+      "danger": 2.5,
+      "treated": 4.8
+     },
+     "지질": {
+      "caution": 11.9,
+      "danger": 9.0,
+      "treated": 9.1
+     },
+     "간기능": {
+      "caution": 7.6,
+      "danger": 12.3
+     },
+     "신장기능": {
+      "caution": 4.2,
+      "danger": 3.6
+     },
+     "빈혈": {
+      "caution": 7.2,
+      "danger": 1.8
+     },
+     "비만": {
+      "caution": 17.0
+     }
+    }
+   },
+   "55~59세": {
+    "examinees": 864559,
+    "normalA": 8.8,
+    "anyCaution": 74.2,
+    "anySuspect": 40.0,
+    "anyBpDmSuspect": 10.0,
+    "anyTreated": 33.3,
+    "groups": {
+     "혈압": {
+      "caution": 32.4,
+      "danger": 7.3,
+      "treated": 21.2
+     },
+     "혈당": {
+      "caution": 27.8,
+      "danger": 3.1,
+      "treated": 8.0
+     },
+     "지질": {
+      "caution": 12.6,
+      "danger": 10.9,
+      "treated": 16.7
+     },
+     "간기능": {
+      "caution": 9.2,
+      "danger": 13.2
+     },
+     "신장기능": {
+      "caution": 3.6,
+      "danger": 3.5
+     },
+     "빈혈": {
+      "caution": 4.6,
+      "danger": 0.3
+     },
+     "비만": {
+      "caution": 19.0
+     }
+    }
+   },
+   "60~64세": {
+    "examinees": 1015074,
+    "normalA": 4.7,
+    "anyCaution": 76.7,
+    "anySuspect": 46.3,
+    "anyBpDmSuspect": 10.7,
+    "anyTreated": 45.3,
+    "groups": {
+     "혈압": {
+      "caution": 31.2,
+      "danger": 7.8,
+      "treated": 29.2
+     },
+     "혈당": {
+      "caution": 28.3,
+      "danger": 3.2,
+      "treated": 11.4
+     },
+     "지질": {
+      "caution": 18.1,
+      "danger": 14.0,
+      "treated": 25.0
+     },
+     "간기능": {
+      "caution": 9.8,
+      "danger": 12.5
+     },
+     "신장기능": {
+      "caution": 3.9,
+      "danger": 4.8
+     },
+     "빈혈": {
+      "caution": 5.4,
+      "danger": 0.3
+     },
+     "비만": {
+      "caution": 20.0
+     }
+    }
+   },
+   "65~69세": {
+    "examinees": 653481,
+    "normalA": 1.9,
+    "anyCaution": 80.7,
+    "anySuspect": 57.3,
+    "anyBpDmSuspect": 11.0,
+    "anyTreated": 56.4,
+    "groups": {
+     "혈압": {
+      "caution": 28.4,
+      "danger": 8.2,
+      "treated": 39.2
+     },
+     "혈당": {
+      "caution": 27.7,
+      "danger": 3.2,
+      "treated": 15.2
+     },
+     "지질": {
+      "caution": 12.5,
+      "danger": 8.2,
+      "treated": 31.1
+     },
+     "간기능": {
+      "caution": 9.7,
+      "danger": 11.6
+     },
+     "신장기능": {
+      "caution": 4.6,
+      "danger": 6.3
+     },
+     "빈혈": {
+      "caution": 7.4,
+      "danger": 0.5
+     },
+     "비만": {
+      "caution": 21.6
+     }
+    }
+   },
+   "70~74세": {
+    "examinees": 501289,
+    "normalA": 1.9,
+    "anyCaution": 76.2,
+    "anySuspect": 56.2,
+    "anyBpDmSuspect": 11.3,
+    "anyTreated": 67.5,
+    "groups": {
+     "혈압": {
+      "caution": 23.4,
+      "danger": 8.3,
+      "treated": 51.7
+     },
+     "혈당": {
+      "caution": 27.4,
+      "danger": 3.4,
+      "treated": 20.7
+     },
+     "지질": {
+      "caution": 8.5,
+      "danger": 4.7,
+      "treated": 35.4
+     },
+     "간기능": {
+      "caution": 9.5,
+      "danger": 10.9
+     },
+     "신장기능": {
+      "caution": 5.2,
+      "danger": 8.8
+     },
+     "빈혈": {
+      "caution": 10.5,
+      "danger": 0.9
+     },
+     "비만": {
+      "caution": 22.7
+     }
+    }
+   },
+   "75~79세": {
+    "examinees": 240493,
+    "normalA": 0.8,
+    "anyCaution": 77.7,
+    "anySuspect": 64.5,
+    "anyBpDmSuspect": 11.5,
+    "anyTreated": 73.7,
+    "groups": {
+     "혈압": {
+      "caution": 18.6,
+      "danger": 8.3,
+      "treated": 61.0
+     },
+     "혈당": {
+      "caution": 26.8,
+      "danger": 3.6,
+      "treated": 23.8
+     },
+     "지질": {
+      "caution": 16.2,
+      "danger": 8.1,
+      "treated": 35.9
+     },
+     "간기능": {
+      "caution": 8.6,
+      "danger": 9.7
+     },
+     "신장기능": {
+      "caution": 5.7,
+      "danger": 12.1
+     },
+     "빈혈": {
+      "caution": 15.1,
+      "danger": 1.7
+     },
+     "비만": {
+      "caution": 22.7
+     }
+    }
+   },
+   "80~84세": {
+    "examinees": 184312,
+    "normalA": 0.5,
+    "anyCaution": 80.6,
+    "anySuspect": 73.2,
+    "anyBpDmSuspect": 11.6,
+    "anyTreated": 77.0,
+    "groups": {
+     "혈압": {
+      "caution": 14.6,
+      "danger": 7.9,
+      "treated": 67.2
+     },
+     "혈당": {
+      "caution": 26.3,
+      "danger": 4.1,
+      "treated": 25.1
+     },
+     "지질": {
+      "caution": 19.9,
+      "danger": 9.7,
+      "treated": 32.2
+     },
+     "간기능": {
+      "caution": 7.4,
+      "danger": 8.5
+     },
+     "신장기능": {
+      "caution": 6.0,
+      "danger": 17.6
+     },
+     "빈혈": {
+      "caution": 21.5,
+      "danger": 3.2
+     },
+     "비만": {
+      "caution": 21.4
+     }
+    }
+   },
+   "85세이상": {
+    "examinees": 58892,
+    "normalA": 0.5,
+    "anyCaution": 80.9,
+    "anySuspect": 77.2,
+    "anyBpDmSuspect": 12.8,
+    "anyTreated": 75.5,
+    "groups": {
+     "혈압": {
+      "caution": 11.5,
+      "danger": 7.1,
+      "treated": 69.3
+     },
+     "혈당": {
+      "caution": 25.1,
+      "danger": 6.1,
+      "treated": 21.1
+     },
+     "지질": {
+      "caution": 13.9,
+      "danger": 7.6,
+      "treated": 22.1
+     },
+     "간기능": {
+      "caution": 5.8,
+      "danger": 7.1
+     },
+     "신장기능": {
+      "caution": 4.9,
+      "danger": 24.1
+     },
+     "빈혈": {
+      "caution": 30.1,
+      "danger": 7.9
+     },
+     "비만": {
+      "caution": 16.3
+     }
+    }
+   }
+  }
+ }
+}

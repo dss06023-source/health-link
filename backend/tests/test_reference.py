@@ -84,6 +84,19 @@ def test_pregnancy_excludes_red_yeast_rice():
     assert "plant_sterol" in {x["supplementId"] for x in r["recommendations"]}
 
 
+def test_pregnancy_excludes_banaba_and_milk_thistle():
+    # 고시 3. 2-12, 2-14: 어린이·임산부·수유부는 섭취를 피할 것
+    user = dict(USER, lifestyle={"pregnant": True})
+    r = logic.recommend(user, {"fbs": 110, "alt": 50}, [])
+    assert {"banaba", "milk_thistle"} <= {e["supplementId"] for e in r["excluded"]}
+
+
+def test_liver_values_exclude_red_yeast_rice():
+    # 고시 3. 2-52: 간 질환이 있으면 섭취를 피할 것
+    r = logic.recommend(USER, {"ldl": 150, "alt": 50}, [])
+    assert "red_yeast_rice" in {e["supplementId"] for e in r["excluded"]}
+
+
 def test_liver_caution_ingredients_are_not_recommended_together():
     r = logic.recommend(USER, {"bmi": 27}, [])
     ids = {x["supplementId"] for x in r["recommendations"]}

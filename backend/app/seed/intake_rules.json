@@ -91,7 +91,8 @@
   "conditionCautions": [
     {"supplement": "garcinia", "items": ["alt", "ast"], "level": "avoid", "message": "간 수치가 기준치 밖일 때는 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."},
     {"supplement": "green_tea", "items": ["alt", "ast"], "level": "avoid", "message": "간 수치가 기준치 밖일 때는 녹차추출물 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."},
-    {"supplement": "red_yeast_rice", "items": ["alt", "ast", "creatinine", "egfr"], "level": "caution", "message": "간·콩팥 수치가 기준치 밖이면 홍국 섭취 전 의사 상담이 필요합니다."},
+    {"supplement": "red_yeast_rice", "items": ["alt", "ast"], "level": "avoid", "message": "홍국은 간 질환이 있으면 섭취를 피해야 하는 원료입니다. 간 수치가 기준치 밖이라 추천에서 뺐습니다."},
+    {"supplement": "red_yeast_rice", "items": ["creatinine", "egfr"], "level": "caution", "message": "콩팥 수치가 기준치 밖이면 홍국 섭취 전 의사 상담이 필요합니다."},
     {"supplement": "garcinia", "items": ["creatinine", "egfr"], "level": "avoid", "message": "콩팥 수치가 기준치 밖일 때는 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."}
   ],
   "lifeStage": {
@@ -99,10 +100,10 @@
     "labels": {"pregnant": "임신 중", "breastfeeding": "수유 중", "child": "어린이"}
   },
   "notTogether": [
-    {"supplements": ["garcinia", "green_tea"], "message": "간 관련 주의사항이 있는 원료끼리는 함께 먹지 않도록 한 가지만 추천합니다.", "basis": "식약처 2026년 「건강기능식품의 기준 및 규격」 개정 행정예고: 간 질환 관련 주의사항이 있는 기능성 원료 간 혼합 금지"}
+    {"supplements": ["garcinia", "green_tea"], "message": "둘 다 체지방 감소 원료이고 간 관련 주의사항이 있어 한 가지만 추천합니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 3. 2-25 가르시니아캄보지아 추출물 섭취 시 주의사항(시행 2027-01-01): 체지방 감소 기능성의 건강기능식품과 함께 섭취를 피할 것. 녹차추출물(3. 2-6)은 체지방 감소 기능성이 있다."}
   ],
   "upperLimits": {
-    "_about": "성인 하루 섭취 상한(음식 포함). 2020 한국인 영양소 섭취기준(보건복지부·한국영양학회). 1차 원문 대조 전.",
+    "_about": "성인 하루 섭취 상한(음식 포함). 2020 한국인 영양소 섭취기준(보건복지부·한국영양학회). 1차 원문 대조 전(건강기능식품 고시 [별표 3]에는 권장·충분섭취량만 있고 상한섭취량은 없다).",
     "values": {
       "비타민D": {"amount": 100, "unit": "μg"},
       "철": {"amount": 45, "unit": "mg"},
