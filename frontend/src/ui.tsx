@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useId, type ReactNode } from 'react'
 import type { Status, Warning } from './types'
 import { STATUS_LABEL } from './data/rules'
 
@@ -24,16 +24,42 @@ export function Icon({ name, color = 'currentColor', size = 20 }: { name: IconNa
   )
 }
 
-// 이름 옆 표시: 두 점(검진 결과와 영양제)을 잇는 초록 선.
+// 앱 아이콘(시안 4-T): 순환 화살표(검진 주기) · ㅅ(잇는 선) · 캡슐(영양제)로 "잇"을 그린다.
+// ink는 고리와 캡슐, link는 ㅅ 색. 아이콘은 초록 바탕, 이름 속 "잇"은 바탕 없이 쓴다.
+function ItShapes({ ink, link }: { ink: string; link: string }) {
+  return (
+    <g transform="translate(-4 30)">
+      <path d="M78.4 198.5A72 72 0 1 1 96.5 254.2" fill="none" stroke={ink} strokeWidth="32" strokeLinecap="round" />
+      <path d="M71.2 276.9L78.7 216L121.8 231.4Z" fill={ink} stroke={ink} strokeWidth="8" strokeLinejoin="round" />
+      <path d="M356 237V350a32 32 0 0 0 64 0V237z" fill={ink} />
+      <rect x="356" y="92" width="64" height="290" rx="32" fill="none" stroke={ink} strokeWidth="22" />
+      <path d="M187.8 301.9L313 225.9L335.1 370.6" fill="none" stroke={link} strokeWidth="30" strokeLinecap="round" strokeLinejoin="round" />
+    </g>
+  )
+}
+
+export function AppIcon({ size = 32 }: { size?: number }) {
+  const id = useId()
+  return (
+    <svg className="app-icon" width={size} height={size} viewBox="0 0 512 512" aria-hidden="true">
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#25875a" /><stop offset="1" stopColor="#18693f" /></linearGradient>
+      </defs>
+      <path d="M256 8C440 8 504 72 504 256S440 504 256 504 8 440 8 256 72 8 256 8Z" fill={`url(#${id})`} />
+      <ItShapes ink="#ffffff" link="#a8f5c4" />
+    </svg>
+  )
+}
+
 export function Wordmark() {
   return (
-    <span className="wordmark">
-      <svg viewBox="0 0 42 16" aria-hidden="true">
-        <circle cx="6" cy="8" r="5" fill="none" stroke="var(--fg)" strokeWidth="2" />
-        <path d="M11 8h20" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" />
-        <circle cx="36" cy="8" r="5" fill="var(--accent)" />
-      </svg>
-      건강잇다
+    <span className="wordmark" role="img" aria-label="건강잇다">
+      <AppIcon />
+      <span className="wm-text" aria-hidden="true">
+        건강
+        <svg className="wm-it" viewBox="48 104 390 328"><ItShapes ink="currentColor" link="var(--accent)" /></svg>
+        다
+      </span>
     </span>
   )
 }
