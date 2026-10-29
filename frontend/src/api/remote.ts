@@ -2,6 +2,7 @@ import type {
   Checkup, CheckupCenter, CheckupItem, IntakeLog, Measurement, MydataResult, MydataState, Recommendation, ReminderTimes,
   Supplement, Timing, UserProfile, Warning,
 } from '../types'
+import type { UploadResult } from './index'
 
 // backend/(FastAPI, docs/api.md) 응답을 화면이 쓰는 모양으로 바꾼다.
 const BASE = import.meta.env.VITE_API_BASE ?? ''
@@ -165,10 +166,19 @@ export const remote = {
   getCenters: async (): Promise<CheckupCenter[]> =>
     (await call<{ id: number; name: string; address: string; distanceKm: number; bookingUrl: string }[]>('/api/checkup-centers'))
       .map((c) => ({ id: String(c.id), name: c.name, address: c.address, distanceKm: c.distanceKm, slots: [], tags: [], bookingUrl: c.bookingUrl })),
-  upload: async (file: File) => {
+  // 못 찾은 항목은 missing, 다시 볼 값은 needsReview로 온다. 수치를 하나도 못 찾으면 422(detail에 안내 문구).
+  upload: async (file: File): Promise<UploadResult> => {
     const body = new FormData(); body.append('file', file)
-    const r = await call<{ id: number; ocr: { fields: CheckupItem[] } }>('/api/checkups/upload', { method: 'POST', body })
-    return { id: r.id, items: r.ocr.fields.map((f) => ({ code: f.code.toUpperCase(), name: f.name, value: f.value, unit: f.unit })) }
+    const r = await call<{ id: number; ocr: { engine?: string; fields: (CheckupItem & { needsReview?: boolean })[]; missing?: CheckupItem[]; message?: string | null } }>('/api/checkups/upload', { method: 'POST', body })
+    const item = (f: Pick<CheckupItem, 'code' | 'name' | 'unit'>, value: number) => ({ code: f.code.toUpperCase(), name: f.name, value, unit: f.unit })
+    return {
+      id: r.id,
+      items: r.ocr.fields.map((f) => item(f, f.value)),
+      missing: (r.ocr.missing ?? []).map((f) => item(f, NaN)),
+      review: r.ocr.fields.filter((f) => f.needsReview).map((f) => f.code.toUpperCase()),
+      engine: r.ocr.engine ?? null,
+      message: r.ocr.message ?? null,
+    }
   },
   confirm: (id: number, items: CheckupItem[]) =>
     call(`/api/checkups/${id}`, json('PATCH', { values: Object.fromEntries(items.map((i) => [i.code.toLowerCase(), i.value])), confirm: true })),
