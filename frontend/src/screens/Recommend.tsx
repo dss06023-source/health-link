@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { Route } from '../App'
 import { MEDICATION_OPTIONS, SUPPLEMENT_OPTIONS } from '../data/mock'
-import { checkWarnings, interpret, recommend, TIMING_LABEL } from '../data/rules'
+import { ALREADY, checkWarnings, interpret, recommend, TIMING_LABEL } from '../data/rules'
 import { latestCheckup, useStore } from '../store'
 import { CautionList, Disclaimer, Value } from '../ui'
 
@@ -21,6 +21,13 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
   const warnings = s.remote?.warnings ?? checkWarnings([...chosen.map((r) => r.name), ...s.supplements.filter((x) => !x.paused).map((x) => x.name)], p, items)
   const itemOf = (code: string) => items.find((i) => i.code === code)
   const already = chosen.filter((r) => s.supplements.some((x) => x.id === r.id)).length
+  // 이미 먹는 영양제 중 추천 구성에 없는 것은 빠진 이유를 함께 보여 준다.
+  const notInRecs = p.currentSupplements.filter((n) => !recs.some((r) => r.name === n || ALREADY[n] === r.id)).map((n) => ({
+    name: n,
+    why: warnings.some((w) => w.title === `${n} 제외`)
+      ? `옆의 '함께 먹을 때 주의할 점'에 적은 이유로 추천에서 뺐습니다.`
+      : '검진 수치와 생활습관에서 이 영양제가 필요한 근거를 찾지 못해 추천에 넣지 않았습니다.',
+  }))
   const weight = items.some((i) => (i.code === 'BMI' || i.code === 'WAIST') && i.status !== 'normal')
 
   const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
@@ -57,6 +64,13 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
                 </div>
               )
             })}
+            {notInRecs.map((x) => (
+              <div key={x.name} className="link-row off">
+                <div className="evid"><span className="life">이미 먹는 영양제</span></div>
+                <span className="wire soft" aria-hidden="true" />
+                <div className="supp"><b>{x.name}</b><span className="skip">{x.why}</span></div>
+              </div>
+            ))}
             {!recs.length && <p className="muted" style={{ padding: '14px 0' }}>지금 수치와 생활습관으로는 추가할 영양제가 없습니다.</p>}
           </div>
           <div className="actions">

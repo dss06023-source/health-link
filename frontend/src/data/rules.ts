@@ -301,7 +301,7 @@ const REC_RULES: RecRule[] = [
 ]
 
 // 사용자가 이미 먹는 영양제 이름 → 추천 id
-const ALREADY: Record<string, string> = { '오메가-3': 'omega3', '비타민D': 'vitd', '철분': 'iron', '비타민B군': 'b12', '비타민C': 'vitc' }
+export const ALREADY: Record<string, string> = { '오메가-3': 'omega3', '비타민D': 'vitd', '철분': 'iron', '비타민B군': 'b12', '비타민C': 'vitc' }
 
 export function recommend(items: InterpretedItem[], p: UserProfile): Recommendation[] {
   return REC_RULES.flatMap((r) => {
