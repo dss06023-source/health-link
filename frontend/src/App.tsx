@@ -42,7 +42,7 @@ function heroOf(route: Route, s: AppStore): { title: string; sub: string } {
       const t = checkupTarget(p)
       if (t.isTarget && !t.done) return { title: `검진 마감까지 D-${t.daysLeft}`, sub: `${p.name} 님은 ${t.year}년 일반건강검진 대상이에요` }
       if (t.done) return { title: `${t.year}년 검진을 받으셨어요`, sub: '결과를 바탕으로 영양 구성을 관리하고 있어요' }
-      return { title: `${t.year + 1}년에 검진 대상이에요`, sub: `${p.name} 님의 다음 국가건강검진` }
+      return { title: `${t.nextYear}년에 검진 대상이에요`, sub: `${p.name} 님의 다음 국가건강검진` }
     }
     case 'results': {
       const last = latestCheckup(s)

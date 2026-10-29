@@ -1,4 +1,4 @@
-import type {
+import type { JobType,
   Checkup, CheckupCenter, CheckupItem, IntakeLog, Measurement, MydataResult, MydataState, Recommendation, ReminderTimes,
   Supplement, Timing, UserProfile, Warning,
 } from '../types'
@@ -26,6 +26,7 @@ const firstEntry = (o: Record<string, string>) => Object.entries(o)[0] ?? ['', '
 
 interface RUser {
   name: string; birthYear: number; gender: 'M' | 'F'; heightCm?: number; medications: string[]; lastCheckupDate: string | null
+  jobType?: JobType; confirmedTargetYear?: number | null
   currentSupplements?: string[]; conditions?: string[]; allergies?: string[]; customAllergies?: string[]
   lifestyle: {
     smoking: boolean | 'never' | 'past' | 'current'; drinkingPerWeek: number; exercisePerWeek: number; lowSunlight: boolean
@@ -125,6 +126,7 @@ export async function loadAll() {
     allergies: [...toLabel(codes.allergy, user.allergies), ...(user.customAllergies ?? [])],
     pregnant: !!(L.pregnant || L.breastfeeding),
     heightCm: user.heightCm,
+    jobType: user.jobType, confirmedTargetYear: user.confirmedTargetYear ?? null,
   }
   const supplements: Supplement[] = supps.map((x) => {
     const [ing, amt] = firstEntry(x.ingredients)
@@ -189,6 +191,7 @@ export const remote = {
     const pregnant = p.sex === 'F' && !!p.pregnant
     return call('/api/users/me', json('PUT', {
       name: p.name, birthYear: p.birthYear, gender: p.sex, medications: p.medications,
+      ...(p.jobType && { jobType: p.jobType }), confirmedTargetYear: p.confirmedTargetYear ?? 0,
       currentSupplements: toCode(codes.supplement, p.currentSupplements),
       conditions: toCode(codes.condition, p.conditions),
       allergies: toCode(codes.allergy, p.allergies),
