@@ -431,3 +431,7 @@ button.li:hover { background: var(--hover); }
   .snackbar { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* 사는 곳 */
+.addr-picked { flex: 1; min-width: 0; padding: 12px 14px; border-radius: 14px; background: var(--input-bg); word-break: keep-all; }
+.addr-hits { max-height: 280px; overflow: auto; }

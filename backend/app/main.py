@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from . import checkup_schedule as sched
-from . import db, logic, measure, ocr, options, public_api
+from . import db, logic, measure, ocr, options, public_api, regions
 from . import reference as ref
 
 TIME_SLOTS = ["morning", "lunch", "evening", "bedtime"]
@@ -180,6 +180,42 @@ class UserUpdate(BaseModel):
     customAllergies: Optional[list[str]] = None
     consent: Optional[dict] = None
     location: Optional[dict] = None
+    # 사는 곳: {sido, sigungu, roadAddress, detailAddress, zipCode, lat, lng}. 좌표는 서버가 채운다.
+    address: Optional[dict] = None
+
+
+ADDRESS_FIELDS = ("sigungu", "roadAddress", "detailAddress", "zipCode")
+
+
+def clean_address(a):
+    """사는 곳 입력을 확인한다. 시·도는 목록에 있어야 하고, 나머지는 짧은 글자만 받는다."""
+    if a.get("sido") not in regions.SIDO_CENTERS:
+        raise HTTPException(422, "sido는 " + ", ".join(regions.SIDO_CENTERS) + " 중 하나입니다.")
+    out = {"sido": a["sido"]}
+    for key in ADDRESS_FIELDS:
+        v = a.get(key)
+        if v is not None and (not isinstance(v, str) or len(v) > 120):
+            raise HTTPException(422, f"{key}는 120자 이하 글자입니다.")
+        out[key] = (v or "").strip()
+    try:
+        lat, lng = float(a["lat"]), float(a["lng"])
+        if 33 <= lat <= 39 and 124 <= lng <= 132:  # 한국 범위
+            out["lat"], out["lng"] = lat, lng
+    except (KeyError, TypeError, ValueError):
+        pass
+    return out
+
+
+def locate(address):
+    """검진기관 찾기 기준 좌표. 고른 주소의 좌표 → 도로명주소 → 시·군·구 → 시·도 대표 좌표 순."""
+    if "lat" in address:
+        return {"lat": address["lat"], "lng": address["lng"]}
+    for query in (address["roadAddress"], f'{address["sido"]} {address["sigungu"]}'.strip()):
+        found = public_api.geocode(query) if query and query != address["sido"] else None
+        if found:
+            return {"lat": found["lat"], "lng": found["lng"]}
+    lat, lng = regions.SIDO_CENTERS[address["sido"]]
+    return {"lat": lat, "lng": lng}
 
 
 @app.get("/api/users/me")
@@ -214,6 +250,7 @@ def update_me(body: UserUpdate):
         errors += bad
     if errors:
         raise HTTPException(422, "보기에 없는 값입니다. " + " / ".join(errors))
+    address = clean_address(body.address) if body.address is not None else None
     # 보기에 없는 약은 '직접 입력'으로 저장하고, 상호작용 규칙이 없다고 알린다.
     unknown = [m for m in body.medications or [] if m not in ref.MEDICATIONS]
     with db.connect() as conn:
@@ -224,6 +261,9 @@ def update_me(body: UserUpdate):
                 changes[key] = None
         if lifestyle is not None:
             changes["lifestyle"] = {**user.get("lifestyle", {}), **lifestyle}
+        if address is not None:
+            changes["address"] = address
+            changes["location"] = locate(address)
         if body.currentSupplements is not None:
             sync_supplements(conn, body.currentSupplements)
             changes["currentSupplements"] = [c for c in body.currentSupplements if c not in SYNCED_SUPPLEMENTS]
@@ -345,11 +385,14 @@ DEMO_ADDRESSES = [
 def search_address(q: str = Query(..., min_length=2), limit: int = Query(10, ge=1, le=30)):
     """도로명주소 검색(행정안전부). 키가 없거나 실패하면 시연용 주소 두 개 중에서 찾는다."""
     found = public_api.search_address(q.strip(), limit)
+    source = "juso"
+    if found is None:
+        found, source = public_api.search_address_kakao(q.strip(), limit), "kakao"
     if found is None:
         words = q.split()
         items = [a for a in DEMO_ADDRESSES if all(w in a["roadAddress"] + a["jibunAddress"] for w in words)]
         return {"source": "demo", "isDemoData": True, "items": items or DEMO_ADDRESSES}
-    return {"source": "juso", "isDemoData": False, "items": found}
+    return {"source": source, "isDemoData": False, "items": found}
 
 
 @app.get("/api/geocode")

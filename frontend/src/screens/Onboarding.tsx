@@ -5,6 +5,8 @@ import { Icon, Sheet, Wordmark } from '../ui'
 import { ALLERGY_OPTIONS, CONDITION_OPTIONS, DIET_OPTIONS, MEDICATION_GROUPS, SAMPLE_PROFILE, SUPPLEMENT_OPTIONS } from '../data/mock'
 import type { Lifestyle, UserProfile } from '../types'
 import { loadTheme, saveTheme, type Theme } from '../theme'
+import { regionLabel } from '../data/regions'
+import AddressField from './AddressField'
 
 const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
 
@@ -71,7 +73,7 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
     )}
     <div className="main narrow">
       <form className="page"
-        onSubmit={(e) => { e.preventDefault(); setProfile({ ...p, pregnant: p.sex === 'F' ? p.pregnant : false }); onDone() }}>
+        onSubmit={(e) => { e.preventDefault(); setProfile({ ...p, pregnant: p.sex === 'F' ? p.pregnant : false, region: p.address?.sido ? regionLabel(p.address.sido, p.address.sigungu) : p.region }); onDone() }}>
         <div className="hero">
           {!initial && <Wordmark />}
           <h1>{initial ? '내 정보' : '필요한 정보를 알려 주세요'}</h1>
@@ -90,8 +92,6 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
             {p.sex === 'F'
               ? <Seg label="임신·수유 중" options={[[0, '아니요'], [1, '예']]} value={p.pregnant ? 1 : 0} onChange={(v) => upd({ pregnant: v === 1 })} />
               : <span />}
-            <div className="field"><label htmlFor="ob-region">사는 곳</label>
-              <input id="ob-region" value={p.region} placeholder="예: 서울 마포구" onChange={(e) => upd({ region: e.target.value })} /></div>
             <div className="field"><label htmlFor="ob-last">마지막 검진 연도</label>
               <input id="ob-last" type="number" value={p.lastCheckupYear ?? ''} placeholder="예: 2024" aria-describedby="ob-last-hint" onChange={(e) => upd({ lastCheckupYear: e.target.value ? Number(e.target.value) : null })} />
               <small id="ob-last-hint" className="muted">받은 적 없으면 비워 두세요.</small></div>
@@ -101,6 +101,12 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
               value={p.confirmedTargetYear === thisYear ? 1 : 0} onChange={(v) => upd({ confirmedTargetYear: v ? thisYear : null })} />
           </div>
           <p className="small muted">비사무직(현장·생산·판매직 등) 직장가입자는 해마다 대상입니다. 작년에 못 받아 추가 등록했다면 공단 조회 결과로 '대상자'를 고르세요. 고른 값이 출생연도 짝·홀 규칙보다 우선합니다.</p>
+        </section>
+
+        <section className="sec">
+          <div className="sec-head"><h2>사는 곳</h2></div>
+          <AddressField value={p.address} onChange={(address) => upd({ address })} />
+          <p className="small muted">가까운 검진기관을 이 주소 기준으로 찾습니다. 도로명주소까지 고르면 더 정확합니다.</p>
         </section>
 
         <section className="sec">

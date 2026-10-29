@@ -14,11 +14,26 @@ export interface Lifestyle {
   diet?: string[]
 }
 
+// 사는 곳. 시·도와 시·군·구는 목록에서, 도로명주소는 검색에서 고르고 상세주소는 직접 쓴다.
+export interface Address {
+  sido: string
+  sigungu: string
+  roadAddress: string
+  detailAddress: string
+  zipCode?: string
+  lat?: number // 검색에서 고른 주소의 좌표. 없으면 서버가 주소로 찾는다.
+  lng?: number
+}
+
+// 주소 검색 결과 한 줄
+export interface AddressHit { roadAddress: string | null; jibunAddress: string | null; zipCode: string | null; buildingName: string | null; lat?: number; lng?: number }
+
 export interface UserProfile {
   name: string
   birthYear: number
   sex: Sex
-  region: string
+  region: string // 화면에 보이는 짧은 지역 이름(예: 서울 마포구). address에서 만든다.
+  address?: Address
   lastCheckupYear: number | null
   medications: string[]
   currentSupplements: string[]

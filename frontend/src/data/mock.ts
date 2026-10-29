@@ -6,6 +6,7 @@ export const SAMPLE_PROFILE: UserProfile = {
   birthYear: 1980,
   sex: 'M',
   region: '서울 마포구',
+  address: { sido: '서울특별시', sigungu: '마포구', roadAddress: '', detailAddress: '' },
   lastCheckupYear: 2024,
   medications: ['아스피린'],
   currentSupplements: ['종합비타민'],

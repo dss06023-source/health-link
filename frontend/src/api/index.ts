@@ -1,4 +1,4 @@
-import type { CheckupCenter, CheckupItem } from '../types'
+import type { AddressHit, CheckupCenter, CheckupItem } from '../types'
 import { CENTERS, OCR_RESULT } from '../data/mock'
 import { remote } from './remote'
 
@@ -11,6 +11,18 @@ export async function getCenters(): Promise<CheckupCenter[]> {
   if (USE_API) return remote.getCenters()
   await wait(300)
   return CENTERS
+}
+
+// 도로명주소 검색. 모의 모드는 시연용 주소 두 개 중에서 찾는다.
+const DEMO_ADDRESSES: AddressHit[] = [
+  { roadAddress: '서울특별시 중구 세종대로 110', jibunAddress: '서울특별시 중구 태평로1가 31', zipCode: '04524', buildingName: '서울특별시청', lat: 37.5665, lng: 126.978 },
+  { roadAddress: '서울특별시 마포구 월드컵북로 400', jibunAddress: '서울특별시 마포구 상암동 1601', zipCode: '03925', buildingName: null, lat: 37.5794, lng: 126.8895 },
+]
+export async function searchAddress(q: string): Promise<AddressHit[]> {
+  if (USE_API) return remote.searchAddress(q)
+  await wait(200)
+  const words = q.split(/\s+/).filter(Boolean)
+  return DEMO_ADDRESSES.filter((a) => words.every((w) => `${a.roadAddress} ${a.jibunAddress}`.includes(w)))
 }
 
 // 백엔드는 업로드한 결과를 '확인 대기'로 저장하고 id를 돌려준다. 확정은 store.addCheckup에서 한다.
