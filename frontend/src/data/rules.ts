@@ -402,4 +402,21 @@ export function checkWarnings(names: string[], p: UserProfile, items: Interprete
 }
 
 export const TIMING_LABEL: Record<Supplement['timing'], string> = { morning: '아침', lunch: '점심', evening: '저녁' }
+
+// 서버 intake_rules slotBalance·supplements altSlots와 같은 규칙(서버 없는 시연 모드용).
+// 권장 시간대에 이미 3개 이상이면, 식후 아무 때나 먹어도 되는 영양제는 덜 붐비는 시간대로 나눈다.
+const MAX_PER_SLOT = 3
+export const ALT_TIMINGS: Record<string, Supplement['timing'][]> = {
+  omega3: ['lunch', 'evening'], milkthistle: ['lunch', 'evening'], coq10: ['lunch', 'evening'], vitd: ['lunch', 'evening'],
+  multivitamin: ['lunch'], b12: ['lunch'], vitamin_k: ['lunch', 'evening'], folic_acid: ['lunch', 'evening'],
+  lutein: ['lunch', 'evening'], vitc: ['morning', 'evening'], magnesium: ['lunch'], fiber: ['morning', 'evening'],
+}
+export function balanceTiming(id: string, timing: Supplement['timing'], existing: Supplement[]): Pick<Supplement, 'timing' | 'altTimings' | 'slotNote'> {
+  const alts = ALT_TIMINGS[id] ?? []
+  const count = (t: Supplement['timing']) => existing.filter((s) => !s.paused && s.timing === t).length
+  if (!alts.length || count(timing) < MAX_PER_SLOT) return { timing, altTimings: alts }
+  const best = alts.reduce((a, b) => (count(b) < count(a) ? b : a))
+  if (count(best) >= count(timing)) return { timing, altTimings: alts }
+  return { timing: best, altTimings: alts, slotNote: `${TIMING_LABEL[timing]}에 먹을 것이 많아 ${TIMING_LABEL[best]}으로 나눴습니다. 식사 뒤에 먹으면 되는 영양제라 시간대를 옮겨도 됩니다.` }
+}
 export const STATUS_LABEL: Record<Status, string> = { normal: '정상', caution: '경계', danger: '질환의심' }

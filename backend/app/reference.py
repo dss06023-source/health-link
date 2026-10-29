@@ -114,6 +114,7 @@ DIAGNOSIS_CAUTIONS = _rules["diagnosisCautions"]
 LIFE_STAGE_LABELS = _rules["lifeStage"]["labels"]
 NOT_TOGETHER = _rules["notTogether"]
 SPACING_RULES = _rules["spacing"]
+SLOT_BALANCE = _rules["slotBalance"]
 MEDICATIONS = dict(_rules["medications"])
 for _group in PROFILE_OPTIONS["medicationGroups"]:
     for _item in _group["items"]:

@@ -57,13 +57,14 @@ def test_due_reminder_after_slot_time(client):
     assert client.get("/api/reminders/due", params={"at": "2026-10-28T07:59"}).json()["due"] == []
     r = client.get("/api/reminders/due", params={"at": "2026-10-28T08:30"}).json()
     assert r["due"][0]["timeSlot"] == "morning" and r["due"][0]["overdueMinutes"] == 30
-    assert len(r["due"][0]["items"]) == 4
+    # 시연 인물의 비타민D는 아침이 붐벼 점심으로 나눠 두었다.
+    assert len(r["due"][0]["items"]) == 3
 
 
 def test_taken_items_leave_reminder(client):
     supplements = client.get("/api/supplements").json()
     for s in supplements:
-        client.post("/api/intake-logs", json={"supplementId": s["id"], "timeSlot": "morning"})
+        client.post("/api/intake-logs", json={"supplementId": s["id"], "timeSlot": s["timeSlots"][0]})
     assert client.get("/api/reminders/due", params={"at": "2026-10-28T09:00"}).json()["due"] == []
 
 
@@ -137,3 +138,20 @@ def test_reset_restores_feature_state(client):
     client.post("/api/demo/reset")
     assert client.get("/api/mydata").json()["connected"] is False
     assert client.get("/api/measurements", params={"type": "waist"}).json() == []
+
+
+# ---------- 시간대 나누기 ----------
+
+def test_crowded_morning_moves_flexible_supplement(client):
+    # 시연 인물은 아침에 셋(오메가-3·밀크씨슬·종합비타민), 점심에 비타민D가 있다.
+    lutein = client.post("/api/supplements", json={"supplementId": "lutein"}).json()
+    assert lutein["timeSlots"] == ["evening"] and lutein["recommendedSlots"] == ["morning"]
+    assert lutein["slotNote"].startswith("아침에 먹을 것이 많아 저녁으로")
+    # 시간을 옮기면 안 되는 철분(공복)은 붐벼도 아침에 둔다.
+    iron = client.post("/api/supplements", json={"supplementId": "iron"}).json()
+    assert iron["timeSlots"] == ["morning"] and iron["slotNote"] is None
+
+
+def test_user_chosen_slot_is_kept(client):
+    s = client.post("/api/supplements", json={"supplementId": "coq10", "timeSlots": ["morning"]}).json()
+    assert s["timeSlots"] == ["morning"] and s["slotNote"] is None

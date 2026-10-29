@@ -3,6 +3,7 @@
   "_fields": {
     "ingredients": "제품 1일분에 든 성분 양(중복·상한 계산에 쓴다)",
     "purpose": "이미 먹는 영양제를 안내할 때 쓰는 목적 한 마디('눈 건강을 위해 드신다면'). 앱 문구이며 고시 문구가 아니다. 기능성 범위 안에서 고른다.",
+    "altSlots": "권장 시간대에 먹을 것이 많을 때 옮겨도 되는 시간대. 식후 아무 때나 먹어도 되는 영양제만 두고, 철분·칼슘처럼 간격이 필요한 조합과 겹치는 시간대는 넣지 않는다.",
     "timingReason": "timeSlots로 정한 이유. 일반적인 흡수·작용 원리로 설명하고, 근거가 없으면 잊지 않도록 정했다고 적는다.",
     "dailyIntake": "고시된 1일 섭취량 범위. 제품 양(ingredients)이 이 범위 안에 있어야 한다.",
     "lifeStageAvoid": "pregnant(임신) / breastfeeding(수유) / child(어린이) 중 섭취를 피해야 하는 대상",
@@ -12,7 +13,7 @@
   "items": {
     "omega3": {
       "name": "오메가-3", "ingredients": {"EPA·DHA": "1000mg"},
-      "dose": "1일 1회 1캡슐", "timeSlots": ["morning"], "timing": "아침 식후",
+      "dose": "1일 1회 1캡슐", "timeSlots": ["morning"], "altSlots": ["lunch", "evening"], "timing": "아침 식후",
       "timingReason": "기름에 녹는 성분이라 식사 직후에 먹어야 흡수가 잘 되고 비린 트림도 줄어듭니다. 식후라면 점심·저녁도 괜찮지만 잊지 않도록 아침으로 정했습니다.",
       "claim": "혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음",
       "purpose": "혈중 중성지질과 혈행 개선",
@@ -86,7 +87,7 @@
     },
     "indigestible_dextrin": {
       "name": "난소화성말토덱스트린", "ingredients": {"식이섬유(난소화성말토덱스트린)": "5g"},
-      "dose": "1일 1회 1포", "timeSlots": ["lunch"], "timing": "점심 식사와 함께 물에 타서",
+      "dose": "1일 1회 1포", "timeSlots": ["lunch"], "altSlots": ["morning", "evening"], "timing": "점심 식사와 함께 물에 타서",
       "timingReason": "식이섬유가 식사 중 당과 지방의 흡수를 늦추는 원리라 식사와 함께 물에 타서 먹습니다. 다른 끼니와 함께여도 되지만 점심으로 정했습니다.",
       "claim": "식후 혈당상승 억제·혈중 중성지질 개선에 도움을 줄 수 있음",
       "purpose": "식후 혈당 관리",
@@ -104,7 +105,7 @@
     },
     "milk_thistle": {
       "name": "밀크씨슬", "ingredients": {"실리마린": "130mg"},
-      "dose": "1일 1회 1정", "timeSlots": ["morning"], "timing": "아침 식후",
+      "dose": "1일 1회 1정", "timeSlots": ["morning"], "altSlots": ["lunch", "evening"], "timing": "아침 식후",
       "timingReason": "주성분 실리마린이 물에 잘 녹지 않아 식후에 먹어야 흡수에 유리하고 속도 덜 불편합니다.",
       "claim": "간 건강에 도움을 줄 수 있음",
       "purpose": "간 건강",
@@ -124,7 +125,7 @@
     },
     "coq10": {
       "name": "코엔자임Q10", "ingredients": {"코엔자임Q10": "100mg"},
-      "dose": "1일 1회 1캡슐", "timeSlots": ["morning"], "timing": "아침 식후",
+      "dose": "1일 1회 1캡슐", "timeSlots": ["morning"], "altSlots": ["lunch", "evening"], "timing": "아침 식후",
       "timingReason": "기름에 녹는 성분이라 식후에 먹어야 흡수가 잘 됩니다.",
       "claim": "높은 혈압 감소에 도움을 줄 수 있음",
       "purpose": "혈압 관리",
@@ -158,7 +159,7 @@
     },
     "vitamin_d": {
       "name": "비타민D", "ingredients": {"비타민D": "10μg"},
-      "dose": "1일 1회 1정", "timeSlots": ["morning"], "timing": "아침 식후",
+      "dose": "1일 1회 1정", "timeSlots": ["morning"], "altSlots": ["lunch", "evening"], "timing": "아침 식후",
       "timingReason": "기름에 녹는 비타민이라 지방이 든 식사 뒤에 먹어야 흡수가 잘 됩니다.",
       "claim": "칼슘과 인이 흡수되고 이용되는데 필요, 뼈의 형성과 유지에 필요",
       "purpose": "뼈 건강",
@@ -219,7 +220,7 @@
     },
     "multivitamin": {
       "name": "종합비타민", "ingredients": {"비타민D": "10μg", "철": "8mg", "비타민C": "100mg", "비타민B6": "1.5mg"},
-      "dose": "1일 1회 1정", "timeSlots": ["morning"], "timing": "아침 식후",
+      "dose": "1일 1회 1정", "timeSlots": ["morning"], "altSlots": ["lunch"], "timing": "아침 식후",
       "timingReason": "기름에 녹는 비타민(A·D·E·K)이 들어 있어 식후에 먹어야 흡수가 잘 되고, 빈속에 먹을 때 생기는 메스꺼움도 줄어듭니다.",
       "claim": "에너지 생성과 정상적인 면역기능에 필요",
       "purpose": "영양 보충",
@@ -234,7 +235,7 @@
     },
     "vitamin_b": {
       "name": "비타민B군", "ingredients": {"비타민B1": "1.2mg", "비타민B2": "1.4mg", "비타민B6": "1.5mg", "비타민B12": "2.4μg"},
-      "dose": "1일 1회 1정", "timeSlots": ["morning"], "timing": "아침 식후",
+      "dose": "1일 1회 1정", "timeSlots": ["morning"], "altSlots": ["lunch"], "timing": "아침 식후",
       "claim": "탄수화물과 에너지 대사에 필요, 체내 에너지 생성에 필요",
       "timingReason": "물에 녹는 성분이라 먹는 때에 따른 차이는 크지 않습니다. 잊지 않도록 아침 식후로 정했습니다.",
       "purpose": "에너지 대사",
@@ -252,7 +253,7 @@
     },
     "vitamin_c": {
       "name": "비타민C", "ingredients": {"비타민C": "100mg"},
-      "dose": "1일 1회 1정", "timeSlots": ["lunch"], "timing": "점심 식후",
+      "dose": "1일 1회 1정", "timeSlots": ["lunch"], "altSlots": ["morning", "evening"], "timing": "점심 식후",
       "claim": "결합조직 형성과 기능유지에 필요, 철의 흡수에 필요, 항산화 작용을 하여 유해산소로부터 세포를 보호하는데 필요",
       "timingReason": "물에 녹는 성분이라 먹는 때에 따른 차이는 크지 않습니다. 빈속에 먹으면 속이 쓰릴 수 있어 식후에, 잊지 않도록 점심으로 정했습니다.",
       "purpose": "항산화",
@@ -271,7 +272,7 @@
     },
     "vitamin_k": {
       "name": "비타민K", "ingredients": {"비타민K": "70μg"},
-      "dose": "1일 1회 1정", "timeSlots": ["morning"], "timing": "아침 식후",
+      "dose": "1일 1회 1정", "timeSlots": ["morning"], "altSlots": ["lunch", "evening"], "timing": "아침 식후",
       "claim": "정상적인 혈액응고에 필요, 뼈의 구성에 필요",
       "timingReason": "기름에 녹는 성분이라 식사 직후에 먹어야 흡수가 잘 됩니다. 잊지 않도록 아침 식후로 정했습니다.",
       "purpose": "혈액응고와 뼈 건강",
@@ -304,7 +305,7 @@
     },
     "magnesium": {
       "name": "마그네슘", "ingredients": {"마그네슘": "100mg"},
-      "dose": "1일 1회 1정", "timeSlots": ["evening"], "timing": "저녁 식후",
+      "dose": "1일 1회 1정", "timeSlots": ["evening"], "altSlots": ["lunch"], "timing": "저녁 식후",
       "claim": "에너지 이용에 필요, 신경과 근육 기능 유지에 필요",
       "timingReason": "먹는 때에 따른 차이는 뚜렷하지 않습니다. 잊지 않도록 저녁 식후로 정했습니다.",
       "purpose": "신경과 근육 기능",
@@ -334,7 +335,7 @@
     },
     "folic_acid": {
       "name": "엽산", "ingredients": {"엽산": "400μg"},
-      "dose": "1일 1회 1정", "timeSlots": ["morning"], "timing": "아침 식후",
+      "dose": "1일 1회 1정", "timeSlots": ["morning"], "altSlots": ["lunch", "evening"], "timing": "아침 식후",
       "claim": "세포와 혈액생성에 필요, 태아 신경관의 정상 발달에 필요, 혈액의 호모시스테인 수준을 정상으로 유지하는데 필요",
       "timingReason": "물에 녹는 성분이라 먹는 때에 따른 차이는 크지 않습니다. 잊지 않도록 아침 식후로 정했습니다.",
       "purpose": "혈액 생성",
@@ -369,7 +370,7 @@
     },
     "lutein": {
       "name": "루테인", "ingredients": {"루테인": "20mg"},
-      "dose": "1일 1회 1캡슐", "timeSlots": ["morning"], "timing": "아침 식후",
+      "dose": "1일 1회 1캡슐", "timeSlots": ["morning"], "altSlots": ["lunch", "evening"], "timing": "아침 식후",
       "claim": "노화로 인해 감소될 수 있는 황반색소밀도를 유지하여 눈 건강에 도움을 줄 수 있음",
       "timingReason": "기름에 녹는 성분이라 식사 직후에 먹어야 흡수가 잘 됩니다. 잊지 않도록 아침 식후로 정했습니다.",
       "purpose": "눈 건강",
