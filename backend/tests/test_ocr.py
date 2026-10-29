@@ -126,13 +126,16 @@ def test_blood_pressure_with_scattered_digits():
 
 def test_upload_several_pages_merges_values(client, monkeypatch):
     # 장마다 다른 항목이 나오고, 같은 항목은 더 확실하게 읽은 값을 쓴다.
-    pages = iter([({"tc": (205.0, 0.95), "hdl": (40.0, 0.5)}, "ocr"), ({"hdl": (47.0, 0.99), "egfr": (92.0, 0.97)}, "ocr")])
-    monkeypatch.setattr(ocr, "read", lambda data, is_pdf: next(pages))
+    from datetime import date
+    pages = iter([({"tc": (205.0, 0.95), "hdl": (40.0, 0.5)}, "ocr", date(2026, 4, 27)),
+                  ({"hdl": (47.0, 0.99), "egfr": (92.0, 0.97)}, "ocr", date(2026, 4, 20))])
+    monkeypatch.setattr(ocr, "read_with_date", lambda data, is_pdf, today=None: next(pages))
     pic = (FIXTURES / "sample_sheet.png").read_bytes()
     r = client.post("/api/checkups/upload", files=[("files", ("1.png", pic, "image/png")), ("files", ("2.png", pic, "image/png"))])
     body = r.json()
     assert body["values"] == {"tc": 205, "hdl": 47, "egfr": 92}
     assert body["ocr"]["files"] == 2 and body["fileName"] == "1.png, 2.png"
+    assert body["date"] == "2026-04-20"  # 장마다 읽은 날짜 중 가장 이른 것(검진일)
 
 
 def test_upload_pdf_pages_together(client):
@@ -145,3 +148,11 @@ def test_upload_at_most_four_files(client):
     pdf = (FIXTURES / "sample_sheet.pdf").read_bytes()
     r = client.post("/api/checkups/upload", files=[("files", (f"{i}.pdf", pdf, "application/pdf")) for i in range(5)])
     assert r.status_code == 422 and "4장" in r.json()["detail"]
+
+
+def test_exam_date_is_read_from_sheet():
+    # 공식 양식: 1쪽 검진일 2026. 10. 20., 3쪽 통보일 2026. 10. 27. → 가장 이른 날
+    from datetime import date
+    items, _ = ocr.pdf_items((FIXTURES / "official_sheet.pdf").read_bytes())
+    assert ocr.find_date(items, date(2026, 10, 28)) == date(2026, 10, 20)
+    assert ocr.find_date(items, date(2026, 10, 1)) is None  # 앞으로 올 날짜는 버린다

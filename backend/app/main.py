@@ -471,17 +471,19 @@ async def upload_checkup(file: Optional[UploadFile] = File(None), files: Optiona
         pages.append((name, is_pdf, await up.read()))
     source = "pdf" if all(is_pdf for _, is_pdf, _ in pages) else "photo"
     names_units = {code: (item["name"], item["unit"]) for code, item in ref.CHECKUP_ITEMS.items()}
-    found, engines = {}, []
+    found, engines, dates = {}, [], []
     try:
         for name, is_pdf, data in pages:
             try:
                 # 읽는 동안에도 다른 요청(Render 상태 확인 5초 제한)에 답하도록 별도 스레드에서 돌린다.
-                page_found, engine = await run_in_threadpool(ocr.read, data, is_pdf)
+                page_found, engine, page_date = await run_in_threadpool(ocr.read_with_date, data, is_pdf, db.today())
             except ocr.OCRUnavailable:
                 raise
             except Exception:
                 raise HTTPException(422, f"{name}: 파일을 열지 못했습니다. 다른 사진이나 PDF로 다시 올려 주십시오.")
             engines.append(engine)
+            if page_date:
+                dates.append(page_date)
             for code, (value, score) in page_found.items():
                 if code not in found or score > found[code][1]:
                     found[code] = (value, score)
@@ -496,12 +498,14 @@ async def upload_checkup(file: Optional[UploadFile] = File(None), files: Optiona
         raise HTTPException(422, "결과지에서 검진 수치를 찾지 못했습니다. 밝은 곳에서 표 전체가 반듯하게 나오도록 다시 찍거나 PDF를 올려 주십시오.")
     else:
         message = "인식한 수치를 확인해 주십시오. 틀린 값은 고친 뒤 확정하십시오."
+    # 결과지에 적힌 검진일을 쓴다(변화 리포트가 날짜로 비교한다). 못 읽으면 올린 날.
+    exam_date = min(dates) if dates else db.today()
     fields = ocr.fields(found, names_units)
     values = {f["code"]: f["value"] for f in fields}
     with db.connect() as conn:
         cur = conn.execute(
             "INSERT INTO checkups (user_id, date, source, status, file_name, item_values) VALUES (?, ?, ?, 'pending_review', ?, ?)",
-            (db.uid(), db.today().isoformat(), source, name, json.dumps(values)),
+            (db.uid(), exam_date.isoformat(), source, name, json.dumps(values)),
         )
         checkup = get_checkup(conn, cur.lastrowid)
     checkup["ocr"] = {

@@ -301,16 +301,45 @@ def fields(found, names_units):
     return sorted(out, key=lambda f: order.index(f["code"]))
 
 
-def read(data, is_pdf):
-    """파일 → (찾은 값 {code: (value, score)}, 엔진 이름). HEALTH_ITDA_OCR=mock이면 읽지 않는다(시험용)."""
+DATE_RE = re.compile(r"(20\d{2})\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})")
+
+
+def find_date(items, today=None):
+    """결과지에 적힌 날짜 중 가장 이른 것(검진일 ≤ 판정일·통보일). 오늘보다 뒤인 날짜는 버린다."""
+    from datetime import date
+
+    found = []
+    for row in _rows_from_boxes(items):
+        for y, m, d in DATE_RE.findall(" ".join(t for t, _ in row)):
+            try:
+                day = date(int(y), int(m), int(d))
+            except ValueError:
+                continue
+            if today is None or day <= today:
+                found.append(day)
+    return min(found) if found else None
+
+
+def read_with_date(data, is_pdf, today=None):
+    """read와 같고, 결과지에서 읽은 검진일(없으면 None)을 함께 돌려준다."""
     if os.environ.get("HEALTH_ITDA_OCR") == "mock":
         raise OCRUnavailable("모의 모드")
     if is_pdf:
         items, engine = pdf_items(data)
     else:
         items, engine = image_items(data), "ocr"
+    return _parse(items), engine, find_date(items, today)
+
+
+def _parse(items):
     found = parse_items(items)
     for code, value in parse_rows(_rows_from_boxes(items)).items():
         if code not in ("sbp", "dbp"):  # 혈압은 쌍으로만 믿는다. 행 방식은 안내 문구의 '140'을 잡은 적이 있다.
             found.setdefault(code, value)
+    return found
+
+
+def read(data, is_pdf):
+    """파일 → (찾은 값 {code: (value, score)}, 엔진 이름). HEALTH_ITDA_OCR=mock이면 읽지 않는다(시험용)."""
+    found, engine, _ = read_with_date(data, is_pdf)
     return found, engine
