@@ -26,8 +26,15 @@ def _age_hit(rule, age, sex):
 
 def age_items(age, sex):
     """올해 일반검진에 더해지는 성·연령별 검사."""
-    return [{"id": r["id"], "name": r["name"], **({"note": r["note"]} if r.get("note") else {})}
-            for r in S["ageItems"] if _age_hit(r, age, sex)]
+    out = []
+    for r in S["ageItems"]:
+        if not _age_hit(r, age, sex):
+            continue
+        # 연령대에 1회인 검사(우울증 35~39세, 40~70대 10년마다)는 해당 연령대를 알려 준다.
+        band = next((f"{lo}~{hi}세 중 1회" for lo, hi in r.get("bands", []) if lo <= age <= hi), None)
+        note = band or r.get("note")
+        out.append({"id": r["id"], "name": r["name"], **({"note": note} if note else {})})
+    return out
 
 
 def cancers(user, year):

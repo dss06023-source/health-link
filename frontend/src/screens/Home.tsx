@@ -30,7 +30,10 @@ export default function Home({ go }: { go: (r: Route) => void }) {
   const todo: { done: boolean; title: string; sub: string; act?: { label: string; to: Route | '#centers' } }[] = [
     due
       ? { done: !!s.reservedCenter, title: s.reservedCenter ? `${s.reservedCenter.name} 예약 요청함` : '검진기관 예약하기', sub: s.reservedCenter ? s.reservedCenter.slot : '아래 목록에서 가까운 기관과 시간을 고릅니다.', act: s.reservedCenter ? undefined : { label: '기관 보기', to: '#centers' } }
-      : { done: true, title: `${t.done ? t.year : t.year - 1}년 검진 받음`, sub: `최근 결과 ${last.date}` },
+      // 대상이 아닌 해에는 지난 대상 연도(작년)에 받았는지 본다. 못 받았으면 추가신청 안내로 보낸다.
+      : t.done || (p.lastCheckupYear ?? 0) >= t.year - 1
+        ? { done: true, title: `${t.done ? t.year : p.lastCheckupYear}년 검진 받음`, sub: `최근 결과 ${last.date}` }
+        : { done: false, title: `${t.year - 1}년 검진을 받지 않음`, sub: '올해 추가신청으로 받을 수 있습니다.', act: { label: '주의사항', to: 'guide' } },
     { done: s.checkups.some((c) => c.source !== 'sample'), title: '결과지 등록하기', sub: '종이 결과지 사진이나 공단 PDF를 올리면 수치를 읽어 옵니다.', act: { label: '등록', to: 'upload' } },
     { done: false, title: `결과 해석 확인 · 기준 벗어남 ${flagged}개`, sub: `${last.items.length}개 항목 중`, act: { label: '해석 보기', to: 'results' } },
     { done: active.length > 0 && takenToday === active.length, title: `오늘 영양제 ${takenToday} / ${active.length}개 먹음`, sub: active.length ? '시간대별로 체크합니다.' : '추천을 받고 복용을 시작하면 여기에 표시됩니다.', act: { label: active.length ? '복용 체크' : '추천 받기', to: active.length ? 'intake' : 'recommend' } },

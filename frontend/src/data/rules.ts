@@ -212,7 +212,11 @@ export function checkupTarget(p: UserProfile, today = new Date()): CheckupTarget
   const nextYear = isTarget && !done ? year : yearly ? year + 1 : year + (parity ? 2 : 1)
   const deadline = `${year}-12-31`
   const daysLeft = Math.ceil((new Date(`${year}-12-31T23:59:59`).getTime() - today.getTime()) / 86400000)
-  const items = isTarget ? SCHEDULE.ageItems.filter((r) => ageHit(r, age, p.sex)).map(({ id, name, note }) => ({ id, name, note })) : []
+  // 연령대에 1회인 검사(우울증 35~39세, 40~70대 10년마다)는 해당 연령대를 알려 준다.
+  const items = isTarget ? SCHEDULE.ageItems.filter((r) => ageHit(r, age, p.sex)).map(({ id, name, note, bands }) => {
+    const band = bands?.find(([lo, hi]) => lo <= age && age <= hi)
+    return { id, name, note: band ? `${band[0]}~${band[1]}세 중 1회` : note }
+  }) : []
   const notes: string[] = []
   if (done) notes.push(SCHEDULE.notes.overLimit)
   else if (!isTarget && age >= 20 && p.lastCheckupYear !== year - 1) {
