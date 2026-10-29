@@ -53,7 +53,7 @@ function fullDemo(): AppState {
   const today = new Date()
   const start = addDays(today, -186)
   const supplements: Supplement[] = [
-    { id: 'omega3', name: '오메가-3', ingredient: 'EPA·DHA', dose: '1,000mg', timing: 'evening', paused: false, startDate: ymd(start) },
+    { id: 'omega3', name: '오메가-3', ingredient: 'EPA·DHA', dose: '1,000mg', timing: 'morning', paused: false, startDate: ymd(start) },
     { id: 'fiber', name: '난소화성말토덱스트린', ingredient: '식이섬유', dose: '5g', timing: 'lunch', paused: false, startDate: ymd(start) },
     { id: 'milkthistle', name: '밀크씨슬', ingredient: '실리마린', dose: '130mg', timing: 'morning', paused: false, startDate: ymd(start) },
     { id: 'vitd', name: '비타민D', ingredient: '콜레칼시페롤', dose: '1,000IU', timing: 'morning', paused: false, startDate: ymd(start) },

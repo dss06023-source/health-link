@@ -102,6 +102,8 @@ export interface Supplement {
   timing: Timing
   paused: boolean
   startDate: string
+  recommendedTiming?: Timing // 권장 시간대와 그 이유. 사용자가 시간대를 바꿀 때 확인 창에 쓴다.
+  timingReason?: string
 }
 
 // 날짜(YYYY-MM-DD) → 영양제 id → 복용 여부

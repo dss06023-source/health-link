@@ -71,6 +71,8 @@ def supplement_row(row):
         "dose": info["dose"],
         "claim": info["claim"],
         "timeSlots": json.loads(row["time_slots"]),
+        "recommendedSlots": info["timeSlots"],  # 권장 시간대와 그 이유(사용자가 시간대를 바꿀 때 보여 준다)
+        "timingReason": info["timingReason"],
         "paused": bool(row["paused"]),
         "startedAt": row["started_at"],
         "endedAt": row["ended_at"],

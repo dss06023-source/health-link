@@ -1,11 +1,24 @@
 import { useEffect, useState } from 'react'
 import { notifySupported, requestNotify } from '../reminders'
 import { TIMING_LABEL } from '../data/rules'
+import { MOCK_TIMING_GUIDE } from '../data/mock'
 import { addDays, useStore, ymd } from '../store'
 import type { Supplement, Timing } from '../types'
 import { Icon, Sheet, Snackbar } from '../ui'
 
 const TIMINGS: Timing[] = ['morning', 'lunch', 'evening']
+
+// 이름 끝 글자 받침에 맞춰 조사를 고른다(숫자·영문 끝은 받침 없는 것으로 본다).
+function josa(word: string, withFinal: string, without: string) {
+  const c = word.charCodeAt(word.length - 1) - 0xac00
+  return word + (c >= 0 && c <= 11171 && c % 28 ? withFinal : without)
+}
+
+// 권장 시간대와 이유. 서버가 보낸 값이 없으면(모의 모드) 이름으로 찾는다.
+function guideOf(x: Supplement): { timing: Timing; reason: string } | null {
+  if (x.recommendedTiming && x.timingReason) return { timing: x.recommendedTiming, reason: x.timingReason }
+  return MOCK_TIMING_GUIDE[x.name] ?? null
+}
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
 export default function Intake() {
@@ -18,6 +31,14 @@ export default function Intake() {
   const [perm, setPerm] = useState(() => (notifySupported() ? Notification.permission : 'unsupported'))
   const [toast, setToast] = useState<string | null>(null)
   const [removing, setRemoving] = useState<Supplement | null>(null)
+  const [moving, setMoving] = useState<{ x: Supplement; to: Timing; guide: { timing: Timing; reason: string } } | null>(null)
+  // 권장 시간대에서 벗어나게 바꿀 때만 이유를 보여 주고 한 번 더 묻는다.
+  const changeTiming = (x: Supplement, to: Timing) => {
+    if (to === x.timing) return
+    const guide = guideOf(x)
+    if (guide && guide.timing !== to) setMoving({ x, to, guide })
+    else s.updateSupplement(x.id, { timing: to })
+  }
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 4500); return () => clearTimeout(t) }, [toast])
 
   // 최근 30일 복용률
@@ -131,10 +152,13 @@ export default function Intake() {
                 <div style={{ minWidth: 0 }}>
                   <div className="row" style={{ gap: 8 }}><b>{x.name}</b>{x.paused && <span className="tag">일시정지</span>}</div>
                   <span className="small muted">{x.ingredient} {x.dose} · {Number(x.startDate.slice(5, 7))}/{Number(x.startDate.slice(8))}부터</span>
+                  {guideOf(x) && (
+                    <p className="small timing-why"><b>{TIMING_LABEL[guideOf(x)!.timing]} 권장</b> · {guideOf(x)!.reason}</p>
+                  )}
                 </div>
                 <div className="seg" role="group" aria-label={`${x.name} 복용 시간대`}>
                   {TIMINGS.map((t) => (
-                    <button key={t} aria-pressed={x.timing === t} onClick={() => s.updateSupplement(x.id, { timing: t })}>{TIMING_LABEL[t]}</button>
+                    <button key={t} aria-pressed={x.timing === t} onClick={() => changeTiming(x, t)}>{TIMING_LABEL[t]}</button>
                   ))}
                 </div>
                 <div className="row" style={{ gap: 8, flexWrap: 'nowrap' }}>
@@ -148,6 +172,14 @@ export default function Intake() {
       </div>
 
       {toast && <Snackbar text={toast} onClose={() => setToast(null)} />}
+      {moving && (
+        <Sheet title={`${josa(moving.x.name, '을', '를')} ${TIMING_LABEL[moving.to]}으로 바꿀까요?`} onClose={() => setMoving(null)}
+          actions={<><button className="btn flat" onClick={() => setMoving(null)}>취소</button>
+            <button className="btn flat strong" onClick={() => { s.updateSupplement(moving.x.id, { timing: moving.to }); setMoving(null) }}>바꾸기</button></>}>
+          <p>{josa(moving.x.name, '은', '는')} {moving.guide.reason}</p>
+          <p className="small muted">그래서 <b>{TIMING_LABEL[moving.guide.timing]}</b>에 드시길 권장합니다. 생활 리듬에 맞지 않으면 바꾸셔도 되고, 알림은 바꾼 시간대로 옵니다.</p>
+        </Sheet>
+      )}
       {removing && (
         <Sheet title={`${removing.name} 복용을 그만둘까요?`} onClose={() => setRemoving(null)}
           actions={<><button className="btn flat" onClick={() => setRemoving(null)}>취소</button>

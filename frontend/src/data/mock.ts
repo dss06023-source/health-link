@@ -1,4 +1,4 @@
-import type { Checkup, CheckupCenter, CheckupItem, UserProfile } from '../types'
+import type { Checkup, CheckupCenter, CheckupItem, Timing, UserProfile } from '../types'
 
 // 모든 인물·수치는 시연용 가상 데이터다.
 export const SAMPLE_PROFILE: UserProfile = {
@@ -72,3 +72,14 @@ export const MYDATA_PRESCRIPTIONS = [
   { name: '아스피린', dispensedAt: '2026-09-02', institution: '하늘내과의원(가상)' },
   { name: '스타틴', dispensedAt: '2026-09-02', institution: '하늘내과의원(가상)' },
 ]
+
+// 모의 모드의 권장 시간대 이유. 서버 모드는 backend/app/seed/supplements.json의 timingReason을 받는다(같은 문구).
+export const MOCK_TIMING_GUIDE: Record<string, { timing: Timing; reason: string }> = {
+  '오메가-3': { timing: 'morning', reason: '기름에 녹는 성분이라 식사 직후에 먹어야 흡수가 잘 되고 비린 트림도 줄어듭니다. 식후라면 점심·저녁도 괜찮지만 잊지 않도록 아침으로 정했습니다.' },
+  '난소화성말토덱스트린': { timing: 'lunch', reason: '식이섬유가 식사 중 당과 지방의 흡수를 늦추는 원리라 식사와 함께 물에 타서 먹습니다. 다른 끼니와 함께여도 되지만 점심으로 정했습니다.' },
+  '밀크씨슬': { timing: 'morning', reason: '주성분 실리마린이 물에 잘 녹지 않아 식후에 먹어야 흡수에 유리하고 속도 덜 불편합니다.' },
+  '철분': { timing: 'morning', reason: '빈속에 먹을 때 흡수가 가장 잘 됩니다. 커피·차·우유·칼슘제와는 2시간쯤 떨어뜨려 드세요. 속이 불편하면 식후로 바꿔도 됩니다.' },
+  '비타민D': { timing: 'morning', reason: '기름에 녹는 비타민이라 지방이 든 식사 뒤에 먹어야 흡수가 잘 됩니다.' },
+  '비타민B12': { timing: 'morning', reason: '물에 녹는 비타민이라 언제 먹어도 되지만 잊지 않도록 아침으로 정했습니다.' },
+  '비타민C': { timing: 'lunch', reason: '물에 녹는 비타민이라 언제 먹어도 됩니다. 빈속에는 속이 쓰릴 수 있어 점심 식후로 정했습니다.' },
+}

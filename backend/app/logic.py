@@ -181,6 +181,7 @@ def recommend(user, values, active_catalog_ids):
             "dose": info["dose"],
             "timing": info["timing"],
             "timeSlots": info["timeSlots"],
+            "timingReason": info["timingReason"],
             "claim": info["claim"],
             "dailyIntake": info.get("dailyIntake"),
             "cautions": info.get("cautions", []),

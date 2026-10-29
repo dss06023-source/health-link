@@ -2,6 +2,7 @@
   "_about": "시연용 영양제 목록. 기능성 문구·1일 섭취량·섭취 시 주의사항은 식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」(2026-06-11 개정) 고시전문 제3. 개별 기준 및 규격에서 옮겼다(2026-10-28 원문 대조). 고시전문은 국가법령정보센터 행정규칙 일련번호 2100000280574의 첨부파일이다.",
   "_fields": {
     "ingredients": "제품 1일분에 든 성분 양(중복·상한 계산에 쓴다)",
+    "timingReason": "timeSlots로 정한 이유. 일반적인 흡수·작용 원리로 설명하고, 근거가 없으면 잊지 않도록 정했다고 적는다.",
     "dailyIntake": "고시된 1일 섭취량 범위. 제품 양(ingredients)이 이 범위 안에 있어야 한다.",
     "lifeStageAvoid": "pregnant(임신) / breastfeeding(수유) / child(어린이) 중 섭취를 피해야 하는 대상",
     "cautions": "고시의 섭취 시 주의사항을 쉬운 말로 옮긴 것. 고시에 없는 안내는 넣지 않고 intake_rules.json의 규칙으로 둔다.",
@@ -11,6 +12,7 @@
     "omega3": {
       "name": "오메가-3", "ingredients": {"EPA·DHA": "1000mg"},
       "dose": "1일 1회 1캡슐", "timeSlots": ["morning"], "timing": "아침 식후",
+      "timingReason": "기름에 녹는 성분이라 식사 직후에 먹어야 흡수가 잘 되고 비린 트림도 줄어듭니다. 식후라면 점심·저녁도 괜찮지만 잊지 않도록 아침으로 정했습니다.",
       "claim": "혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음",
       "dailyIntake": {"ingredient": "EPA·DHA", "min": 500, "max": 2000, "unit": "mg"},
       "lifeStageAvoid": [],
@@ -28,6 +30,7 @@
     "red_yeast_rice": {
       "name": "홍국", "ingredients": {"모나콜린K": "8mg"},
       "dose": "1일 1회 1정", "timeSlots": ["evening"], "timing": "저녁 식후",
+      "timingReason": "콜레스테롤은 주로 밤에 많이 만들어지는데, 홍국의 모나콜린K가 이 과정을 줄이는 방식이라 저녁 식후에 먹습니다.",
       "claim": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
       "dailyIntake": {"ingredient": "모나콜린K", "min": 4, "max": 8, "unit": "mg"},
       "lifeStageAvoid": ["pregnant", "breastfeeding", "child"],
@@ -48,6 +51,7 @@
     "plant_sterol": {
       "name": "식물스테롤", "ingredients": {"식물스테롤": "1600mg"},
       "dose": "1일 2회 1정", "timeSlots": ["morning", "evening"], "timing": "식사와 함께",
+      "timingReason": "음식 속 콜레스테롤이 흡수되는 것을 막는 원리라 식사와 함께 먹어야 효과가 있습니다.",
       "claim": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
       "dailyIntake": {"ingredient": "식물스테롤", "min": 800, "max": 3000, "unit": "mg"},
       "lifeStageAvoid": [],
@@ -61,6 +65,7 @@
     "banaba": {
       "name": "바나바잎 추출물", "ingredients": {"코로솔산": "1.3mg"},
       "dose": "1일 1회 1정", "timeSlots": ["morning"], "timing": "아침 식전",
+      "timingReason": "식후 혈당이 오르는 것을 줄이려는 원료라 식사 전에 먹습니다.",
       "claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
       "dailyIntake": {"ingredient": "코로솔산", "min": 0.45, "max": 1.3, "unit": "mg"},
       "lifeStageAvoid": ["pregnant", "breastfeeding", "child"],
@@ -77,6 +82,7 @@
     "indigestible_dextrin": {
       "name": "난소화성말토덱스트린", "ingredients": {"식이섬유(난소화성말토덱스트린)": "5g"},
       "dose": "1일 1회 1포", "timeSlots": ["lunch"], "timing": "점심 식사와 함께 물에 타서",
+      "timingReason": "식이섬유가 식사 중 당과 지방의 흡수를 늦추는 원리라 식사와 함께 물에 타서 먹습니다. 다른 끼니와 함께여도 되지만 점심으로 정했습니다.",
       "claim": "식후 혈당상승 억제·혈중 중성지질 개선에 도움을 줄 수 있음",
       "dailyIntake": {"ingredient": "식이섬유(난소화성말토덱스트린)", "min": 5, "max": 30, "unit": "g"},
       "lifeStageAvoid": [],
@@ -93,6 +99,7 @@
     "milk_thistle": {
       "name": "밀크씨슬", "ingredients": {"실리마린": "130mg"},
       "dose": "1일 1회 1정", "timeSlots": ["morning"], "timing": "아침 식후",
+      "timingReason": "주성분 실리마린이 물에 잘 녹지 않아 식후에 먹어야 흡수에 유리하고 속도 덜 불편합니다.",
       "claim": "간 건강에 도움을 줄 수 있음",
       "dailyIntake": {"ingredient": "실리마린", "min": 130, "max": 130, "unit": "mg"},
       "lifeStageAvoid": ["pregnant", "breastfeeding", "child"],
@@ -111,6 +118,7 @@
     "coq10": {
       "name": "코엔자임Q10", "ingredients": {"코엔자임Q10": "100mg"},
       "dose": "1일 1회 1캡슐", "timeSlots": ["morning"], "timing": "아침 식후",
+      "timingReason": "기름에 녹는 성분이라 식후에 먹어야 흡수가 잘 됩니다.",
       "claim": "높은 혈압 감소에 도움을 줄 수 있음",
       "dailyIntake": {"ingredient": "코엔자임Q10", "min": 90, "max": 100, "unit": "mg"},
       "lifeStageAvoid": ["breastfeeding"],
@@ -128,6 +136,7 @@
     "iron": {
       "name": "철분", "ingredients": {"철": "12mg"},
       "dose": "1일 1회 1정", "timeSlots": ["morning"], "timing": "아침 공복",
+      "timingReason": "빈속에 먹을 때 흡수가 가장 잘 됩니다. 커피·차·우유·칼슘제와는 2시간쯤 떨어뜨려 드세요. 속이 불편하면 식후로 바꿔도 됩니다.",
       "claim": "체내 산소운반과 혈액생성에 필요",
       "dailyIntake": {"ingredient": "철", "min": 3.6, "max": 15, "unit": "mg"},
       "lifeStageAvoid": [],
@@ -141,6 +150,7 @@
     "vitamin_d": {
       "name": "비타민D", "ingredients": {"비타민D": "10μg"},
       "dose": "1일 1회 1정", "timeSlots": ["morning"], "timing": "아침 식후",
+      "timingReason": "기름에 녹는 비타민이라 지방이 든 식사 뒤에 먹어야 흡수가 잘 됩니다.",
       "claim": "칼슘과 인이 흡수되고 이용되는데 필요, 뼈의 형성과 유지에 필요",
       "dailyIntake": {"ingredient": "비타민D", "min": 3, "max": 10, "unit": "μg"},
       "lifeStageAvoid": [],
@@ -157,6 +167,7 @@
     "garcinia": {
       "name": "가르시니아", "ingredients": {"HCA": "1500mg"},
       "dose": "1일 2회 1정", "timeSlots": ["morning", "evening"], "timing": "식전",
+      "timingReason": "탄수화물이 지방으로 바뀌는 것을 줄이려는 원료라 식사 전에 먹습니다.",
       "claim": "탄수화물이 지방으로 합성되는 것을 억제하여 체지방 감소에 도움을 줄 수 있음",
       "dailyIntake": {"ingredient": "HCA", "min": 750, "max": 1500, "unit": "mg"},
       "lifeStageAvoid": ["pregnant", "breastfeeding", "child"],
@@ -177,6 +188,7 @@
     "green_tea": {
       "name": "녹차추출물", "ingredients": {"카테킨": "300mg"},
       "dose": "1일 1회 1정", "timeSlots": ["lunch"], "timing": "점심 식후",
+      "timingReason": "빈속에 먹으면 속쓰림이나 간 부담이 생길 수 있어 식후에 먹고, 카페인이 있어 잠을 방해하지 않도록 저녁은 피합니다.",
       "claim": "체지방 감소·혈중 콜레스테롤 개선에 도움을 줄 수 있음",
       "dailyIntake": {"ingredient": "카테킨", "min": 300, "max": 1000, "unit": "mg"},
       "lifeStageAvoid": ["pregnant", "breastfeeding", "child"],
@@ -196,6 +208,7 @@
     "multivitamin": {
       "name": "종합비타민", "ingredients": {"비타민D": "10μg", "철": "8mg", "비타민C": "100mg", "비타민B6": "1.5mg"},
       "dose": "1일 1회 1정", "timeSlots": ["morning"], "timing": "아침 식후",
+      "timingReason": "기름에 녹는 비타민(A·D·E·K)이 들어 있어 식후에 먹어야 흡수가 잘 되고, 빈속에 먹을 때 생기는 메스꺼움도 줄어듭니다.",
       "claim": "에너지 생성과 정상적인 면역기능에 필요",
       "dailyIntake": null,
       "lifeStageAvoid": [],

@@ -442,3 +442,7 @@ button.li:hover { background: var(--hover); }
 .center-info dt { color: var(--muted); }
 .center-info dd { margin: 0; word-break: keep-all; }
 .center-info a { color: var(--accent); font-weight: 700; }
+
+/* 복용 시간대 이유 */
+.timing-why { margin: 6px 0 0; color: var(--muted); word-break: keep-all; }
+.timing-why b { color: var(--accent); }

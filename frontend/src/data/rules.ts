@@ -256,7 +256,7 @@ interface RecRule {
 
 const REC_RULES: RecRule[] = [
   {
-    id: 'omega3', name: '오메가-3', ingredient: 'EPA·DHA', dose: '1,000mg', timing: 'evening',
+    id: 'omega3', name: '오메가-3', ingredient: 'EPA·DHA', dose: '1,000mg', timing: 'morning',
     claim: '혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음',
     reason: '중성지방이나 LDL 콜레스테롤이 기준보다 높습니다.',
     when: (it) => { const c = ['TG', 'LDL'].filter((k) => flagged(byCode(it, k))); return c.length ? c : null },
