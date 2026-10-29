@@ -1,8 +1,9 @@
 import type { JobType,
-  Checkup, CheckupCenter, CurrentReview, CheckupItem, IntakeLog, Measurement, MydataResult, MydataState, Recommendation, ReminderTimes,
+  Address, AddressHit, CenterPlace, Checkup, CheckupCenter, CheckupItem, CurrentReview, IntakeLog, Measurement, MydataResult, MydataState, Recommendation, ReminderTimes,
   Supplement, Timing, UserProfile, Warning,
 } from '../types'
 import type { UploadResult } from './index'
+import { regionLabel } from '../data/regions'
 
 // backend/(FastAPI, docs/api.md) 응답을 화면이 쓰는 모양으로 바꾼다.
 const BASE = import.meta.env.VITE_API_BASE ?? ''
@@ -27,6 +28,7 @@ const firstEntry = (o: Record<string, string>) => Object.entries(o)[0] ?? ['', '
 interface RUser {
   name: string; birthYear: number; gender: 'M' | 'F'; heightCm?: number; medications: string[]; lastCheckupDate: string | null
   jobType?: JobType; confirmedTargetYear?: number | null
+  address?: Address
   liverHighRisk?: boolean; packYears?: number | null; cancerSpecialCase?: string[]; colonoscopyYear?: number | null
   currentSupplements?: string[]; conditions?: string[]; allergies?: string[]; customAllergies?: string[]
   lifestyle: {
@@ -57,7 +59,7 @@ const toLabel = (m: Map<string, string>, values: string[] = []) => {
 }
 interface RCheckupRow { id: number; date: string; source: string; status: string }
 interface RCheckup { id: number; date: string; source: string; items: { code: string; name: string; value: number; unit: string }[] }
-interface RSupp { id: number; supplementId: string; name: string; ingredients: Record<string, string>; timeSlots: Slot[]; paused: boolean; startedAt: string }
+interface RSupp { id: number; supplementId: string; name: string; ingredients: Record<string, string>; timeSlots: Slot[]; recommendedSlots?: Slot[]; timingReason?: string; paused: boolean; startedAt: string }
 interface RReason { code: string; name: string; value: number; unit: string }
 interface RWarning { level: 'info' | 'caution'; message: string; type: string; ingredient?: string; drugs?: string[] }
 interface RRec {
@@ -96,7 +98,7 @@ const mapWarning = (w: RWarning): Warning => ({
 export async function loadAll() {
   const today = new Date()
   const from = new Date(today); from.setDate(from.getDate() - 40)
-  const iso = (d: Date) => d.toISOString().slice(0, 10)
+  const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` // 기기 날짜(한국 시간). UTC로 바꾸면 새벽에 오늘 기록이 빠진다.
   const [user, rows, supps, logs, recs, meds, ms, reminder, mydata, options] = await Promise.all([
     call<RUser>('/api/users/me'),
     call<RCheckupRow[]>('/api/checkups'),
@@ -117,7 +119,8 @@ export async function loadAll() {
 
   const L = user.lifestyle
   const profile: UserProfile = {
-    name: user.name, birthYear: user.birthYear, sex: user.gender, region: '서울',
+    name: user.name, birthYear: user.birthYear, sex: user.gender,
+    region: user.address ? regionLabel(user.address.sido, user.address.sigungu) : '서울', address: user.address,
     lastCheckupYear: user.lastCheckupDate ? Number(user.lastCheckupDate.slice(0, 4)) : null,
     medications: user.medications, currentSupplements: toLabel(codes.supplement, user.currentSupplements),
     lifestyle: {
@@ -135,7 +138,8 @@ export async function loadAll() {
   }
   const supplements: Supplement[] = supps.map((x) => {
     const [ing, amt] = firstEntry(x.ingredients)
-    return { id: String(x.id), name: x.name, ingredient: ing, dose: amt, timing: toTiming(x.timeSlots), paused: x.paused, startDate: x.startedAt }
+    return { id: String(x.id), name: x.name, ingredient: ing, dose: amt, timing: toTiming(x.timeSlots), paused: x.paused, startDate: x.startedAt,
+      recommendedTiming: x.recommendedSlots && toTiming(x.recommendedSlots), timingReason: x.timingReason }
   })
   const intake: IntakeLog = {}
   for (const l of logs.logs) (intake[l.date] ??= {})[String(l.supplementId)] = l.taken
@@ -172,8 +176,12 @@ export async function loadAll() {
 
 export const remote = {
   getCenters: async (): Promise<CheckupCenter[]> =>
-    (await call<{ id: number | string; name: string; address: string; distanceKm: number; bookingUrl: string; kind?: string | null; exams?: string[] }[]>('/api/checkup-centers'))
-      .map((c) => ({ id: String(c.id), name: c.name, address: c.address, distanceKm: c.distanceKm, slots: [], kind: c.kind ?? undefined, exams: c.exams ?? [], bookingUrl: c.bookingUrl })),
+    (await call<{ id: number | string; name: string; address: string; distanceKm: number; bookingUrl: string; kind?: string | null; exams?: string[]; phone?: string | null; lat: number; lng: number }[]>('/api/checkup-centers'))
+      .map((c) => ({ id: String(c.id), name: c.name, address: c.address, distanceKm: c.distanceKm, slots: [], kind: c.kind ?? undefined, exams: c.exams ?? [],
+        bookingUrl: c.bookingUrl, phone: c.phone ?? undefined, lat: c.lat, lng: c.lng })),
+  getCenterPlace: (c: CheckupCenter) =>
+    call<CenterPlace>(`/api/checkup-centers/place?${new URLSearchParams({ name: c.name, lat: String(c.lat), lng: String(c.lng) })}`),
+  getConfig: () => call<{ kakaoJsKey: string | null }>('/api/config'),
   // 못 찾은 항목은 missing, 다시 볼 값은 needsReview로 온다. 수치를 하나도 못 찾으면 422(detail에 안내 문구).
   upload: async (files: File[]): Promise<UploadResult> => {
     const body = new FormData(); files.forEach((f) => body.append('files', f))
@@ -197,6 +205,7 @@ export const remote = {
     const pregnant = p.sex === 'F' && !!p.pregnant
     return call('/api/users/me', json('PUT', {
       name: p.name, birthYear: p.birthYear, gender: p.sex, medications: p.medications,
+      ...(p.address?.sido && { address: p.address }),
       ...(p.jobType && { jobType: p.jobType }), confirmedTargetYear: p.confirmedTargetYear ?? 0,
       liverHighRisk: !!p.liverHighRisk, packYears: p.packYears ?? 0, cancerSpecialCase: p.cancerSpecialCase ?? [], colonoscopyYear: p.colonoscopyYear ?? 0,
       currentSupplements: toCode(codes.supplement, p.currentSupplements),
@@ -220,6 +229,8 @@ export const remote = {
   intake: (id: string, timing: Timing, taken: boolean, date: string) =>
     call('/api/intake-logs', json('POST', { supplementId: Number(id), timeSlot: timing, taken, date })),
   reset: () => call('/api/demo/reset', { method: 'POST' }),
+  searchAddress: async (q: string) =>
+    (await call<{ items: AddressHit[] }>(`/api/address/search?${new URLSearchParams({ q })}`)).items,
 
   // 중간 점검(가정 측정)
   addMeasurement: (m: Omit<Measurement, 'id'>) =>

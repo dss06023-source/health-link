@@ -83,7 +83,7 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
         {weight && (
           <section className="sec tint-caution">
             <h2>영양제보다 먼저</h2>
-            <p className="small">체질량지수나 허리둘레가 기준을 넘었습니다. 체중을 5%(약 4kg)만 줄여도 중성지방·혈당·간 수치가 함께 내려가는 경우가 많습니다. 하루 30분 걷기와 저녁 탄수화물 줄이기부터 시작해 보세요.</p>
+            <p className="small">체질량지수나 허리둘레가 기준을 넘었습니다. 체중을 5%(약 4kg)만 줄여도 중성지방·혈당·간 수치가 함께 내려가는 경우가 많습니다. 하루 30분 걷기와 저녁 탄수화물 줄이기부터 시작해 보십시오.</p>
           </section>
         )}
       </div>

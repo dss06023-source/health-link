@@ -56,7 +56,7 @@ def mydata_connect(body: MydataConnect):
         raise HTTPException(422, "건강정보 전송에 동의해야 연동할 수 있습니다.")
     bad = [s for s in body.scopes if s not in ("checkups", "prescriptions")]
     if bad or not body.scopes:
-        raise HTTPException(422, "scopes는 checkups, prescriptions 중에서 고르세요.")
+        raise HTTPException(422, "scopes는 checkups, prescriptions 중에서 고르십시오.")
     with db.connect() as conn:
         user = load_user(conn)
         user["mydata"] = {
@@ -90,7 +90,7 @@ def mydata_sync(body: MydataSync = MydataSync()):
         user = load_user(conn)
         state = user.get("mydata", {})
         if not state.get("connected"):
-            raise HTTPException(409, "먼저 마이데이터 연동에 동의해 주세요.")
+            raise HTTPException(409, "먼저 마이데이터 연동에 동의해 주십시오.")
         imported, skipped, prescriptions = [], [], []
         if "checkups" in state["scopes"]:
             existing = {c["date"] for c in confirmed_checkups(conn)}
@@ -174,7 +174,7 @@ class ReminderSettings(BaseModel):
 def put_reminder_settings(body: ReminderSettings):
     for slot, value in (body.times or {}).items():
         if slot not in TIME_SLOTS:
-            raise HTTPException(422, f"시간대는 {', '.join(TIME_SLOTS)} 중에서 고르세요.")
+            raise HTTPException(422, f"시간대는 {', '.join(TIME_SLOTS)} 중에서 고르십시오.")
         if not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", value):
             raise HTTPException(422, "알림 시각은 HH:MM(24시간) 형식입니다.")
     with db.connect() as conn:
@@ -240,9 +240,9 @@ class Snooze(BaseModel):
 def snooze_reminder(body: Snooze):
     """알림 미루기. 기본 30분."""
     if body.timeSlot not in TIME_SLOTS:
-        raise HTTPException(422, f"시간대는 {', '.join(TIME_SLOTS)} 중에서 고르세요.")
+        raise HTTPException(422, f"시간대는 {', '.join(TIME_SLOTS)} 중에서 고르십시오.")
     if not 5 <= body.minutes <= 240:
-        raise HTTPException(422, "미루기는 5분에서 240분 사이로 정하세요.")
+        raise HTTPException(422, "미루기는 5분에서 240분 사이로 정하십시오.")
     now = now_kst(body.at)
     until = now + timedelta(minutes=body.minutes)
     with db.connect() as conn:
@@ -279,14 +279,14 @@ def measurement_types():
 def add_measurement(body: MeasurementIn):
     spec = measure.MEASUREMENT_TYPES.get(body.type)
     if not spec:
-        raise HTTPException(422, f"type은 {', '.join(measure.MEASUREMENT_TYPES)} 중에서 고르세요.")
+        raise HTTPException(422, f"type은 {', '.join(measure.MEASUREMENT_TYPES)} 중에서 고르십시오.")
     if set(body.values) != set(spec["fields"]):
-        raise HTTPException(422, f"{spec['label']}은(는) {', '.join(spec['fields'])} 값을 입력하세요.")
+        raise HTTPException(422, f"{spec['label']}은(는) {', '.join(spec['fields'])} 값을 입력하십시오.")
     for field, (lo, hi) in spec["fields"].items():
         if not lo <= body.values[field] <= hi:
             raise HTTPException(422, f"{field} 값은 {lo}~{hi} 사이여야 합니다.")
     if body.type == "glucose" and body.fasting is None:
-        raise HTTPException(422, "혈당은 공복 여부(fasting)를 함께 입력하세요.")
+        raise HTTPException(422, "혈당은 공복 여부(fasting)를 함께 입력하십시오.")
     measured_at = body.measuredAt or now_kst(None).isoformat(timespec="minutes")
     try:
         datetime.fromisoformat(measured_at)

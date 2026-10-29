@@ -55,7 +55,7 @@ export default function Measure({ go }: { go: (r: Route) => void }) {
     const values: Record<string, number> = {}
     for (const f of spec.fields) {
       const v = Number(vals[f.key])
-      if (!vals[f.key] || Number.isNaN(v) || v < f.min || v > f.max) { setError(`${f.label} 값은 ${f.min}~${f.max} ${f.unit} 사이로 입력해 주세요.`); return }
+      if (!vals[f.key] || Number.isNaN(v) || v < f.min || v > f.max) { setError(`${f.label} 값은 ${f.min}~${f.max} ${f.unit} 사이로 입력해 주십시오.`); return }
       values[f.key] = v
     }
     if (day > today) { setError('앞으로의 날짜는 기록할 수 없습니다.'); return }

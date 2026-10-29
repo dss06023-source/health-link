@@ -22,11 +22,11 @@ export function checkupGuide(p: UserProfile, t: CheckupTarget, confirm: ConfirmT
     out.push({
       id: 'before', title: '예약과 준비물',
       items: [
-        '검진기관 사정(예약 집중 등)으로 예약이 일찍 마감될 수 있으니 미리 예약하고 방문하세요.',
-        '건강검진은 주소지와 관계없이 지정된 검진기관 어디서나 받을 수 있습니다. 공휴일 검진기관은 미리 전화로 날짜를 확인하세요.',
-        '신분증을 꼭 가져가 검진기관에 보여 주세요.',
-        `해외 체류, 군 입대, 직장 입·퇴사, 건강보험 자격 상실로 대상이 바뀔 수 있으니 검진 전에 ${NHIS_APP}에서 대상 여부와 항목을 확인하세요.`,
-        '검진 때 귀중품은 도난·분실 위험이 있으니 챙겨 두세요.',
+        '검진기관 사정(예약 집중 등)으로 예약이 일찍 마감될 수 있으니 미리 예약하고 방문하십시오.',
+        '건강검진은 주소지와 관계없이 지정된 검진기관 어디서나 받을 수 있습니다. 공휴일 검진기관은 미리 전화로 날짜를 확인하십시오.',
+        '신분증을 꼭 가져가 검진기관에 보여 주십시오.',
+        `해외 체류, 군 입대, 직장 입·퇴사, 건강보험 자격 상실로 대상이 바뀔 수 있으니 검진 전에 ${NHIS_APP}에서 대상 여부와 항목을 확인하십시오.`,
+        '검진 때 귀중품은 도난·분실 위험이 있으니 챙겨 두십시오.',
       ],
     })
     const fasting = due || cancer('stomach') || cancer('liver') || cancer('lung')
@@ -35,9 +35,9 @@ export function checkupGuide(p: UserProfile, t: CheckupTarget, confirm: ConfirmT
           id: 'fasting', title: '금식',
           why: due ? '일반건강검진 혈액검사' : [cancer('stomach'), cancer('liver'), cancer('lung')].filter(Boolean).map((c) => c!.name).join('·') + ' 검진',
           items: [
-            '검진 전날 저녁 9시 이후에는 먹지 마세요.',
-            '검진 당일 아침에는 식사는 물론 물, 커피, 우유, 담배, 주스, 껌도 삼가세요.',
-            '되도록 오전에 받으세요. 오후에 받는다면 검사 전 최소 8시간 공복을 지켜야 합니다. 공복이 아니면 결과가 다르게 나올 수 있습니다.',
+            '검진 전날 저녁 9시 이후에는 먹지 마십시오.',
+            '검진 당일 아침에는 식사는 물론 물, 커피, 우유, 담배, 주스, 껌도 삼가십시오.',
+            '되도록 오전에 받으십시오. 오후에 받는다면 검사 전 최소 8시간 공복을 지켜야 합니다. 공복이 아니면 결과가 다르게 나올 수 있습니다.',
           ],
         }
       : { id: 'fasting', title: '금식', why: '대장암·유방암·자궁경부암 검진만 받음', items: ['이 검진만 받는다면 금식하지 않아도 됩니다.'] })
@@ -47,8 +47,8 @@ export function checkupGuide(p: UserProfile, t: CheckupTarget, confirm: ConfirmT
     out.push({
       id: 'form', title: '문진표',
       items: [
-        '검진기관의 문진표는 반드시 본인이 작성하세요.',
-        `미리 웹 문진표를 쓰면 검진 시간이 줄어듭니다. ${NHIS_APP} → 건강모아 → 나의건강 → 검진신청 → 문진표/평가도구 작성. 일부 기관은 연계가 안 될 수 있으니 확인하세요.`,
+        '검진기관의 문진표는 반드시 본인이 작성하십시오.',
+        `미리 웹 문진표를 쓰면 검진 시간이 줄어듭니다. ${NHIS_APP} → 건강모아 → 나의건강 → 검진신청 → 문진표/평가도구 작성. 일부 기관은 연계가 안 될 수 있으니 확인하십시오.`,
       ],
     })
     out.push({
@@ -56,7 +56,7 @@ export function checkupGuide(p: UserProfile, t: CheckupTarget, confirm: ConfirmT
       why: `${t.year}년 대상`,
       items: [
         '비용은 국민건강보험공단이 전액 부담합니다.',
-        '시력·청력 결과는 운전면허 신체검사에도 쓰이므로 안경·렌즈를 쓰는 분은 교정시력으로 검사받으세요.',
+        '시력·청력 결과는 운전면허 신체검사에도 쓰이므로 안경·렌즈를 쓰는 분은 교정시력으로 검사받으십시오.',
         '구강검진은 구강검진기관으로 지정된 가까운 치과에서 받습니다.',
         ...t.items.map((i) => `${t.year - p.birthYear}세 추가 검사: ${i.name}${i.note ? ` (${i.note})` : ''}`),
       ],
@@ -70,7 +70,7 @@ export function checkupGuide(p: UserProfile, t: CheckupTarget, confirm: ConfirmT
       '위내시경검사를 받습니다. 위내시경이 어려우면 위장조영검사를 고를 수 있습니다.',
       `위장조영검사에서 '위암의심'이 나오면 위내시경은 ${next}년 1월 31일까지 받을 수 있습니다.`,
       '비용은 공단 90%, 본인 10%입니다(국가암검진 대상자·의료급여수급자는 본인부담 없음). 수면내시경 마취비 같은 추가 검사비는 따로 냅니다.',
-      '수면내시경을 받으면 검진 뒤 직접 운전하지 말고 대중교통을 이용하세요. 안전을 위해 보호자와 함께 가세요.',
+      '수면내시경을 받으면 검진 뒤 직접 운전하지 말고 대중교통을 이용하십시오. 안전을 위해 보호자와 함께 가십시오.',
     ],
   })
   const colon = cancer('colorectal')
@@ -105,9 +105,9 @@ export function checkupGuide(p: UserProfile, t: CheckupTarget, confirm: ConfirmT
   if (cervical) out.push({
     id: 'cervical', title: '자궁경부암 검진', why: '20세 이상 여성 2년마다',
     items: [
-      '생리 기간(생리 전후 2~3일 포함)은 피해서 받으세요.',
-      '검진 48시간 전부터 성관계, 탐폰, 질 세척, 질 내 약물·윤활제, 질 내 피임약을 쓰지 마세요.',
-      '자궁 관련 수술 이력이 있거나 처음 받는 분은 검진 의사와 먼저 상담하세요.',
+      '생리 기간(생리 전후 2~3일 포함)은 피해서 받으십시오.',
+      '검진 48시간 전부터 성관계, 탐폰, 질 세척, 질 내 약물·윤활제, 질 내 피임약을 쓰지 마십시오.',
+      '자궁 관련 수술 이력이 있거나 처음 받는 분은 검진 의사와 먼저 상담하십시오.',
       '비용은 공단이 전액 부담합니다.',
     ],
   })
@@ -134,7 +134,7 @@ export function checkupGuide(p: UserProfile, t: CheckupTarget, confirm: ConfirmT
     items: [
       confirm.message,
       `받을 곳: ${confirm.where}.`,
-      '일반건강검진 결과 통보서와 신분증을 꼭 가져가세요.',
+      '일반건강검진 결과 통보서와 신분증을 꼭 가져가십시오.',
       '고혈압은 진찰·혈압측정, 당뇨병은 진찰·공복혈당·당화혈색소, 이상지질혈증은 진찰을 받습니다.',
     ],
   })
@@ -142,7 +142,7 @@ export function checkupGuide(p: UserProfile, t: CheckupTarget, confirm: ConfirmT
   if (t.done) out.push({
     id: 'limit', title: '검진 횟수', why: `${t.year}년 검진 받음`,
     items: [
-      '검진 항목마다 정해진 횟수를 넘겨 받으면 검진비용을 환수합니다. 올해 일반건강검진을 다시 받지 마세요.',
+      '검진 항목마다 정해진 횟수를 넘겨 받으면 검진비용을 환수합니다. 올해 일반건강검진을 다시 받지 마십시오.',
       ...(t.cancers.some((c) => c.status === 'target') ? [`올해 대상인 암검진(${t.cancers.filter((c) => c.status === 'target').map((c) => c.name).join('·')})을 아직 받지 않았다면 12월 31일까지 받을 수 있습니다.`] : []),
     ],
   })

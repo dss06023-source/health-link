@@ -5,6 +5,7 @@ import { checkupTarget, confirmTest, interpret } from '../data/rules'
 import { latestCheckup, useStore, ymd } from '../store'
 import type { CancerScreening, CheckupCenter } from '../types'
 import { Disclaimer, Icon, Sheet } from '../ui'
+import CenterSheet from './CenterSheet'
 
 const CANCER_STATUS: Record<CancerScreening['status'], string> = {
   target: '올해 대상', highRiskOnly: '해당 없음', maybe: '확인 필요', excluded: '대상 제외', notThisYear: '내년 대상',
@@ -22,6 +23,7 @@ export default function Home({ go }: { go: (r: Route) => void }) {
   const t = checkupTarget(p)
   const [centers, setCenters] = useState<CheckupCenter[]>([])
   const [pick, setPick] = useState<{ c: CheckupCenter; slot: string } | null>(null)
+  const [info, setInfo] = useState<CheckupCenter | null>(null)
   useEffect(() => { getCenters().then(setCenters) }, [])
 
   const last = latestCheckup(s)
@@ -52,13 +54,13 @@ export default function Home({ go }: { go: (r: Route) => void }) {
     <>
       <section className="sec">
         <p>
-          {due ? <>{p.name} 님은 <b>{t.year}년 일반건강검진 대상</b>이고, 아직 받지 않으셨어요. 12월 31일에 마감합니다.</>
+          {due ? <>{p.name} 님은 <b>{t.year}년 일반건강검진 대상</b>이고, 아직 받지 않으셨습니다. 12월 31일에 마감합니다.</>
             : t.done ? <>최근 결과는 {last.date} 검진이고, 기준을 벗어난 항목은 <b>{flagged}개</b>입니다.</>
               : <>{p.jobType === 'nonOffice' ? '비사무직은' : `${odd}년생은`} {t.nextYear}년에 검진 대상입니다.</>}
         </p>
         <p className="small muted">{t.reason === 'nonOffice' ? '비사무직 직장가입자는 해마다 무료로 받습니다.'
           : t.reason === 'confirmed' ? '공단 조회 결과에 따라 올해 대상으로 표시합니다.'
-            : <>{odd}년에 태어난 분은 {odd}년에 무료로 받습니다. 공단 조회 결과가 다르면 내 정보에서 바꿀 수 있어요.</>} 비용은 건강보험이 부담합니다.</p>
+            : <>{odd}년에 태어난 분은 {odd}년에 무료로 받습니다. 공단 조회 결과가 다르면 내 정보에서 바꿀 수 있습니다.</>} 비용은 건강보험이 부담합니다.</p>
         {t.notes.map((n) => <p key={n} className="small muted">{n}</p>)}
         <div className="actions">
           <button className="btn flat" onClick={() => go('guide')}>건강검진 주의사항</button>
@@ -124,7 +126,7 @@ export default function Home({ go }: { go: (r: Route) => void }) {
                 <small>{c.address}{centerLabel(c)}</small>
                 <div className="slots">
                   {c.slots.map((sl) => <button key={sl} className="chip" onClick={() => setPick({ c, slot: sl })}>{sl}</button>)}
-                  {c.bookingUrl && <a className="chip" href={c.bookingUrl} target="_blank" rel="noreferrer">예약 안내 열기</a>}
+                  <button className="chip" onClick={() => setInfo(c)}>지도·전화 보기</button>
                 </div>
               </div>
             </li>
@@ -135,8 +137,10 @@ export default function Home({ go }: { go: (r: Route) => void }) {
 
       <Disclaimer />
 
+      {info && <CenterSheet c={info} onClose={() => setInfo(null)} />}
+
       {pick && (
-        <Sheet title="예약을 요청할까요?" onClose={() => setPick(null)}
+        <Sheet title="예약을 요청하시겠습니까?" onClose={() => setPick(null)}
           actions={<><button className="btn flat" onClick={() => setPick(null)}>취소</button>
             <button className="btn flat strong" onClick={() => { s.reserve(pick.c.name, pick.slot); setPick(null) }}>예약 요청</button></>}>
           <div className="picked"><b>{pick.c.name}</b><span className="small muted">{pick.c.address}</span><span className="num">{pick.slot}</span></div>

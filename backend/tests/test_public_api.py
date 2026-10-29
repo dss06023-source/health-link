@@ -33,6 +33,12 @@ def fake_responses(url, params=None, headers=None, timeout=None):
         return httpx.Response(200, request=req, json={"header": {"resultCode": "00"}, "body": {"items": [
             {"itemSeq": "200502107", "itemName": "쿠파린정5밀리그램(와파린나트륨)", "entpName": "하나제약(주)",
              "efcyQesitm": "혈전 예방\n", "intrcQesitm": "비타민K가 많은 음식에 주의하십시오.\n"}]}})
+    if "search/keyword" in url:
+        assert params["query"] == "가까운의원" and params["radius"] == 300
+        return httpx.Response(200, request=req, json={"documents": [
+            {"place_name": "다른약국", "phone": "02-9", "place_url": "http://place.map.kakao.com/9"},
+            {"place_name": "가까운의원", "phone": "02-777-7777", "place_url": "http://place.map.kakao.com/7",
+             "road_address_name": "서울 중구 앞길 2", "category_name": "의료,건강 > 병원 > 내과"}]})
     if "addrLinkApi" in url:
         return httpx.Response(200, request=req, json={"results": {"common": {"errorCode": "0"}, "juso": [
             {"roadAddr": "서울특별시 중구 세종대로 110", "jibunAddr": "서울특별시 중구 태평로1가 31",
@@ -62,7 +68,7 @@ def test_without_keys_everything_falls_back_to_demo(client):
     assert client.get("/api/drugs/search", params={"q": "와파린"}).json()["items"][0]["name"] == "와파린"
     assert client.get("/api/address/search", params={"q": "세종대로"}).json()["source"] == "demo"
     assert client.get("/api/geocode", params={"address": "아무 주소"}).json()["isDemoData"] is True
-    assert client.get("/api/health").json()["publicApis"] == {"dataGoKr": False, "juso": False, "kakao": False}
+    assert client.get("/api/health").json()["publicApis"] == {"dataGoKr": False, "juso": False, "kakao": False, "kakaoJs": False}
 
 
 def test_real_checkup_centers_sorted_by_distance(client, keys):
@@ -105,3 +111,49 @@ def test_api_failure_falls_back_and_hides_key(client, monkeypatch, caplog):
 def test_encoded_data_go_kr_key_is_decoded(monkeypatch):
     monkeypatch.setenv("DATA_GO_KR_KEY", "abc%2Bdef%3D%3D")
     assert public_api._key("DATA_GO_KR_KEY") == "abc+def=="
+
+
+def test_address_search_falls_back_to_kakao_without_juso(client, keys, monkeypatch):
+    monkeypatch.delenv("JUSO_API_KEY")
+    addr = client.get("/api/address/search", params={"q": "세종대로 110 kakao"}).json()
+    assert addr["source"] == "kakao"
+    assert addr["items"][0] == {"roadAddress": "서울 중구 세종대로 110", "jibunAddress": "서울 중구 태평로1가 31",
+                                "zipCode": None, "buildingName": None, "regionCode": None, "lat": 37.5665, "lng": 126.978}
+
+
+def test_saving_address_moves_checkup_center_search(client, keys):
+    me = client.put("/api/users/me", json={"address": {
+        "sido": "서울특별시", "sigungu": "중구", "roadAddress": "서울 중구 세종대로 110", "detailAddress": "3층"}}).json()
+    assert me["address"]["detailAddress"] == "3층" and me["location"] == {"lat": 37.5665, "lng": 126.978}
+    assert client.get("/api/checkup-centers").json()[0]["source"] == "nhis"
+
+
+def test_address_without_geocode_uses_sido_center(client):
+    me = client.put("/api/users/me", json={"address": {"sido": "부산광역시", "sigungu": "해운대구"}}).json()
+    assert me["location"] == {"lat": 35.1796, "lng": 129.0756}
+    assert me["address"] == {"sido": "부산광역시", "sigungu": "해운대구", "roadAddress": "", "detailAddress": "", "zipCode": ""}
+
+
+def test_picked_address_keeps_its_coordinates_and_bad_sido_is_rejected(client):
+    me = client.put("/api/users/me", json={"address": {"sido": "제주특별자치도", "sigungu": "서귀포시",
+                                                        "roadAddress": "제주 서귀포시 중앙로 1", "lat": 33.25, "lng": 126.56}}).json()
+    assert me["location"] == {"lat": 33.25, "lng": 126.56}
+    assert client.put("/api/users/me", json={"address": {"sido": "서울"}}).status_code == 422
+def test_center_place_uses_kakao_keyword_match(client, keys):
+    r = client.get("/api/checkup-centers/place", params={"name": "가까운의원", "lat": 37.5665, "lng": 126.979}).json()
+    assert r["found"] and r["phone"] == "02-777-7777" and r["placeUrl"].endswith("/7")
+    assert r["category"].endswith("내과") and r["mapLink"].startswith("https://map.kakao.com/link/map/")
+
+
+def test_center_place_without_key_still_gives_map_link(client):
+    r = client.get("/api/checkup-centers/place", params={"name": "가상내과의원", "lat": 37.5, "lng": 127.0}).json()
+    assert r["found"] is False and "phone" not in r
+    assert r["mapLink"] == "https://map.kakao.com/link/map/%EA%B0%80%EC%83%81%EB%82%B4%EA%B3%BC%EC%9D%98%EC%9B%90,37.5,127.0"
+
+
+def test_client_config_exposes_only_js_key(client, monkeypatch):
+    assert client.get("/api/config").json() == {"kakaoJsKey": None}
+    monkeypatch.setenv("KAKAO_JS_KEY", "js-key")
+    monkeypatch.setenv("KAKAO_REST_API_KEY", "rest-secret")
+    body = client.get("/api/config").text
+    assert "js-key" in body and "rest-secret" not in body

@@ -14,11 +14,26 @@ export interface Lifestyle {
   diet?: string[]
 }
 
+// 사는 곳. 시·도와 시·군·구는 목록에서, 도로명주소는 검색에서 고르고 상세주소는 직접 쓴다.
+export interface Address {
+  sido: string
+  sigungu: string
+  roadAddress: string
+  detailAddress: string
+  zipCode?: string
+  lat?: number // 검색에서 고른 주소의 좌표. 없으면 서버가 주소로 찾는다.
+  lng?: number
+}
+
+// 주소 검색 결과 한 줄
+export interface AddressHit { roadAddress: string | null; jibunAddress: string | null; zipCode: string | null; buildingName: string | null; lat?: number; lng?: number }
+
 export interface UserProfile {
   name: string
   birthYear: number
   sex: Sex
-  region: string
+  region: string // 화면에 보이는 짧은 지역 이름(예: 서울 마포구). address에서 만든다.
+  address?: Address
   lastCheckupYear: number | null
   medications: string[]
   currentSupplements: string[]
@@ -95,6 +110,8 @@ export interface Supplement {
   timing: Timing
   paused: boolean
   startDate: string
+  recommendedTiming?: Timing // 권장 시간대와 그 이유. 사용자가 시간대를 바꿀 때 확인 창에 쓴다.
+  timingReason?: string
 }
 
 // 날짜(YYYY-MM-DD) → 영양제 id → 복용 여부
@@ -109,6 +126,20 @@ export interface CheckupCenter {
   kind?: string // 의원·치과의원·병원 등 기관 종류
   exams: string[] // 하는 검진: 일반·위암·대장암·구강 등
   bookingUrl?: string
+  phone?: string // 공단 등록 전화. 상세 화면에서 카카오 장소 전화로 보완한다.
+  lat?: number
+  lng?: number
+}
+
+// 검진기관 상세: 카카오 장소 검색 결과. 못 찾으면 found=false와 지도 링크만 온다.
+export interface CenterPlace {
+  found: boolean
+  phone?: string | null
+  placeUrl?: string | null
+  roadAddress?: string | null
+  category?: string | null
+  mapLink: string
+  routeLink: string
 }
 
 export interface CheckupTarget {

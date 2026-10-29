@@ -72,7 +72,7 @@ def ingredient_overlaps(catalog_ids):
         message = f"{ingredient} 성분이 {names}에 함께 들어 있습니다. 하루 합계 {total:g}{unit}"
         if limit is not None:
             message += f"(상한 {limit:g}{unit})"
-        message += "로 상한을 넘습니다. 한 제품을 줄이세요." if over else "입니다."
+        message += "로 상한을 넘습니다. 한 제품을 줄이십시오." if over else "입니다."
         warnings.append({
             "type": "duplicate",
             "level": "caution" if over else "info",
@@ -170,6 +170,7 @@ def recommend(user, values, active_catalog_ids):
             "dose": info["dose"],
             "timing": info["timing"],
             "timeSlots": info["timeSlots"],
+            "timingReason": info["timingReason"],
             "claim": info["claim"],
             "dailyIntake": info.get("dailyIntake"),
             "cautions": info.get("cautions", []),
@@ -259,13 +260,13 @@ def review_current(cid, user, described, med_classes, medications):
     purpose = info.get("purpose")
     if avoid:
         status = "conflict"
-        message = " ".join(avoid) + " 드시고 있다고 하셔서 복용 관리에는 넣어 두었습니다. 계속 드실지는 의사·약사와 상의하세요."
+        message = " ".join(avoid) + " 드시고 있다고 하셔서 복용 관리에는 넣어 두었습니다. 계속 드실지는 의사·약사와 상의하십시오."
     else:
         status = "keep"
         lead = f"{purpose}{_josa(purpose, '을', '를')} 위해 드신다면 계속 드셔도 됩니다. " if purpose else ""
         message = lead + "입력하신 약·질환·검진 수치와 부딪히는 규칙이 없어 복용 관리에 함께 넣었습니다."
         if cautions:
-            message += " 다만 아래 내용은 확인하세요."
+            message += " 다만 아래 내용은 확인하십시오."
     return {"supplementId": cid, "name": info["name"], "claim": info["claim"], "purpose": purpose,
             "status": status, "message": message, "cautions": cautions}
 
