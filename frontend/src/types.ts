@@ -93,7 +93,8 @@ export interface CheckupCenter {
   address: string
   distanceKm: number
   slots: string[]
-  tags: string[]
+  kind?: string // 의원·치과의원·병원 등 기관 종류
+  exams: string[] // 하는 검진: 일반·위암·대장암·구강 등
   bookingUrl?: string
 }
 
