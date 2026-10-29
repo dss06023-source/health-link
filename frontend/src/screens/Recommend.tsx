@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { Route } from '../App'
 import { MEDICATION_OPTIONS, SUPPLEMENT_OPTIONS } from '../data/mock'
-import { checkWarnings, interpret, recommend, TIMING_LABEL } from '../data/rules'
+import { checkWarnings, interpret, recommend, reviewCurrent, TIMING_LABEL } from '../data/rules'
 import { latestCheckup, useStore } from '../store'
 import { CautionList, Disclaimer, Value } from '../ui'
 
@@ -21,6 +21,8 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
   const warnings = s.remote?.warnings ?? checkWarnings([...chosen.map((r) => r.name), ...s.supplements.filter((x) => !x.paused).map((x) => x.name)], p, items)
   const itemOf = (code: string) => items.find((i) => i.code === code)
   const already = chosen.filter((r) => s.supplements.some((x) => x.id === r.id)).length
+  // 이미 먹는 영양제 중 추천 구성에 없는 것: 계속 먹어도 되는지, 피해야 하는지
+  const current = s.remote?.current ?? reviewCurrent(p, items, recs)
   const weight = items.some((i) => (i.code === 'BMI' || i.code === 'WAIST') && i.status !== 'normal')
 
   const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
@@ -57,6 +59,17 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
                 </div>
               )
             })}
+            {current.map((x) => (
+              <div key={x.name} className={`link-row current ${x.status}`}>
+                <div className="evid"><span className="life">이미 먹는 영양제</span></div>
+                <span className="wire soft" aria-hidden="true" />
+                <div className="supp">
+                  <b>{x.name}</b>
+                  <span className={x.status === 'conflict' ? 'skip danger' : 'claim'}>{x.message}</span>
+                  {x.cautions.map((c) => <span key={c} className="claim">확인: {c}</span>)}
+                </div>
+              </div>
+            ))}
             {!recs.length && <p className="muted" style={{ padding: '14px 0' }}>지금 수치와 생활습관으로는 추가할 영양제가 없습니다.</p>}
           </div>
           <div className="actions">

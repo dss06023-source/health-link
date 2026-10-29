@@ -201,7 +201,7 @@ def test_profile_supplements_and_intake_list_are_one(client):
 
     # 시연 인물의 복용 관리 목록이 내 정보에도 보인다.
     assert {"omega3", "milk_thistle", "multivitamin", "vitamin_d"} <= set(client.get("/api/users/me").json()["currentSupplements"])
-    # 내 정보에서 빼면 복용 관리에서 중단되고, 새로 고르면 추가된다. 유산균처럼 복용 관리에 없는 보기는 정보에만 남는다.
+    # 내 정보에서 빼면 복용 관리에서 중단되고, 새로 고르면 추가된다.
     me = client.put("/api/users/me", json={"currentSupplements": ["omega3", "milk_thistle", "probiotics", "coq10"]}).json()
     assert set(me["currentSupplements"]) == {"omega3", "milk_thistle", "probiotics", "coq10"}
     assert {"vitamin_d", "multivitamin"}.isdisjoint(plan()) and {"omega3", "coq10"} <= plan()
@@ -210,3 +210,32 @@ def test_profile_supplements_and_intake_list_are_one(client):
     # 추천에서 복용을 시작하면 내 정보에도 체크된다.
     client.post("/api/supplements", json={"supplementId": "vitamin_d"})
     assert "vitamin_d" in client.get("/api/users/me").json()["currentSupplements"]
+
+
+def test_current_supplements_keep_or_conflict(client):
+    # 시연 인물은 스타틴을 먹고 ALT가 기준치 밖이다. 홍국은 피해야 하고, 유산균·루테인은 부딪히는 규칙이 없다.
+    me = client.put("/api/users/me", json={"currentSupplements": ["omega3", "probiotics", "lutein", "red_yeast_rice"]}).json()
+    assert set(me["currentSupplements"]) == {"omega3", "probiotics", "lutein", "red_yeast_rice"}
+    plan = {s["supplementId"] for s in client.get("/api/supplements").json()}
+    assert {"probiotics", "lutein", "omega3", "red_yeast_rice"} <= plan
+    current = {c["supplementId"]: c for c in client.get("/api/recommendations").json()["current"]}
+    assert "omega3" not in current  # 추천에도 있는 영양제는 추천 줄에서 '이미 복용 중'으로 보인다.
+    assert current["probiotics"]["status"] == "keep" and current["probiotics"]["message"].startswith("장 건강을 위해 드신다면")
+    assert current["lutein"]["message"].startswith("눈 건강을 위해 드신다면")
+    assert current["red_yeast_rice"]["status"] == "conflict" and "추천에서 뺐습니다" not in current["red_yeast_rice"]["message"]
+    # 나중에 임신 중으로 바꾸면 루테인은 복용 관리에 남고 '피해야 함'으로 보인다.
+    client.put("/api/users/me", json={"lifestyle": {"pregnant": True}})
+    assert "lutein" in {s["supplementId"] for s in client.get("/api/supplements").json()}
+    current = {c["supplementId"]: c for c in client.get("/api/recommendations").json()["current"]}
+    assert current["lutein"]["status"] == "conflict"
+
+
+def test_new_recommendation_that_clashes_with_taking_is_excluded():
+    from app import logic
+    user = {"gender": "F", "medications": [], "conditions": [], "lifestyle": {}}
+    values = {"bmi": 31, "waist": 95, "ldl": 170, "tc": 250}
+    free = {r["supplementId"] for r in logic.recommend(user, values, [])["recommendations"]}
+    assert {"garcinia", "green_tea"} & free
+    r = logic.recommend(user, values, ["green_tea"])
+    excluded = {e["supplementId"]: e["message"] for e in r["excluded"]}
+    assert "garcinia" in excluded and "이미 녹차추출물을 드시고 있어" in excluded["garcinia"]

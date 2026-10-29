@@ -1,5 +1,5 @@
 import type { JobType,
-  Address, AddressHit, CenterPlace, Checkup, CheckupCenter, CheckupItem, IntakeLog, Measurement, MydataResult, MydataState, Recommendation, ReminderTimes,
+  Address, AddressHit, CenterPlace, Checkup, CheckupCenter, CheckupItem, CurrentReview, IntakeLog, Measurement, MydataResult, MydataState, Recommendation, ReminderTimes,
   Supplement, Timing, UserProfile, Warning,
 } from '../types'
 import type { UploadResult } from './index'
@@ -66,11 +66,13 @@ interface RRec {
   supplementId: string; name: string; ingredients: Record<string, string>; timeSlots: Slot[]; claim: string
   reasons: RReason[]; lifestyleReasons: string[]; alreadyTaking: boolean
 }
-interface RRecs { recommendations: RRec[]; excluded: { name: string; message: string }[]; warnings: (RWarning & { supplementId?: string })[]; notes?: { message: string }[] }
+interface RRecs { recommendations: RRec[]; excluded: { name: string; message: string }[]; warnings: (RWarning & { supplementId?: string })[]; notes?: { message: string }[]
+  current?: { name: string; status: 'keep' | 'conflict'; message: string; cautions: string[] }[] }
 
 export interface RemoteExtras {
   checkupIds: Record<string, number>
   recs: Recommendation[]
+  current: CurrentReview[]
   warnings: Warning[]
   notes: string[]
   medOptions: string[]
@@ -154,6 +156,7 @@ export async function loadAll() {
         skipped: r.alreadyTaking ? '이미 복용 중입니다.' : undefined,
       }
     }),
+    current: (recs?.current ?? []).map((c) => ({ name: c.name, status: c.status, message: c.message, cautions: c.cautions })),
     warnings: [
       ...(recs?.excluded ?? []).map((e): Warning => ({ level: 'danger', title: `${e.name} 제외`, detail: e.message })),
       ...(recs?.warnings ?? []).map(mapWarning),

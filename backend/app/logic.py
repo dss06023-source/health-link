@@ -147,33 +147,22 @@ def recommend(user, values, active_catalog_ids):
             entry = candidates.setdefault(rule["supplement"], {"priority": rule["priority"], "reasons": [], "lifestyleReasons": []})
             entry["lifestyleReasons"].append(rule["reason"])
 
-    lifestyle = user.get("lifestyle", {})
     recommendations, excluded = [], []
     for cid, entry in candidates.items():
         info = ref.SUPPLEMENTS[cid]
-        warnings = interaction_warnings(cid, med_classes, medications)
-        for rule in ref.CONDITION_CAUTIONS:
-            if rule["supplement"] == cid and any(
-                described.get(code, {}).get("status", ref.NORMAL) != ref.NORMAL for code in rule["items"]
-            ):
-                warnings.append({"type": "condition", "level": rule["level"], "message": rule["message"]})
-        for rule in ref.DIAGNOSIS_CAUTIONS:
-            if rule["supplement"] == cid and set(rule["conditions"]) & set(user.get("conditions", [])):
-                warnings.append({"type": "diagnosis", "level": rule["level"], "message": rule["message"]})
-        stages = [ref.LIFE_STAGE_LABELS[s] for s in info.get("lifeStageAvoid", []) if lifestyle.get(s)]
-        if stages:
-            warnings.append({"type": "lifeStage", "level": "avoid",
-                             "message": f"{'·'.join(stages)}에는 {info['name']} 섭취를 피해야 합니다. 추천에서 뺐습니다."})
-        if any(w["level"] == "avoid" for w in warnings):
+        warnings = supplement_warnings(cid, user, described, med_classes, medications)
+        others = [c for c in active_catalog_ids if c != cid]
+        overlaps = [w for w in ingredient_overlaps(others + [cid]) if cid in w["supplements"]]
+        clash = taking_conflicts(cid, active_catalog_ids, overlaps)
+        if any(w["level"] == "avoid" for w in warnings) or clash:
             excluded.append({
                 "supplementId": cid,
                 "name": info["name"],
                 "reasons": entry["reasons"],
-                "message": " ".join(w["message"] for w in warnings if w["level"] == "avoid"),
+                "message": " ".join([w["message"] for w in warnings if w["level"] == "avoid"] + clash),
             })
             continue
-        others = [c for c in active_catalog_ids if c != cid]
-        warnings += [w for w in ingredient_overlaps(others + [cid]) if cid in w["supplements"]]
+        warnings += overlaps
         recommendations.append({
             "supplementId": cid,
             "name": info["name"],
@@ -212,8 +201,82 @@ def recommend(user, values, active_catalog_ids):
         if codes:
             notes.append({"items": codes, "message": rule["message"]})
     flat = [dict(w, supplementId=r["supplementId"]) for r in recommendations for w in r["warnings"]]
+    recommended = {r["supplementId"] for r in recommendations}
+    current = [review_current(cid, user, described, med_classes, medications)
+               for cid in dict.fromkeys(active_catalog_ids) if cid not in recommended]
     return {"recommendations": recommendations, "excluded": excluded, "warnings": flat, "notes": notes,
-            "disclaimer": ref.DISCLAIMER}
+            "current": current, "disclaimer": ref.DISCLAIMER}
+
+
+def supplement_warnings(cid, user, described, med_classes, medications):
+    """약·검진 수치·진단 질환·임신 등으로 이 영양제에 붙는 주의. level이 avoid면 먹지 않아야 한다."""
+    info = ref.SUPPLEMENTS[cid]
+    warnings = interaction_warnings(cid, med_classes, medications)
+    for rule in ref.CONDITION_CAUTIONS:
+        if rule["supplement"] == cid and any(
+            described.get(code, {}).get("status", ref.NORMAL) != ref.NORMAL for code in rule["items"]
+        ):
+            warnings.append({"type": "condition", "level": rule["level"], "message": rule["message"]})
+    for rule in ref.DIAGNOSIS_CAUTIONS:
+        if rule["supplement"] == cid and set(rule["conditions"]) & set(user.get("conditions", [])):
+            warnings.append({"type": "diagnosis", "level": rule["level"], "message": rule["message"]})
+    lifestyle = user.get("lifestyle", {})
+    stages = [ref.LIFE_STAGE_LABELS[s] for s in info.get("lifeStageAvoid", []) if lifestyle.get(s)]
+    if stages:
+        warnings.append({"type": "lifeStage", "level": "avoid",
+                         "message": f"{'·'.join(stages)}에는 {info['name']} 섭취를 피해야 합니다. 추천에서 뺐습니다."})
+    return warnings
+
+
+def taking_conflicts(cid, active_catalog_ids, overlaps):
+    """이미 먹는 영양제와 부딪히는 이유. 함께 먹지 않도록 묶인 원료이거나, 같은 성분이 하루 상한을 넘으면 새로 추천하지 않는다."""
+    if cid in active_catalog_ids:
+        return []
+    out = []
+    for group in ref.NOT_TOGETHER:
+        taking = [c for c in active_catalog_ids if c in group["supplements"] and c != cid]
+        if cid in group["supplements"] and taking:
+            names = ", ".join(ref.SUPPLEMENTS[c]["name"] for c in taking)
+            out.append(f"{group['message']} 이미 {names}{_josa(names, '을', '를')} 드시고 있어 추천에서 뺐습니다.")
+    for w in overlaps:
+        if w["level"] == "caution":
+            names = ", ".join(ref.SUPPLEMENTS[c]["name"] for c in w["supplements"] if c != cid)
+            out.append(f"이미 드시는 {names}{_josa(names, '과', '와')} {w['ingredient']} 성분이 겹쳐 하루 상한({w['upperLimit']})을 넘으므로 추천에서 뺐습니다.")
+    return out
+
+
+def review_current(cid, user, described, med_classes, medications):
+    """이미 먹는 영양제(추천에 없는 것)를 계속 먹어도 되는지. 피해야 할 조합이 있으면 conflict."""
+    info = ref.SUPPLEMENTS[cid]
+    warnings = supplement_warnings(cid, user, described, med_classes, medications)
+    # 추천용 문구의 '추천에서 뺐습니다.'를 걷어 낸다("…밖이라 추천에서 뺐습니다." → "…밖입니다.").
+    plain = lambda m: re.sub(r"이라 추천에서 뺐습니다\.$", "입니다.", m).replace(" 추천에서 뺐습니다.", "").strip()
+    avoid = [plain(w["message"]) for w in warnings if w["level"] == "avoid"]
+    cautions = [plain(w["message"]) for w in warnings if w["level"] != "avoid"]
+    # 고시의 섭취 시 주의사항 중 이 사람에게 해당하는 것(약·질환이 있거나 흡연)을 함께 보여 준다.
+    smoking = user.get("lifestyle", {}).get("smoking") in (True, "current")
+    cautions += [c for c in info.get("cautions", []) if c not in cautions and (
+        (medications and ("의약품" in c or "항응고제" in c)) or (user.get("conditions") and "질환" in c) or (smoking and "흡연" in c))]
+    purpose = info.get("purpose")
+    if avoid:
+        status = "conflict"
+        message = " ".join(avoid) + " 드시고 있다고 하셔서 복용 관리에는 넣어 두었습니다. 계속 드실지는 의사·약사와 상의하십시오."
+    else:
+        status = "keep"
+        lead = f"{purpose}{_josa(purpose, '을', '를')} 위해 드신다면 계속 드셔도 됩니다. " if purpose else ""
+        message = lead + "입력하신 약·질환·검진 수치와 부딪히는 규칙이 없어 복용 관리에 함께 넣었습니다."
+        if cautions:
+            message += " 다만 아래 내용은 확인하십시오."
+    return {"supplementId": cid, "name": info["name"], "claim": info["claim"], "purpose": purpose,
+            "status": status, "message": message, "cautions": cautions}
+
+
+def _josa(word, with_final, without_final):
+    """받침이 있으면 앞의 조사, 없으면 뒤의 조사."""
+    last = word[-1] if word else ""
+    if "가" <= last <= "힣":
+        return with_final if (ord(last) - 0xAC00) % 28 else without_final
+    return with_final
 
 
 def compare(before, after, gender):

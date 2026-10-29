@@ -22,7 +22,7 @@ def test_options_list_and_rule_flags(client):
     assert items["항우울제"]["rules"] is True
     assert items["기타 고지혈증약"]["rules"] is True
     sups = {s["id"]: s["rules"] for s in o["supplements"]}
-    assert sups["omega3"] is True and sups["vitamin_k"] is True and sups["vitamin_c"] is False
+    assert sups["omega3"] is True and sups["vitamin_k"] is True and sups["vitamin_c"] is True
     conds = {c["value"]: c["rules"] for c in o["conditions"]}
     assert conds == {"hypertension": False, "diabetes": True, "dyslipidemia": True,
                      "liver": True, "kidney": True, "thyroid": False}

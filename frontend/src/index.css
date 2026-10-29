@@ -313,6 +313,8 @@ button.li:hover { background: var(--hover); }
 .supp .skip { font-size: 14.5px; color: var(--caution); font-weight: 700; }
 .link-row > .switch { grid-area: sw; margin-left: 16px; }
 .link-row.off .evid, .link-row.off .supp, .link-row.off .wire { opacity: .45; }
+.supp .skip.danger { color: var(--danger); }
+.link-row.current .supp .claim:first-of-type { color: var(--fg); }
 
 .strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .pouch { display: flex; flex-direction: column; gap: 4px; padding: 18px 20px 12px; min-width: 0; background: var(--block); border: 1px solid var(--block-edge); border-radius: var(--rb); }
