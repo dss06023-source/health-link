@@ -47,6 +47,7 @@ PLAUSIBLE = {
 NUMBER = re.compile(r"^\d+(\.\d+)?$")
 PAIR = re.compile(r"^(\d+)\s*/\s*(\d+)$")
 REVIEW_SCORE = 0.9
+MAX_PHOTO_SIDE = 2400
 
 _engine = None
 
@@ -70,7 +71,10 @@ def _get_engine():
             raise OCRUnavailable("사진 인식 모델이 설치되지 않았습니다.")
         from rapidocr import RapidOCR
         # 방향 분류는 끈다. 표 글자를 180도로 잘못 돌려 읽는 일이 있었다.
+        # 글자 위치 찾기는 긴 변 1024px로 줄여서 돌린다(글자 읽기는 원본 해상도). 기본값으로는 공식 양식 사진
+        # 한 장에 메모리를 700MB 넘게 써 무료 서버(512MB)가 꺼졌다(502).
         _engine = RapidOCR(params={"Global.use_cls": False, "Global.log_level": "error",
+                                   "Det.limit_type": "max", "Det.limit_side_len": 1024,
                                    "Rec.model_path": str(REC_MODEL), "Rec.rec_keys_path": str(REC_DICT)})
     return _engine
 
@@ -108,6 +112,9 @@ def image_items(data):
     img = ImageOps.exif_transpose(Image.open(io.BytesIO(data))).convert("RGB")
     if img.width < 1400:  # 작은 사진은 키워야 글자를 더 잘 읽는다.
         img = img.resize((1400, round(img.height * 1400 / img.width)), Image.LANCZOS)
+    if max(img.size) > MAX_PHOTO_SIDE:  # 휴대폰 원본(4000px 안팎)은 줄여서 메모리와 시간을 아낀다.
+        scale = MAX_PHOTO_SIDE / max(img.size)
+        img = img.resize((round(img.width * scale), round(img.height * scale)), Image.LANCZOS)
     result = _get_engine()(np.array(img))
     if result.boxes is None:
         return []
@@ -260,7 +267,10 @@ def parse_items(items):
         if rest and not rest[0].startswith("(") and NUMBER.match(rest[0]):
             found[code] = (float(rest[0]), label[4])
             continue
-        line = sorted((i for i in items if i is not label and i[0] >= label[5] - 2 and _same_line(i, label)),
+        line = [i for i in items if i is not label and i[0] >= label[5] - 2 and _same_line(i, label)]
+        # 줄 간격이 좁으면 윗줄 값도 '같은 줄'로 잡힌다. 같은 칸(가로로 겹침)에 둘이 있으면 높이가 더 가까운 것만 남긴다.
+        dy = lambda i: abs(i[1] - label[1])  # noqa: E731
+        line = sorted((i for i in line if not any(j is not i and j[0] < i[5] and i[0] < j[5] and dy(j) < dy(i) for j in line)),
                       key=lambda i: i[0])
         depth = label[3].count("(") - label[3].count(")")  # '(수축기'처럼 괄호 안 안내 문구면 값을 찾지 않는다.
         for item in line:
