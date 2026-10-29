@@ -10,6 +10,12 @@ const CANCER_STATUS: Record<CancerScreening['status'], string> = {
   target: '올해 대상', highRiskOnly: '해당 없음', maybe: '확인 필요', excluded: '대상 제외', notThisYear: '내년 대상',
 }
 
+// 주소 뒤 안내: [기관 종류] <검진 종류> … 예) [치과의원] <구강>
+function centerLabel(c: CheckupCenter) {
+  const parts = [c.kind && `[${c.kind}]`, ...c.exams.map((e) => `<${e === '일반' ? '일반검진' : e}>`)].filter(Boolean)
+  return parts.length ? ` ${parts.join(' ')}` : ''
+}
+
 export default function Home({ go }: { go: (r: Route) => void }) {
   const s = useStore()
   const p = s.profile!
@@ -115,7 +121,7 @@ export default function Home({ go }: { go: (r: Route) => void }) {
             <li key={c.id} className="li center">
               <div className="li-main">
                 <span className="row" style={{ gap: '2px 10px' }}><b>{c.name}</b><span className="num small muted">{c.distanceKm}km</span></span>
-                <small>{c.address}{c.tags.length ? ` · ${c.tags.join(' · ')}` : ''}</small>
+                <small>{c.address}{centerLabel(c)}</small>
                 <div className="slots">
                   {c.slots.map((sl) => <button key={sl} className="chip" onClick={() => setPick({ c, slot: sl })}>{sl}</button>)}
                   {c.bookingUrl && <a className="chip" href={c.bookingUrl} target="_blank" rel="noreferrer">예약 안내 열기</a>}

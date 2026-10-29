@@ -92,6 +92,19 @@ def test_official_form_photo_reads_all_values():
     assert engine == "ocr" and values(found) == EXPECTED
 
 
+@needs_model
+def test_large_phone_photo_is_scaled_down_and_read():
+    # 휴대폰 원본 크기(가로 4032px). 줄이지 않으면 무료 서버 메모리를 넘겨 502가 났다.
+    import io
+    from PIL import Image
+
+    img = Image.open(FIXTURES / "official_sheet_p2.jpg").convert("RGB")
+    buf = io.BytesIO()
+    img.resize((4032, round(img.height * 4032 / img.width))).save(buf, format="JPEG", quality=90)
+    found, engine = ocr.read(buf.getvalue(), False)
+    assert values(found) == EXPECTED
+
+
 def test_reference_numbers_are_not_results():
     # (x0, y, h, text, score, x1)
     items = [
