@@ -70,6 +70,25 @@ export default function Home({ go }: { go: (r: Route) => void }) {
       )}
 
       <div>
+        <h2 className="subhead">할 일</h2>
+        <ol className="list">
+          {todo.map((x) => {
+            const act = x.act
+            const body = <>
+              <span className={`tick${x.done ? ' on' : ''}`} role="img" aria-label={x.done ? '완료' : '남음'}>{x.done && <Icon name="check" size={14} />}</span>
+              <span className="li-main"><b>{x.title}</b><small>{x.sub}</small></span>
+              {act && <span className="li-end">{act.label}<Icon name="chevron" size={16} /></span>}
+            </>
+            return (
+              <li key={x.title}>
+                {act ? <button className="li" onClick={() => (act.to === '#centers' ? toCenters() : go(act.to as Route))}>{body}</button> : <div className="li">{body}</div>}
+              </li>
+            )
+          })}
+        </ol>
+      </div>
+
+      <div>
         <h2 className="subhead">{t.year}년 검진 항목 <span>공단 검진대상조회 안내 기준</span></h2>
         <ul className="list">
           {t.isTarget && (
@@ -87,25 +106,6 @@ export default function Home({ go }: { go: (r: Route) => void }) {
           ))}
           {!t.isTarget && !t.cancers.length && <li className="li muted">올해 받을 국가검진 항목이 없습니다.</li>}
         </ul>
-      </div>
-
-      <div>
-        <h2 className="subhead">할 일</h2>
-        <ol className="list">
-          {todo.map((x) => {
-            const act = x.act
-            const body = <>
-              <span className={`tick${x.done ? ' on' : ''}`} role="img" aria-label={x.done ? '완료' : '남음'}>{x.done && <Icon name="check" size={14} />}</span>
-              <span className="li-main"><b>{x.title}</b><small>{x.sub}</small></span>
-              {act && <span className="li-end">{act.label}<Icon name="chevron" size={16} /></span>}
-            </>
-            return (
-              <li key={x.title}>
-                {act ? <button className="li" onClick={() => (act.to === '#centers' ? toCenters() : go(act.to as Route))}>{body}</button> : <div className="li">{body}</div>}
-              </li>
-            )
-          })}
-        </ol>
       </div>
 
       <div id="centers">
