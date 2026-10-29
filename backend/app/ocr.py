@@ -48,6 +48,7 @@ NUMBER = re.compile(r"^\d+(\.\d+)?$")
 PAIR = re.compile(r"^(\d+)\s*/\s*(\d+)$")
 REVIEW_SCORE = 0.9
 MAX_PHOTO_SIDE = 2400
+OCR_THREADS = int(os.environ.get("HEALTH_ITDA_OCR_THREADS", "1"))
 
 _engine = None
 
@@ -75,6 +76,9 @@ def _get_engine():
         # 한 장에 메모리를 700MB 넘게 써 무료 서버(512MB)가 꺼졌다(502).
         _engine = RapidOCR(params={"Global.use_cls": False, "Global.log_level": "error",
                                    "Det.limit_type": "max", "Det.limit_side_len": 1024,
+                                   # 무료 서버는 CPU 0.1개라 스레드를 늘려도 빨라지지 않고 다른 요청만 굶긴다.
+                                   "EngineConfig.onnxruntime.intra_op_num_threads": OCR_THREADS,
+                                   "EngineConfig.onnxruntime.inter_op_num_threads": 1,
                                    "Rec.model_path": str(REC_MODEL), "Rec.rec_keys_path": str(REC_DICT)})
     return _engine
 

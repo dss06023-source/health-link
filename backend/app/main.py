@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 from datetime import date, timedelta
 from typing import Optional
 
+from starlette.concurrency import run_in_threadpool
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -341,7 +342,8 @@ async def upload_checkup(file: Optional[UploadFile] = File(None), files: Optiona
     try:
         for name, is_pdf, data in pages:
             try:
-                page_found, engine = ocr.read(data, is_pdf)
+                # 읽는 동안에도 다른 요청(Render 상태 확인 5초 제한)에 답하도록 별도 스레드에서 돌린다.
+                page_found, engine = await run_in_threadpool(ocr.read, data, is_pdf)
             except ocr.OCRUnavailable:
                 raise
             except Exception:
