@@ -3,6 +3,7 @@ import { useStore } from '../store'
 import { Icon, Sheet, Wordmark } from '../ui'
 import { ALLERGY_OPTIONS, CONDITION_OPTIONS, DIET_OPTIONS, MEDICATION_GROUPS, SAMPLE_PROFILE, SUPPLEMENT_OPTIONS } from '../data/mock'
 import type { Lifestyle, UserProfile } from '../types'
+import { loadTheme, saveTheme, type Theme } from '../theme'
 
 const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
 
@@ -49,6 +50,7 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
   const [p, setP] = useState<UserProfile>(initial ?? SAMPLE_PROFILE)
   const [group, setGroup] = useState<string | null>(null)
   const [draft, setDraft] = useState<string[]>([])
+  const [theme, setTheme] = useState<Theme>(loadTheme)
   const upd = (patch: Partial<UserProfile>) => setP((x) => ({ ...x, ...patch }))
   const life = (patch: Partial<Lifestyle>) => setP((x) => ({ ...x, lifestyle: { ...x.lifestyle, ...patch } }))
   const L = p.lifestyle
@@ -166,6 +168,15 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
           <div className="field"><span className="label">식습관 (해당하는 것 모두)</span>
             <Pick options={DIET_OPTIONS} value={L.diet ?? []} none={false} onChange={(v) => life({ diet: v })} /></div>
         </section>
+
+        {initial && (
+          <section className="sec">
+            <div className="sec-head"><h2>화면 모드</h2></div>
+            <Seg label="화면 밝기" options={[['light', '밝게'], ['dark', '어둡게'], ['system', '기기 설정 따르기']]} value={theme}
+              onChange={(v) => { setTheme(v); saveTheme(v) }} />
+            <p className="small muted">바로 적용되고, 이 기기에 저장됩니다.</p>
+          </section>
+        )}
 
         <div className="stack" style={{ gap: 12 }}>
           <p className="small muted" style={{ padding: '0 4px' }}>복용 약과 질환은 건강에 관한 민감정보입니다. 시연 모드에서는 이 브라우저에만 저장되고 서버로 보내지 않습니다.</p>

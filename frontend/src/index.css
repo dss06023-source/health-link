@@ -13,6 +13,7 @@
   --chip-bg: #eef1ee;
   --seg-bg: #e3e8e4;
   --input-bg: #f4f6f4;
+  --seg-on: #ffffff;
   --accent: #1f7a4d;
   --accent-ink: #ffffff;
   --accent-soft: #d9eee0;
@@ -36,7 +37,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0b0f0c; --block: #1a201c; --surface: #1a201c; --line: #2b3430; --fg: #e5ede7; --muted: #9daea3;
-    --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25;
+    --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25; --seg-on: #3a443d;
     --accent: #5cc48d; --accent-ink: #0d1a12; --accent-soft: #1d3a29;
     --caution: #e2a948; --caution-soft: #3a2e17; --danger: #ef7d74; --danger-ink: #1a0d0c; --danger-soft: #3d1f1d;
     --snack-bg: #e1e8e3; --snack-fg: #111814; --snack-act: #1f7a4d;
@@ -45,7 +46,7 @@
 }
 :root[data-theme="dark"] {
   --bg: #0b0f0c; --block: #1a201c; --surface: #1a201c; --line: #2b3430; --fg: #e5ede7; --muted: #9daea3;
-  --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25;
+  --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25; --seg-on: #3a443d;
   --accent: #5cc48d; --accent-ink: #0d1a12; --accent-soft: #1d3a29;
   --caution: #e2a948; --caution-soft: #3a2e17; --danger: #ef7d74; --danger-ink: #1a0d0c; --danger-soft: #3d1f1d;
   --snack-bg: #e1e8e3; --snack-fg: #111814; --snack-act: #1f7a4d;
@@ -113,7 +114,7 @@ a { color: inherit; }
   flex: 1; border: 0; background: transparent; padding: 8px 12px; border-radius: 999px; cursor: pointer;
   font-size: 15px; font-weight: 700; color: var(--muted);
 }
-.subtabs button[aria-pressed="true"] { background: var(--block); color: var(--fg); box-shadow: 0 1px 3px rgba(0, 0, 0, .08); }
+.subtabs button[aria-pressed="true"] { background: var(--seg-on); color: var(--fg); box-shadow: 0 1px 3px rgba(0, 0, 0, .08); }
 .page { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
 .demo-foot {
   margin-top: 40px; padding: 0 8px;
@@ -201,7 +202,7 @@ button.li:hover { background: var(--hover); }
 
 .seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--seg-bg); }
 .seg button { border: 0; background: transparent; padding: 5px 14px; border-radius: 999px; font-size: 14px; font-weight: 700; color: var(--muted); cursor: pointer; }
-.seg button[aria-pressed="true"] { background: var(--block); color: var(--fg); box-shadow: 0 1px 3px rgba(0, 0, 0, .08); }
+.seg button[aria-pressed="true"] { background: var(--seg-on); color: var(--fg); box-shadow: 0 1px 3px rgba(0, 0, 0, .08); }
 .seg.wide { display: flex; width: 100%; max-width: 420px; margin: 0 auto; }
 .seg.wide button { flex: 1; padding-block: 7px; }
 
