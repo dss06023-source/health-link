@@ -1,7 +1,7 @@
 import criteria from './checkup_criteria.json'
 import schedule from './checkup_schedule.json'
 import type {
-  CancerScreening, Checkup, CheckupItem, CheckupTarget, ConfirmTest, InterpretedItem, Recommendation, Sex, Status,
+  CancerScreening, Checkup, CheckupItem, CheckupTarget, ConfirmTest, CurrentReview, InterpretedItem, Recommendation, Sex, Status,
   Supplement, UserProfile, Warning,
 } from '../types'
 
@@ -304,7 +304,7 @@ const REC_RULES: RecRule[] = [
 ]
 
 // 사용자가 이미 먹는 영양제 이름 → 추천 id
-const ALREADY: Record<string, string> = { '오메가-3': 'omega3', '비타민D': 'vitd', '철분': 'iron', '비타민B군': 'b12', '비타민C': 'vitc' }
+export const ALREADY: Record<string, string> = { '오메가-3': 'omega3', '비타민D': 'vitd', '철분': 'iron', '비타민B군': 'b12', '비타민C': 'vitc' }
 
 export function recommend(items: InterpretedItem[], p: UserProfile): Recommendation[] {
   return REC_RULES.flatMap((r) => {
@@ -317,6 +317,51 @@ export function recommend(items: InterpretedItem[], p: UserProfile): Recommendat
     const dup = Object.entries(ALREADY).find(([n, id]) => id === r.id && p.currentSupplements.includes(n))
     if (dup) rec.skipped = `이미 ${dup[0]}을(를) 드시고 있어 추가하지 않습니다.`
     return [rec]
+  })
+}
+
+// 이미 먹는 영양제(내 정보의 보기) → 복용 관리에 넣을 때 쓰는 정보와 안내용 목적(backend seed/supplements.json의 purpose와 같은 말).
+// id가 추천 규칙과 같으면 추천 줄에서 '이미 복용 중'으로 보인다.
+export const CURRENT_INFO: Record<string, { id: string; purpose: string; ingredient: string; dose: string; timing: Supplement['timing']; cautions?: string[] }> = {
+  '종합비타민': { id: 'multivitamin', purpose: '영양 보충', ingredient: '비타민·무기질', dose: '1정', timing: 'morning' },
+  '비타민B군': { id: 'b12', purpose: '에너지 대사', ingredient: '비타민B1·B2·B6·B12', dose: '1정', timing: 'morning' },
+  '비타민C': { id: 'vitc', purpose: '항산화', ingredient: '비타민C', dose: '100mg', timing: 'lunch' },
+  '비타민D': { id: 'vitd', purpose: '뼈 건강', ingredient: '비타민D', dose: '10μg', timing: 'morning' },
+  '비타민K': { id: 'vitamin_k', purpose: '혈액응고와 뼈 건강', ingredient: '비타민K', dose: '70μg', timing: 'morning', cautions: ['항응고제 등을 먹고 있으면 전문가와 상담하십시오.'] },
+  '칼슘': { id: 'calcium', purpose: '뼈와 치아 건강', ingredient: '칼슘', dose: '300mg', timing: 'evening' },
+  '마그네슘': { id: 'magnesium', purpose: '신경과 근육 기능', ingredient: '마그네슘', dose: '100mg', timing: 'evening' },
+  '아연': { id: 'zinc', purpose: '면역 기능', ingredient: '아연', dose: '8.5mg', timing: 'lunch' },
+  '철분': { id: 'iron', purpose: '혈액 생성', ingredient: '철', dose: '12mg', timing: 'morning' },
+  '엽산': { id: 'folic_acid', purpose: '혈액 생성', ingredient: '엽산', dose: '400μg', timing: 'morning' },
+  '오메가-3': { id: 'omega3', purpose: '혈중 중성지질과 혈행 개선', ingredient: 'EPA·DHA', dose: '1,000mg', timing: 'evening', cautions: ['항응고제·항혈소판제·혈압강하제 등 의약품을 먹고 있으면 전문가와 상담하십시오.'] },
+  '유산균': { id: 'probiotics', purpose: '장 건강', ingredient: '프로바이오틱스', dose: '10억 CFU', timing: 'morning', cautions: ['질환이 있거나 의약품을 먹고 있으면 전문가와 상담하십시오.'] },
+  '루테인': { id: 'lutein', purpose: '눈 건강', ingredient: '루테인', dose: '20mg', timing: 'morning', cautions: ['흡연자는 먹기 전에 전문가와 상담하십시오.'] },
+  '밀크씨슬': { id: 'milkthistle', purpose: '간 건강', ingredient: '실리마린', dose: '130mg', timing: 'morning' },
+  '홍국': { id: 'red_yeast_rice', purpose: '콜레스테롤 관리', ingredient: '모나콜린K', dose: '8mg', timing: 'evening' },
+  '코엔자임Q10': { id: 'coq10', purpose: '혈압 관리', ingredient: '코엔자임Q10', dose: '100mg', timing: 'morning' },
+}
+
+const josa = (w: string, a: string, b: string) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 === 0 ? b : a }
+
+// 이미 먹는 영양제 중 피해야 하는 조합(backend logic.supplement_warnings의 avoid와 같은 기준). 없으면 빈 배열.
+export function avoidReasons(name: string, p: UserProfile, items: InterpretedItem[]): string[] {
+  const out: string[] = []
+  if (name === '홍국' && p.medications.includes('스타틴')) out.push('홍국에 스타틴과 같은 성분(모나콜린K)이 있어 작용이 겹칩니다.')
+  if (name === '홍국' && (p.conditions?.includes('간질환') || ['AST', 'ALT', 'GGT'].some((c) => flagged(byCode(items, c)))))
+    out.push('간 수치가 기준 밖이거나 간 질환이 있으면 홍국 섭취를 피해야 합니다.')
+  if ((name === '홍국' || name === '루테인') && p.pregnant) out.push(`임신·수유 중에는 ${name} 섭취를 피해야 합니다.`)
+  return out
+}
+
+// 이미 먹는 영양제 중 추천 구성에 없는 것을 계속 먹어도 되는지 알려 준다(backend logic.review_current와 같은 문구).
+export function reviewCurrent(p: UserProfile, items: InterpretedItem[], recs: Recommendation[]): CurrentReview[] {
+  return p.currentSupplements.filter((n) => !recs.some((r) => r.name === n || ALREADY[n] === r.id || CURRENT_INFO[n]?.id === r.id)).map((name) => {
+    const avoid = avoidReasons(name, p, items)
+    if (avoid.length) return { name, status: 'conflict', message: `${avoid.join(' ')} 드시고 있다고 하셔서 복용 관리에는 넣어 두었습니다. 계속 드실지는 의사·약사와 상의하십시오.`, cautions: [] }
+    const info = CURRENT_INFO[name]
+    const cautions = (info?.cautions ?? []).filter((c) => (p.medications.length > 0 && /의약품|항응고제/.test(c)) || (!!p.conditions?.length && c.includes('질환')) || (p.lifestyle.smoking && c.includes('흡연')))
+    const lead = info ? `${info.purpose}${josa(info.purpose, '을', '를')} 위해 드신다면 계속 드셔도 됩니다. ` : ''
+    return { name, status: 'keep', message: `${lead}입력하신 약·질환·검진 수치와 부딪히는 규칙이 없어 복용 관리에 함께 넣었습니다.${cautions.length ? ' 다만 아래 내용은 확인하십시오.' : ''}`, cautions }
   })
 }
 

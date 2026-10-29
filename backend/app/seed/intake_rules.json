@@ -135,7 +135,8 @@
     {"supplement": "red_yeast_rice", "conditions": ["liver"], "level": "avoid", "message": "간 질환이 있으면 홍국 섭취를 피해야 합니다. 추천에서 뺐습니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항"},
     {"supplement": "garcinia", "conditions": ["liver", "kidney"], "level": "avoid", "message": "간·신장 질환이 있으면 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항 (간·신장·심장 질환 시 상담, 드물게 간 손상)"},
     {"supplement": "green_tea", "conditions": ["liver"], "level": "avoid", "message": "간 질환이 있으면 녹차추출물 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항"},
-    {"supplement": "garcinia", "conditions": ["diabetes", "dyslipidemia"], "level": "caution", "message": "당뇨·고콜레스테롤혈증이 있으면 가르시니아 섭취에 주의가 필요합니다. 의사·약사와 상담하십시오.", "basis": "약학정보원 「가르시니아 캄보지아 추출물」"}
+    {"supplement": "garcinia", "conditions": ["diabetes", "dyslipidemia"], "level": "caution", "message": "당뇨·고콜레스테롤혈증이 있으면 가르시니아 섭취에 주의가 필요합니다. 의사·약사와 상담하십시오.", "basis": "약학정보원 「가르시니아 캄보지아 추출물」"},
+    {"supplement": "vitamin_c", "conditions": ["kidney"], "level": "caution", "message": "신장 질환이 있으면 비타민C를 먹기 전에 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 제3. 1-14 섭취 시 주의사항"}
   ],
   "_noRuleYet": {
     "_about": "근거를 찾았지만 경고로 만들지 않았거나, 근거를 찾지 못한 조합(2026-10-29 확인).",
