@@ -28,7 +28,7 @@ KST = ZoneInfo("Asia/Seoul")
 
 
 def save_user(conn, user):
-    conn.execute("UPDATE users SET data = ? WHERE id = 1", (json.dumps(user, ensure_ascii=False),))
+    conn.execute("UPDATE users SET data = ? WHERE id = ?", (json.dumps(user, ensure_ascii=False), db.uid()))
 
 
 # ---------- 마이데이터(가상) ----------
@@ -99,8 +99,8 @@ def mydata_sync(body: MydataSync = MydataSync()):
                     skipped.append({"date": record["date"], "reason": "이미 등록된 검진입니다."})
                     continue
                 cur = conn.execute(
-                    "INSERT INTO checkups (date, source, status, file_name, item_values) VALUES (?, 'mydata', 'confirmed', ?, ?)",
-                    (record["date"], f"마이데이터 · {record['institution']}", json.dumps(record["values"])),
+                    "INSERT INTO checkups (user_id, date, source, status, file_name, item_values) VALUES (?, ?, 'mydata', 'confirmed', ?, ?)",
+                    (db.uid(), record["date"], f"마이데이터 · {record['institution']}", json.dumps(record["values"])),
                 )
                 imported.append({"id": cur.lastrowid, "date": record["date"], "institution": record["institution"]})
         if "prescriptions" in state["scopes"]:
@@ -198,7 +198,8 @@ def due_reminders(at: Optional[str] = None):
         supplements = active_supplements(conn)
         taken = {
             (r["supplement_id"], r["time_slot"])
-            for r in conn.execute("SELECT * FROM intake_logs WHERE date = ? AND taken = 1", (day.isoformat(),))
+            for r in conn.execute("SELECT * FROM intake_logs WHERE date = ? AND taken = 1 AND user_id = ?",
+                                  (day.isoformat(), db.uid()))
         }
     by_slot = {}
     for s, slot in scheduled_on(supplements, day):
@@ -295,8 +296,8 @@ def add_measurement(body: MeasurementIn):
     fasting = None if body.type != "glucose" else int(body.fasting)
     with db.connect() as conn:
         cur = conn.execute(
-            "INSERT INTO measurements (type, measured_at, item_values, fasting, note) VALUES (?, ?, ?, ?, ?)",
-            (body.type, measured_at, json.dumps(body.values), fasting, body.note),
+            "INSERT INTO measurements (user_id, type, measured_at, item_values, fasting, note) VALUES (?, ?, ?, ?, ?, ?)",
+            (db.uid(), body.type, measured_at, json.dumps(body.values), fasting, body.note),
         )
         row = conn.execute("SELECT * FROM measurements WHERE id = ?", (cur.lastrowid,)).fetchone()
         user = load_user(conn)
@@ -317,9 +318,9 @@ def list_measurements(
 @router.delete("/api/measurements/{mid}")
 def delete_measurement(mid: int):
     with db.connect() as conn:
-        if not conn.execute("SELECT 1 FROM measurements WHERE id = ?", (mid,)).fetchone():
+        if not conn.execute("SELECT 1 FROM measurements WHERE id = ? AND user_id = ?", (mid, db.uid())).fetchone():
             raise HTTPException(404, "측정 기록을 찾을 수 없습니다.")
-        conn.execute("DELETE FROM measurements WHERE id = ?", (mid,))
+        conn.execute("DELETE FROM measurements WHERE id = ? AND user_id = ?", (mid, db.uid()))
     return {"deleted": mid}
 
 

@@ -8,6 +8,9 @@ import { regionLabel } from '../data/regions'
 // backend/(FastAPI, docs/api.md) 응답을 화면이 쓰는 모양으로 바꾼다.
 const BASE = import.meta.env.VITE_API_BASE ?? ''
 
+// 로그인이 안 됐거나 세션이 끝났을 때(401). 화면은 이것을 받으면 로그인 화면으로 간다.
+export class AuthError extends Error {}
+
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     ...init,
@@ -15,7 +18,9 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   })
   if (!res.ok) {
     const err = await res.json().catch(() => null) as { detail?: string } | null
-    throw new Error(err?.detail ?? `${path} 요청 실패 (${res.status})`)
+    const message = typeof err?.detail === 'string' ? err.detail : `${path} 요청 실패 (${res.status})`
+    if (res.status === 401 && !path.startsWith('/api/auth/login')) throw new AuthError(message)
+    throw new Error(message)
   }
   return res.json() as Promise<T>
 }
@@ -29,6 +34,7 @@ interface RUser {
   name: string; birthYear: number; gender: 'M' | 'F'; heightCm?: number; medications: string[]; lastCheckupDate: string | null
   jobType?: JobType; confirmedTargetYear?: number | null
   address?: Address
+  onboarded?: boolean // 새로 가입한 계정은 false. 시작 화면을 먼저 보여 준다.
   liverHighRisk?: boolean; packYears?: number | null; cancerSpecialCase?: string[]; colonoscopyYear?: number | null
   currentSupplements?: string[]; conditions?: string[]; allergies?: string[]; customAllergies?: string[]
   lifestyle: {
@@ -169,7 +175,7 @@ export async function loadAll() {
   const measurements: Measurement[] = ms.map((m) => ({ id: String(m.id), type: m.type, measuredAt: m.measuredAt, values: m.values, fasting: m.fasting }))
   const reminderTimes: ReminderTimes = { morning: reminder.times.morning, lunch: reminder.times.lunch, evening: reminder.times.evening }
   return {
-    state: { profile, checkups, supplements, intake, measurements, reminderTimes, mydata: { connected: mydata.connected, lastSyncAt: mydata.lastSyncAt ?? null } },
+    state: { profile: user.onboarded === false ? null : profile, checkups, supplements, intake, measurements, reminderTimes, mydata: { connected: mydata.connected, lastSyncAt: mydata.lastSyncAt ?? null } },
     extras,
   }
 }
@@ -256,4 +262,16 @@ export const remote = {
       prescriptions: r.prescriptions.map((p) => ({ name: p.name, dispensedAt: p.dispensedAt, institution: p.institution, registered: p.alreadyRegistered })),
     }
   },
+}
+
+// 계정: 아이디+비밀번호. 세션은 서버가 HttpOnly 쿠키로 준다.
+export interface Account { username: string | null; isGuest: boolean; name: string; onboarded: boolean }
+const cred = (username: string, password: string) => json('POST', { username, password })
+export const auth = {
+  me: () => call<Account>('/api/auth/me'),
+  signup: (username: string, password: string) => call<Account>('/api/auth/signup', cred(username, password)),
+  login: (username: string, password: string) => call<Account>('/api/auth/login', cred(username, password)),
+  guest: () => call<Account>('/api/auth/guest', { method: 'POST' }),
+  logout: () => call('/api/auth/logout', { method: 'POST' }),
+  deleteAccount: () => call('/api/auth/account', { method: 'DELETE' }),
 }

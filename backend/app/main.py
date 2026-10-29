@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from . import checkup_schedule as sched
-from . import db, logic, measure, ocr, options, public_api, regions
+from . import auth, db, logic, measure, ocr, options, public_api, regions
 from . import reference as ref
 
 TIME_SLOTS = ["morning", "lunch", "evening", "bedtime"]
@@ -29,13 +29,15 @@ async def lifespan(_app):
 
 
 app = FastAPI(title="건강잇다 시연용 API", version="0.1.0", lifespan=lifespan)
+app.add_middleware(auth.AuthGuard)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.include_router(auth.router)
 
 
 # ---------- 공통 ----------
 
 def load_user(conn):
-    return json.loads(conn.execute("SELECT data FROM users WHERE id = 1").fetchone()["data"])
+    return json.loads(conn.execute("SELECT data FROM users WHERE id = ?", (db.uid(),)).fetchone()["data"])
 
 
 def checkup_row(row):
@@ -50,14 +52,15 @@ def checkup_row(row):
 
 
 def get_checkup(conn, checkup_id):
-    row = conn.execute("SELECT * FROM checkups WHERE id = ?", (checkup_id,)).fetchone()
+    row = conn.execute("SELECT * FROM checkups WHERE id = ? AND user_id = ?", (checkup_id, db.uid())).fetchone()
     if not row:
         raise HTTPException(404, "검진 결과를 찾을 수 없습니다.")
     return checkup_row(row)
 
 
 def confirmed_checkups(conn):
-    rows = conn.execute("SELECT * FROM checkups WHERE status = 'confirmed' ORDER BY date, id").fetchall()
+    rows = conn.execute("SELECT * FROM checkups WHERE status = 'confirmed' AND user_id = ? ORDER BY date, id",
+                        (db.uid(),)).fetchall()
     return [checkup_row(r) for r in rows]
 
 
@@ -81,7 +84,8 @@ def supplement_row(row):
 
 
 def active_supplements(conn, include_paused=True):
-    rows = conn.execute("SELECT * FROM supplements WHERE ended_at IS NULL ORDER BY id").fetchall()
+    rows = conn.execute("SELECT * FROM supplements WHERE ended_at IS NULL AND user_id = ? ORDER BY id",
+                        (db.uid(),)).fetchall()
     items = [supplement_row(r) for r in rows]
     return items if include_paused else [s for s in items if not s["paused"]]
 
@@ -111,8 +115,8 @@ def sync_supplements(conn, wanted):
     for cid in wanted:
         if cid in SYNCED_SUPPLEMENTS and cid not in active:
             conn.execute(
-                "INSERT INTO supplements (catalog_id, time_slots, started_at, source) VALUES (?, ?, ?, 'manual')",
-                (cid, json.dumps(ref.SUPPLEMENTS[cid]["timeSlots"]), db.today().isoformat()),
+                "INSERT INTO supplements (user_id, catalog_id, time_slots, started_at, source) VALUES (?, ?, ?, ?, 'manual')",
+                (db.uid(), cid, json.dumps(ref.SUPPLEMENTS[cid]["timeSlots"]), db.today().isoformat()),
             )
 
 
@@ -271,8 +275,8 @@ def update_me(body: UserUpdate):
         if body.currentSupplements is not None:
             sync_supplements(conn, body.currentSupplements)
             changes["currentSupplements"] = [c for c in body.currentSupplements if c not in SYNCED_SUPPLEMENTS]
-        user.update(changes)
-        conn.execute("UPDATE users SET data = ? WHERE id = 1", (json.dumps(user, ensure_ascii=False),))
+        user.update(changes, onboarded=True)
+        conn.execute("UPDATE users SET data = ? WHERE id = ?", (json.dumps(user, ensure_ascii=False), db.uid()))
     result = get_me()
     if unknown:
         result["unknownMedications"] = unknown
@@ -483,8 +487,8 @@ async def upload_checkup(file: Optional[UploadFile] = File(None), files: Optiona
     values = {f["code"]: f["value"] for f in fields}
     with db.connect() as conn:
         cur = conn.execute(
-            "INSERT INTO checkups (date, source, status, file_name, item_values) VALUES (?, ?, 'pending_review', ?, ?)",
-            (db.today().isoformat(), source, name, json.dumps(values)),
+            "INSERT INTO checkups (user_id, date, source, status, file_name, item_values) VALUES (?, ?, ?, 'pending_review', ?, ?)",
+            (db.uid(), db.today().isoformat(), source, name, json.dumps(values)),
         )
         checkup = get_checkup(conn, cur.lastrowid)
     checkup["ocr"] = {
@@ -517,8 +521,9 @@ def update_checkup(checkup_id: int, body: CheckupUpdate):
         if body.date:
             date.fromisoformat(body.date)
         conn.execute(
-            "UPDATE checkups SET item_values = ?, date = ?, status = ? WHERE id = ?",
-            (json.dumps(values), body.date or checkup["date"], "confirmed" if body.confirm else checkup["status"], checkup_id),
+            "UPDATE checkups SET item_values = ?, date = ?, status = ? WHERE id = ? AND user_id = ?",
+            (json.dumps(values), body.date or checkup["date"], "confirmed" if body.confirm else checkup["status"], checkup_id,
+             db.uid()),
         )
     return get_checkup_detail(checkup_id)
 
@@ -527,7 +532,7 @@ def update_checkup(checkup_id: int, body: CheckupUpdate):
 def delete_checkup(checkup_id: int):
     with db.connect() as conn:
         get_checkup(conn, checkup_id)
-        conn.execute("DELETE FROM checkups WHERE id = ?", (checkup_id,))
+        conn.execute("DELETE FROM checkups WHERE id = ? AND user_id = ?", (checkup_id, db.uid()))
     return {"deleted": checkup_id}
 
 
@@ -535,7 +540,7 @@ def delete_checkup(checkup_id: int):
 def list_checkups():
     with db.connect() as conn:
         user = load_user(conn)
-        rows = conn.execute("SELECT * FROM checkups ORDER BY date DESC, id DESC").fetchall()
+        rows = conn.execute("SELECT * FROM checkups WHERE user_id = ? ORDER BY date DESC, id DESC", (db.uid(),)).fetchall()
     result = []
     for row in rows:
         c = checkup_row(row)
@@ -605,7 +610,8 @@ def supplement_catalog():
 def list_supplements(includeEnded: bool = False):
     with db.connect() as conn:
         if includeEnded:
-            return [supplement_row(r) for r in conn.execute("SELECT * FROM supplements ORDER BY id").fetchall()]
+            return [supplement_row(r) for r in conn.execute("SELECT * FROM supplements WHERE user_id = ? ORDER BY id",
+                                                                 (db.uid(),)).fetchall()]
         return active_supplements(conn)
 
 
@@ -659,14 +665,14 @@ def add_supplement(body: SupplementCreate):
             raise HTTPException(409, "이미 복용 중인 영양제입니다.")
         slots = body.timeSlots or ref.SUPPLEMENTS[body.supplementId]["timeSlots"]
         cur = conn.execute(
-            "INSERT INTO supplements (catalog_id, time_slots, started_at, source) VALUES (?, ?, ?, ?)",
-            (body.supplementId, json.dumps(slots), db.today().isoformat(), body.source),
+            "INSERT INTO supplements (user_id, catalog_id, time_slots, started_at, source) VALUES (?, ?, ?, ?, ?)",
+            (db.uid(), body.supplementId, json.dumps(slots), db.today().isoformat(), body.source),
         )
         return supplement_row(conn.execute("SELECT * FROM supplements WHERE id = ?", (cur.lastrowid,)).fetchone())
 
 
 def get_supplement_row(conn, sid):
-    row = conn.execute("SELECT * FROM supplements WHERE id = ?", (sid,)).fetchone()
+    row = conn.execute("SELECT * FROM supplements WHERE id = ? AND user_id = ?", (sid, db.uid())).fetchone()
     if not row:
         raise HTTPException(404, "복용 목록에 없는 항목입니다.")
     return row
@@ -719,9 +725,9 @@ def log_intake(body: IntakeLog):
     with db.connect() as conn:
         get_supplement_row(conn, body.supplementId)
         conn.execute(
-            """INSERT INTO intake_logs (date, time_slot, supplement_id, taken) VALUES (?, ?, ?, ?)
+            """INSERT INTO intake_logs (user_id, date, time_slot, supplement_id, taken) VALUES (?, ?, ?, ?, ?)
                ON CONFLICT (date, time_slot, supplement_id) DO UPDATE SET taken = excluded.taken""",
-            (day, body.timeSlot, body.supplementId, int(body.taken)),
+            (db.uid(), day, body.timeSlot, body.supplementId, int(body.taken)),
         )
     return today_intake(day)
 
@@ -734,7 +740,8 @@ def today_intake(day: Optional[str] = Query(None, alias="date")):
         supplements = active_supplements(conn)
         logs = {
             (r["supplement_id"], r["time_slot"]): bool(r["taken"])
-            for r in conn.execute("SELECT * FROM intake_logs WHERE date = ?", (target.isoformat(),))
+            for r in conn.execute("SELECT * FROM intake_logs WHERE date = ? AND user_id = ?",
+                                  (target.isoformat(), db.uid()))
         }
     slots = [
         {"supplementId": s["id"], "name": s["name"], "timeSlot": slot, "taken": logs.get((s["id"], slot), False)}
@@ -752,9 +759,10 @@ def today_intake(day: Optional[str] = Query(None, alias="date")):
 
 
 def intake_history(conn, start, end):
-    supplements = [supplement_row(r) for r in conn.execute("SELECT * FROM supplements").fetchall()]
+    supplements = [supplement_row(r) for r in conn.execute("SELECT * FROM supplements WHERE user_id = ?", (db.uid(),)).fetchall()]
     rows = conn.execute(
-        "SELECT * FROM intake_logs WHERE date BETWEEN ? AND ? ORDER BY date", (start.isoformat(), end.isoformat())
+        "SELECT * FROM intake_logs WHERE date BETWEEN ? AND ? AND user_id = ? ORDER BY date",
+        (start.isoformat(), end.isoformat(), db.uid()),
     ).fetchall()
     taken = {(r["date"], r["supplement_id"], r["time_slot"]) for r in rows if r["taken"]}
     first_log = rows[0]["date"] if rows else None
@@ -810,8 +818,8 @@ def compare_report(from_: Optional[int] = Query(None, alias="from"), to: Optiona
         records = measure.load(conn, user.get("heightCm"), before["date"], after["date"])
         during = [
             supplement_row(r) for r in conn.execute(
-                "SELECT * FROM supplements WHERE started_at <= ? AND (ended_at IS NULL OR ended_at >= ?)",
-                (after["date"], before["date"]),
+                "SELECT * FROM supplements WHERE started_at <= ? AND (ended_at IS NULL OR ended_at >= ?) AND user_id = ?",
+                (after["date"], before["date"], db.uid()),
             ).fetchall()
         ]
     result = logic.compare(before, after, user["gender"])
@@ -831,8 +839,11 @@ def compare_report(from_: Optional[int] = Query(None, alias="from"), to: Optiona
 
 @app.post("/api/demo/reset")
 def demo_reset():
-    """시연을 처음 상태로 되돌린다(가상 데이터 다시 생성)."""
-    db.init(reset=True)
+    """체험 계정을 처음 상태(가상 인물 기록)로 되돌린다. 가입한 계정의 기록은 지우지 않는다."""
+    with db.connect() as conn:
+        if not conn.execute("SELECT is_guest FROM users WHERE id = ?", (db.uid(),)).fetchone()["is_guest"]:
+            raise HTTPException(403, "시연 초기화는 체험 계정에서만 쓸 수 있습니다.")
+        db.seed(conn, db.uid())
     return {"reset": True}
 
 

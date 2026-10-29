@@ -52,6 +52,7 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setattr(db, "DB_PATH", str(tmp_path / "test.db"))
     from app.main import app
     with TestClient(app) as c:
+        c.post("/api/auth/guest")  # 가상 인물 기록이 든 체험 계정으로 시작
         yield c
 
 
