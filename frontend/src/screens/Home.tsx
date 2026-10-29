@@ -4,7 +4,7 @@ import { getCenters } from '../api'
 import { checkupTarget, interpret } from '../data/rules'
 import { latestCheckup, useStore, ymd } from '../store'
 import type { CheckupCenter } from '../types'
-import { Disclaimer, Icon, PenLine } from '../ui'
+import { Disclaimer, Icon, Sheet } from '../ui'
 
 export default function Home({ go }: { go: (r: Route) => void }) {
   const s = useStore()
@@ -32,73 +32,72 @@ export default function Home({ go }: { go: (r: Route) => void }) {
     { done: !!s.followup, title: s.followup ? '중간 점검 결과 도착' : '복용 6개월 뒤 중간 점검', sub: s.followup ? `${s.followup.date} · 변화 리포트에서 비교합니다.` : '약국 간이검사(혈당·지질)로 변화를 미리 확인합니다.', act: { label: '리포트', to: 'report' } },
   ]
 
+  const toCenters = () => document.getElementById('centers')?.scrollIntoView({ behavior: 'smooth' })
+
   return (
     <>
-      <section className="notice">
-        <p className="headline">
-          {due ? <>{p.name} 님은 <PenLine>{t.year}년 일반건강검진 대상</PenLine>입니다. 아직 받지 않으셨습니다.</>
-            : t.done ? <>{t.year}년 검진을 받으셨습니다. 결과를 바탕으로 영양 구성을 관리하고 있습니다.</>
+      <section className="sec">
+        <p>
+          {due ? <>{p.name} 님은 <b>{t.year}년 일반건강검진 대상</b>이고, 아직 받지 않으셨어요. 12월 31일에 마감합니다.</>
+            : t.done ? <>최근 결과는 {last.date} 검진이고, 기준을 벗어난 항목은 <b>{flagged}개</b>입니다.</>
               : <>{odd}년생은 {t.year + 1}년에 검진 대상입니다.</>}
         </p>
-        <div className="dday">
-          {due ? <><span className="big">D-{t.daysLeft}</span><span className="muted">12월 31일 마감</span></>
-            : <span className="muted">{t.done ? `${t.year}년 검진 완료` : `다음 대상 연도 ${t.year + 1}년`}</span>}
-          {t.extras.length > 0 && <span className="muted">· 올해 추가 검사: {t.extras.join(', ')}</span>}
-        </div>
-        <p className="muted">{odd}년에 태어난 분은 {odd}년에 무료로 받습니다. 비용은 건강보험이 부담합니다.</p>
-        <div className="row">
-          {due ? <a className="btn" href="#centers" onClick={(e) => { e.preventDefault(); document.getElementById('centers')?.scrollIntoView({ behavior: 'smooth' }) }}>근처 검진기관 보기</a>
+        <p className="small muted">{odd}년에 태어난 분은 {odd}년에 무료로 받습니다. 비용은 건강보험이 부담합니다.
+          {t.extras.length > 0 && <> 올해 추가 검사: {t.extras.join(', ')}.</>}</p>
+        <div className="actions">
+          <button className="btn flat" onClick={() => go('upload')}>결과지 등록</button>
+          {due ? <button className="btn" onClick={toCenters}>근처 검진기관 보기</button>
             : <button className="btn" onClick={() => go('results')}>검진 해석 보기</button>}
-          <button className="btn ghost" onClick={() => go('upload')}>결과지 등록</button>
         </div>
       </section>
 
-      <section className="sec">
-        <div className="sec-head"><h2>할 일</h2><p>검진부터 변화 확인까지 순서대로</p></div>
-        <ol className="rows todo">
-          {todo.map((x) => (
-            <li key={x.title}>
-              <span className={`tick${x.done ? ' on' : ''}`} aria-label={x.done ? '완료' : '남음'}>{x.done && <Icon name="check" size={14} />}</span>
-              <div><b>{x.title}</b><small>{x.sub}</small></div>
-              {x.act && (x.act.to === '#centers'
-                ? <a className="go" href="#centers" onClick={(e) => { e.preventDefault(); document.getElementById('centers')?.scrollIntoView({ behavior: 'smooth' }) }}>{x.act.label}</a>
-                : <button className="go" onClick={() => go(x.act!.to as Route)}>{x.act.label}</button>)}
-            </li>
-          ))}
+      <div>
+        <h2 className="subhead">할 일</h2>
+        <ol className="list">
+          {todo.map((x) => {
+            const act = x.act
+            const body = <>
+              <span className={`tick${x.done ? ' on' : ''}`} role="img" aria-label={x.done ? '완료' : '남음'}>{x.done && <Icon name="check" size={14} />}</span>
+              <span className="li-main"><b>{x.title}</b><small>{x.sub}</small></span>
+              {act && <span className="li-end">{act.label}<Icon name="chevron" size={16} /></span>}
+            </>
+            return (
+              <li key={x.title}>
+                {act ? <button className="li" onClick={() => (act.to === '#centers' ? toCenters() : go(act.to as Route))}>{body}</button> : <div className="li">{body}</div>}
+              </li>
+            )
+          })}
         </ol>
-      </section>
+      </div>
 
-      <section className="sec" id="centers">
-        <div className="sec-head"><h2>가까운 검진기관</h2><p>{p.region} 기준 · 거리순 · 국민건강보험공단 지정 기관</p></div>
-        <ul className="rows">
+      <div id="centers">
+        <h2 className="subhead">가까운 검진기관 <span>{p.region} 기준 · 거리순 · 공단 지정 기관</span></h2>
+        <ul className="list">
           {centers.map((c) => (
-            <li key={c.id} className="center">
-              <div className="row" style={{ gap: '4px 12px' }}><b>{c.name}</b><span className="num muted">{c.distanceKm}km</span></div>
-              <span className="meta">{c.address}{c.tags.length ? ` · ${c.tags.join(' · ')}` : ''}</span>
-              <div className="slots">
-                {c.slots.map((sl) => <button key={sl} className="chip" onClick={() => setPick({ c, slot: sl })}>{sl}</button>)}
-                {c.bookingUrl && <a className="chip" href={c.bookingUrl} target="_blank" rel="noreferrer">예약 안내 열기</a>}
+            <li key={c.id} className="li center">
+              <div className="li-main">
+                <span className="row" style={{ gap: '2px 10px' }}><b>{c.name}</b><span className="num small muted">{c.distanceKm}km</span></span>
+                <small>{c.address}{c.tags.length ? ` · ${c.tags.join(' · ')}` : ''}</small>
+                <div className="slots">
+                  {c.slots.map((sl) => <button key={sl} className="chip" onClick={() => setPick({ c, slot: sl })}>{sl}</button>)}
+                  {c.bookingUrl && <a className="chip" href={c.bookingUrl} target="_blank" rel="noreferrer">예약 안내 열기</a>}
+                </div>
               </div>
             </li>
           ))}
-          {!centers.length && <li className="muted">검진기관을 불러오는 중입니다.</li>}
+          {!centers.length && <li className="li muted">검진기관을 불러오는 중입니다.</li>}
         </ul>
-      </section>
+      </div>
 
       <Disclaimer />
 
       {pick && (
-        <div className="modal-back" onClick={() => setPick(null)}>
-          <div className="modal" role="dialog" aria-modal="true" aria-labelledby="rsv-title" onClick={(e) => e.stopPropagation()}>
-            <h2 id="rsv-title">예약을 요청할까요?</h2>
-            <div className="picked"><b>{pick.c.name}</b><span className="small muted">{pick.c.address}</span><span className="num">{pick.slot}</span></div>
-            <p className="small muted">시연에서는 실제 기관으로 예약이 전송되지 않습니다. 정식 서비스에서는 기관 예약 시스템과 연결됩니다.</p>
-            <div className="row" style={{ justifyContent: 'flex-end' }}>
-              <button className="btn ghost" onClick={() => setPick(null)}>취소</button>
-              <button className="btn" onClick={() => { s.reserve(pick.c.name, pick.slot); setPick(null) }}>예약 요청</button>
-            </div>
-          </div>
-        </div>
+        <Sheet title="예약을 요청할까요?" onClose={() => setPick(null)}
+          actions={<><button className="btn flat" onClick={() => setPick(null)}>취소</button>
+            <button className="btn flat strong" onClick={() => { s.reserve(pick.c.name, pick.slot); setPick(null) }}>예약 요청</button></>}>
+          <div className="picked"><b>{pick.c.name}</b><span className="small muted">{pick.c.address}</span><span className="num">{pick.slot}</span></div>
+          <p className="small muted">시연에서는 실제 기관으로 예약이 전송되지 않습니다. 정식 서비스에서는 기관 예약 시스템과 연결됩니다.</p>
+        </Sheet>
       )}
     </>
   )

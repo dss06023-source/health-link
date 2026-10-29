@@ -4,7 +4,7 @@ import { remote } from './api/remote'
 import { TIMING_LABEL } from './data/rules'
 import { useStore, ymd } from './store'
 import type { Timing } from './types'
-import { Icon } from './ui'
+import { Snackbar } from './ui'
 
 const TIMINGS: Timing[] = ['morning', 'lunch', 'evening']
 
@@ -20,7 +20,7 @@ export async function requestNotify(): Promise<NotificationPermission | 'unsuppo
   try { return await Notification.requestPermission() } catch { return 'denied' }
 }
 
-// 알림 시각이 지났는데 체크하지 않은 영양제가 있으면 화면 아래에 알림을 띄운다(30초마다 확인).
+// 알림 시각이 지났는데 체크하지 않은 영양제가 있으면 화면 아래에 스낵바를 띄운다(30초마다 확인).
 // 서버 연결 모드는 GET /api/reminders/due, 시연 모드는 화면의 기록으로 같은 규칙을 계산한다.
 export function ReminderWatcher() {
   const s = useStore()
@@ -68,17 +68,10 @@ export function ReminderWatcher() {
 
   if (!first) return null
   const close = () => setClosed((x) => [...x, `${today}:${first.timing}`])
+  // One UI 스낵바는 버튼 하나. 닫으면 30분 뒤 다시 알린다(미루기).
   return (
-    <div className="toast" role="status" aria-live="polite">
-      <Icon name="bell" />
-      <div className="stack" style={{ gap: 10 }}>
-        <div><b className="small">건강잇다 복용 알림</b><p className="small">{body}</p></div>
-        <div className="row" style={{ gap: 8 }}>
-          <button className="btn sm" onClick={() => { first.items.forEach((i) => s.toggleIntake(today, i.id)); close() }}>다 먹었어요</button>
-          <button className="btn ghost sm" onClick={() => s.snooze(first.timing, 30)}>30분 뒤 다시</button>
-        </div>
-      </div>
-      <button className="btn ghost sm icon" aria-label="알림 닫기" onClick={close}><Icon name="x" size={14} /></button>
-    </div>
+    <Snackbar text={<><b>{TIMING_LABEL[first.timing]} {first.time}</b> · {first.items.map((i) => i.name).join(', ')} 드실 시간이에요</>}
+      action="먹었어요" onAction={() => { first.items.forEach((i) => s.toggleIntake(today, i.id)); close() }}
+      onClose={() => s.snooze(first.timing, 30)} closeLabel="30분 뒤 다시 알림" />
   )
 }

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import type { Status, Warning } from './types'
 import { STATUS_LABEL } from './data/rules'
 
@@ -11,6 +11,8 @@ const PATHS = {
   file: 'M7 3.5h7l4 4V19a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 19V5a1.5 1.5 0 0 1 1-1.5zM14 3.5V8h4',
   alert: 'M12 8v5m0 3.5v.01M10.3 4.3 3 17.5A2 2 0 0 0 4.7 20.5h14.6a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z',
   x: 'M6 6l12 12M18 6 6 18',
+  person: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20.5a7.5 7.5 0 0 1 15 0',
+  chevron: 'M9.5 6l6 6-6 6',
 }
 export type IconName = keyof typeof PATHS
 
@@ -36,54 +38,14 @@ export function Wordmark() {
   )
 }
 
-// 손으로 친 듯한 타원. 0~100 상자 안에서 한 바퀴 조금 넘게 돌고, seed로 모양을 조금씩 다르게 한다.
-function penPath(seed: number) {
-  const rnd = (i: number) => { const x = Math.sin(seed * 12.9898 + i * 78.233) * 43758.5453; return x - Math.floor(x) }
-  const n = 9, turns = 1.12, pts: [number, number][] = []
-  for (let i = 0; i <= n; i++) {
-    const t = (i / n) * turns * Math.PI * 2 - 2.3
-    const r = 1 + (rnd(i) - 0.5) * 0.09 - (i === n ? 0.06 : 0)
-    pts.push([50 + Math.cos(t) * 48 * r, 50 + Math.sin(t) * 46 * r])
-  }
-  let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)]
-    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6]
-    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6]
-    d += ` C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`
-  }
-  return d
-}
-const seedOf = (s: string) => [...s].reduce((a, c) => a + c.charCodeAt(0), 0) % 97
-
-// 수치 표시. 질환의심은 펜 동그라미, 경계는 점선 밑줄, 정상은 그대로.
-export function Value({ status, children, seed = '', faded }: { status: Status; children: ReactNode; seed?: string; faded?: boolean }) {
-  return (
-    <span className={`mark ${status}${faded ? ' faded' : ''}`}>
-      {children}
-      {status === 'danger' && <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d={penPath(seedOf(seed) + 1)} /></svg>}
-    </span>
-  )
+// 수치 표시. 색에 기대지 않도록 판정은 옆에 글자 배지(Judge)나 StatusText로 함께 쓴다.
+export function Value({ status, children, faded }: { status: Status; children: ReactNode; faded?: boolean }) {
+  return <span className={`val-num ${status}${faded ? ' faded' : ''}`}>{children}</span>
 }
 
-// 강조 밑줄(초록 펜).
-export function PenLine({ children }: { children: ReactNode }) {
-  return (
-    <span className="pen-line">
-      {children}
-      <svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path d="M1 6 C20 3 45 8 70 4.5 S94 5 99 3.5" /></svg>
-    </span>
-  )
-}
-
-const ORDER: Status[] = ['normal', 'caution', 'danger']
-// 결과통보서처럼 세 칸 중 해당 칸에 표시.
+// 판정 배지: 정상은 회색 글자, 경계는 노랑 바탕, 질환의심은 빨강 바탕.
 export function Judge({ status }: { status: Status }) {
-  return (
-    <span className="judge" role="img" aria-label={`판정 ${STATUS_LABEL[status]}`}>
-      {ORDER.map((s) => <span key={s} className={s === status ? `on ${s}` : undefined} aria-hidden="true">{STATUS_LABEL[s]}</span>)}
-    </span>
-  )
+  return <span className={`badge ${status}`}>{STATUS_LABEL[status]}</span>
 }
 
 export function StatusText({ status }: { status: Status }) {
@@ -101,6 +63,35 @@ export function CautionList({ items }: { items: Warning[] }) {
         </li>
       ))}
     </ul>
+  )
+}
+
+// 아래쪽 창. 휴대폰에선 화면 아래에서 올라오고, 넓은 화면에선 가운데 작은 창으로 뜬다.
+export function Sheet({ title, onClose, children, actions }: { title: string; onClose: () => void; children?: ReactNode; actions: ReactNode }) {
+  useEffect(() => {
+    const on = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    addEventListener('keydown', on)
+    return () => removeEventListener('keydown', on)
+  }, [onClose])
+  return (
+    <div className="sheet-back" onClick={onClose}>
+      <div className="sheet" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
+        <h2>{title}</h2>
+        {children}
+        <div className="sheet-actions">{actions}</div>
+      </div>
+    </div>
+  )
+}
+
+// 스낵바: 글 한두 줄과 오른쪽 버튼 하나.
+export function Snackbar({ text, action, onAction, onClose, closeLabel = '닫기' }: { text: ReactNode; action?: string; onAction?: () => void; onClose?: () => void; closeLabel?: string }) {
+  return (
+    <div className="snackbar" role="status" aria-live="polite">
+      <p>{text}</p>
+      {action && <button className="snack-act" onClick={onAction}>{action}</button>}
+      {onClose && <button className="snack-x" aria-label={closeLabel} onClick={onClose}><Icon name="x" size={16} /></button>}
+    </div>
   )
 }
 

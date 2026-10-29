@@ -65,8 +65,8 @@ export default function Measure({ go }: { go: (r: Route) => void }) {
 
   return (
     <>
-      <section className="summary-lines">
-        <p className="lead">
+      <section className="sec">
+        <p>
           {base.date} 검진 이후 집에서 잰 기록 <b className="num">{since}건</b>.
           {measured.length > 0
             ? <> 최근 30일 평균으로 보면 기준치에 가까워진 항목 <b>{improved}개</b>, 멀어진 항목 <b>{worsened}개</b>입니다.</>
@@ -76,18 +76,18 @@ export default function Measure({ go }: { go: (r: Route) => void }) {
       </section>
 
       <div className="cols">
-        <section className="sec">
-          <div className="sec-head"><h2>검진 값과 최근 평균</h2><p>점선은 정상 기준선 · 빈 점은 검진 값</p></div>
-          <ul className="rows">
+        <div>
+          <h2 className="subhead">검진 값과 최근 평균 <span>점선은 정상 기준선 · 빈 점은 검진 값</span></h2>
+          <ul className="list">
             {MEASURE_ITEMS.map((it) => {
               const r = rows.find((x) => x.code === it.code)!
               return (
-                <li key={r.code} className="chg">
+                <li key={r.code} className="li chg">
                   <div className="name"><b>{r.name}</b><small>{r.unit} · 기록 {r.points.length}건</small></div>
                   <div className="vals">
-                    <span className="old">{r.checkupValue !== null && r.checkupStatus ? <Value status={r.checkupStatus} seed={r.code} faded>{r.checkupValue}</Value> : '-'}</span>
+                    <span className="old">{r.checkupValue !== null && r.checkupStatus ? <Value status={r.checkupStatus} faded>{r.checkupValue}</Value> : '-'}</span>
                     <span className="arrow" aria-hidden="true">→</span>
-                    <span className="new">{r.recent !== null && r.recentStatus ? <Value status={r.recentStatus} seed={r.code + 'm'}>{r.recent}</Value> : '-'}</span>
+                    <span className="new">{r.recent !== null && r.recentStatus ? <Value status={r.recentStatus}>{r.recent}</Value> : '-'}</span>
                     {r.change !== null && <span className="delta">{r.change > 0 ? '+' : ''}{r.change}</span>}
                   </div>
                   <div className="chart-cell" style={{ minWidth: 0 }}><Trend row={r} /></div>
@@ -101,9 +101,10 @@ export default function Measure({ go }: { go: (r: Route) => void }) {
               )
             })}
           </ul>
-          <div className="callout"><p className="small muted">{MEASURE_NOTE}</p></div>
-        </section>
+          <p className="small muted foot-note">{MEASURE_NOTE}</p>
+        </div>
 
+        <div className="page">
         <section className="sec">
           <div className="sec-head"><h2>오늘 잰 값 기록</h2></div>
           <form className="stack" onSubmit={save}>
@@ -133,35 +134,36 @@ export default function Measure({ go }: { go: (r: Route) => void }) {
             </div>
             {error && <div className="alert"><Icon name="alert" /><div><p className="small">{error}</p></div></div>}
             {saved && !error && <p className="small" role="status">{saved}</p>}
-            <div><button className="btn" type="submit">기록하기</button></div>
+            <div className="actions"><button className="btn" type="submit">기록하기</button></div>
           </form>
+        </section>
 
-          <div className="sec-head" style={{ marginTop: 12 }}><h2>최근 기록</h2></div>
+        <div>
+          <h2 className="subhead">최근 기록</h2>
           {!recent.length && <p className="muted small">아직 기록이 없습니다.</p>}
-          <ul className="rows">
+          <ul className="list">
             {recent.map((m) => {
               const codes = toCodes(m, p.heightCm)
               const spec = MEASURE_TYPES[m.type]
               const text = spec.fields.map((f) => `${m.values[f.key]}`).join('/') + ` ${spec.fields[0].unit}`
               return (
-                <li key={m.id} className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
-                  <span style={{ minWidth: 0 }}>
-                    <b>{spec.label}</b> <span className="num">{text}</span>
-                    {m.type === 'glucose' && <span className="small muted"> · {m.fasting ? '공복' : '식후'}</span>}
-                    {codes.BMI !== undefined && <span className="small muted"> · BMI {codes.BMI}</span>}
-                    <br /><span className="small muted">{m.measuredAt.slice(0, 10)}</span>
+                <li key={m.id} className="li">
+                  <span className="li-main">
+                    <b>{spec.label} <span className="num">{text}</span></b>
+                    <small>{m.measuredAt.slice(0, 10)}{m.type === 'glucose' && <> · {m.fasting ? '공복' : '식후'}</>}{codes.BMI !== undefined && <> · BMI {codes.BMI}</>}</small>
                   </span>
-                  <button className="btn ghost sm" aria-label={`${m.measuredAt.slice(0, 10)} ${spec.label} 기록 삭제`} onClick={() => s.removeMeasurement(m.id)}><Icon name="x" size={14} /></button>
+                  <button className="icon-btn sm" aria-label={`${m.measuredAt.slice(0, 10)} ${spec.label} 기록 삭제`} onClick={() => s.removeMeasurement(m.id)}><Icon name="x" size={16} /></button>
                 </li>
               )
             })}
           </ul>
-        </section>
+        </div>
+        </div>
       </div>
 
-      <div className="row">
-        <button className="btn" onClick={() => go('report')}>변화 리포트 보기</button>
-        <button className="btn ghost" onClick={() => go('intake')}>복용 관리로</button>
+      <div className="actions">
+        <button className="btn flat" onClick={() => go('intake')}>복용 관리로</button>
+        <button className="btn flat strong" onClick={() => go('report')}>변화 리포트 보기</button>
       </div>
     </>
   )

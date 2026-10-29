@@ -43,15 +43,15 @@ export default function Report({ go }: { go: (r: Route) => void }) {
 
   if (!after) {
     return (
-      <section className="sec" style={{ alignItems: 'flex-start' }}>
+      <section className="sec">
         <span className="muted small">기준 검진 · {base.date}</span>
         <h2>복용 6개월 뒤 중간 점검 결과가 들어오면 여기서 비교합니다</h2>
         <p className="muted">다음 국가검진(2년 뒤)까지 기다리지 않도록, 약국·보건소 간이검사로 혈당과 지질을 중간에 확인하는 방식을 가정했습니다.</p>
-        <div className="row">
+        <div className="actions">
+          <button className="btn flat" onClick={() => go('measure')}>집에서 잰 기록 보기</button>
           {s.remote
             ? <button className="btn" onClick={() => go('upload')}>새 결과지 등록하기</button>
             : <button className="btn" onClick={s.addFollowup}>중간 점검 결과 넣어 보기 (가상)</button>}
-          <button className="btn ghost" onClick={() => go('measure')}>집에서 잰 기록 보기</button>
         </div>
       </section>
     )
@@ -82,29 +82,26 @@ export default function Report({ go }: { go: (r: Route) => void }) {
 
   return (
     <>
-      <section className="summary-lines">
-        <p className="lead">
+      <section className="sec">
+        <p>
           {base.date} → {after.date}, 핵심 {rows.length}개 항목 중 <b>{improved}개</b>가 좋아졌습니다.
           {statusUp.length > 0 && <> 판정이 나아진 항목은 <b>{statusUp.map((r) => r.a.name).join(', ')}</b>입니다.</>}
         </p>
-        <p className="muted">같은 기간 복용률 <b className="num" style={{ color: 'var(--fg)' }}>{rate ?? '-'}%</b> · {s.supplements.map((x) => x.name).join(' · ')}</p>
+        <p className="small muted">같은 기간 복용률 <b className="num" style={{ color: 'var(--fg)' }}>{rate ?? '-'}%</b> · {s.supplements.map((x) => x.name).join(' · ')}</p>
       </section>
 
-      <section className="sec">
-        <div className="sec-head">
-          <h2>항목별 변화</h2>
-          <p>{after.label} · 점선은 정상 기준선{prior ? ` · ${prior.date.slice(0, 4)}년 검진부터 표시` : ''}</p>
-        </div>
-        <ul className="rows">
+      <div>
+        <h2 className="subhead">항목별 변화 <span>{after.label} · 점선은 정상 기준선{prior ? ` · ${prior.date.slice(0, 4)}년 검진부터` : ''}</span></h2>
+        <ul className="list">
           {rows.map((r) => {
             const d = Math.round((r.a.value - r.b.value) * 10) / 10
             return (
-              <li key={r.code} className="chg">
+              <li key={r.code} className="li chg">
                 <div className="name"><b>{r.a.name}</b><small>{r.a.unit} · 기준 {r.a.rangeText}</small></div>
                 <div className="vals">
-                  <span className="old"><Value status={r.b.status} seed={r.code} faded>{r.b.value}</Value></span>
+                  <span className="old"><Value status={r.b.status} faded>{r.b.value}</Value></span>
                   <span className="arrow" aria-hidden="true">→</span>
-                  <span className="new"><Value status={r.a.status} seed={r.code + 'a'}>{r.a.value}</Value></span>
+                  <span className="new"><Value status={r.a.status}>{r.a.value}</Value></span>
                   <span className="delta">{d > 0 ? '+' : ''}{d}</span>
                 </div>
                 <div className="chart-cell" style={{ minWidth: 0 }}><Spark points={r.points} limit={r.limit} labels={labels} /></div>
@@ -116,12 +113,11 @@ export default function Report({ go }: { go: (r: Route) => void }) {
             )
           })}
         </ul>
-      </section>
-
-      <div className="callout"><p className="small muted">{s.remote?.compareNote ?? '수치 변화에는 식사, 음주, 운동, 체중, 검사 시점이 함께 영향을 줍니다. 이 비교는 영양제의 효과를 증명하지 않으며, 생활 관리를 이어 가기 위한 참고 자료입니다.'}</p></div>
-      <div className="row">
-        <button className="btn" onClick={() => go('recommend')}>추천 구성 다시 보기</button>
-        <button className="btn ghost" onClick={() => go('intake')}>복용 관리로</button>
+        <p className="small muted foot-note">{s.remote?.compareNote ?? '수치 변화에는 식사, 음주, 운동, 체중, 검사 시점이 함께 영향을 줍니다. 이 비교는 영양제의 효과를 증명하지 않으며, 생활 관리를 이어 가기 위한 참고 자료입니다.'}</p>
+      </div>
+      <div className="actions">
+        <button className="btn flat" onClick={() => go('intake')}>복용 관리로</button>
+        <button className="btn flat strong" onClick={() => go('recommend')}>추천 구성 다시 보기</button>
       </div>
       <Disclaimer />
     </>
