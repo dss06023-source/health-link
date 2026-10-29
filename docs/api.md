@@ -22,10 +22,12 @@
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | GET | `/api/users/me` | 기본 정보 + 검진 알림. `age`, `isTargetThisYear`, `targetReason`(parity 출생연도 짝·홀 / nonOffice 비사무직 매년 / confirmed 공단 조회 결과 / null), `nextCheckupYear`, `checkupDue`(올해 대상인데 미수검), `message`, `lastCheckupDate`, `checkupItems`(올해 성·연령별 검사), `cancerScreenings`(암별 `status`: target·highRiskOnly·maybe·excluded·notThisYear), `confirmTest`(고혈압·당뇨병 질환의심 시 확진검사, 없으면 null), `notes`(미수검·환수 안내). 기준은 `backend/app/seed/checkup_schedule.json` |
-| PUT | `/api/users/me` | 시작 화면 입력 저장. 보낸 필드만 바뀜: `name`, `birthYear`, `gender`(M/F), `heightCm`, `jobType`(office/nonOffice/other), `confirmedTargetYear`(공단 조회에서 대상으로 나온 해, 0이면 지움), `liverHighRisk`(bool), `packYears`(흡연 갑년, 0이면 지움), `cancerSpecialCase[]`(stomach·colorectal·liver·breast·cervical·lung), `colonoscopyYear`(0이면 지움), `lifestyle{…}`(아래 보기의 키, 보낸 키만 바뀜), `medications[]`, `currentSupplements[]`(영양제 id. 복용 관리 목록과 하나로 맞춰짐: 복용 관리에 넣을 수 있는 영양제는 뺀 것을 중단하고 새로 고른 것을 추가하며, GET은 복용 관리 목록을 함께 돌려줌), `conditions[]`, `allergies[]`, `customAllergies[]`(직접 입력), `consent{sensitiveData, agreedAt}`, `location{lat,lng}`, `address{sido(시·도 정식 이름), sigungu, roadAddress, detailAddress, zipCode, lat?, lng?}`(저장하면 서버가 좌표를 정해 `location`을 바꿈: 보낸 좌표 → 도로명주소 → 시·군·구 → 시·도 대표 좌표 순). 보기에 없는 값은 422. 보기에 없는 약은 직접 입력으로 저장하고 `unknownMedications`로 알려 줌 |
+| PUT | `/api/users/me` | 시작 화면 입력 저장. 보낸 필드만 바뀜: `name`, `birthYear`, `gender`(M/F), `heightCm`(100~230, 체질량지수 계산용), `weightKg`(20~300, 바꾸면 체중 측정 기록으로도 남김), `jobType`(office/nonOffice/other), `confirmedTargetYear`(공단 조회에서 대상으로 나온 해, 0이면 지움), `liverHighRisk`(bool), `packYears`(흡연 갑년, 0이면 지움), `cancerSpecialCase[]`(stomach·colorectal·liver·breast·cervical·lung), `colonoscopyYear`(0이면 지움), `lifestyle{…}`(아래 보기의 키, 보낸 키만 바뀜), `medications[]`, `currentSupplements[]`(영양제 id. 복용 관리 목록과 하나로 맞춰짐: 복용 관리에 넣을 수 있는 영양제는 뺀 것을 중단하고 새로 고른 것을 추가하며, GET은 복용 관리 목록을 함께 돌려줌), `conditions[]`, `allergies[]`, `customAllergies[]`(직접 입력), `consent{sensitiveData, agreedAt}`, `location{lat,lng}`, `address{sido(시·도 정식 이름), sigungu, roadAddress, detailAddress, zipCode, lat?, lng?}`(저장하면 서버가 좌표를 정해 `location`을 바꿈: 보낸 좌표 → 도로명주소 → 시·군·구 → 시·도 대표 좌표 순). 보기에 없는 값은 422. 보기에 없는 약은 직접 입력으로 저장하고 `unknownMedications`로 알려 줌 |
 | GET | `/api/options` | 입력 화면 보기 전체. `medicationGroups[{id, label, items[{name, drugClass, rules}]}]`, `supplements[{id, name, rules}]`, `lifestyle[{key, label, type(choice/multi/number/boolean), options?, min?, max?, sex?}]`, `conditions[{value, label, rules}]`, `allergies[{value, label}]`, `conditionNote`, `customAllowed`. `rules: false`인 보기는 저장만 하고 추천·경고 규칙이 아직 없음 |
 | GET | `/api/medications` | 입력 화면의 약 보기 `[{name, drugClass}]`. 예전 이름(아토르바스타틴 등 처방명)은 목록에 없지만 저장하면 규칙이 그대로 적용됨 |
 | GET | `/api/checkup-centers?lat&lng&limit` | 가까운 검진기관 `[{id, name, address, phone, lat, lng, kind, exams[], tags[], distanceKm, bookingUrl, isDemoData, source}]`. 좌표가 속한 시군구(카카오 좌표→법정동 코드)의 건보공단 지정 검진기관을 거리순으로. `source`: `nhis`(실제) / `demo`(키가 없거나 호출 실패 시 가상 5곳). 좌표 생략 시 사용자 위치 |
+| GET | `/api/checkup-centers/place?name&lat&lng` | 검진기관 상세. 카카오 장소 검색으로 찾은 정보(전화 등)에 `found`, `mapLink`(카카오맵 위치), `routeLink`(길찾기)를 더함. 못 찾으면 `found: false`와 링크만 |
+| GET | `/api/config` | 화면이 쓰는 공개 설정 `{kakaoJsKey}`(지도용 공개 키, 없으면 null). 비밀 키는 넣지 않음 |
 | GET | `/api/drugs/search?q&limit` | 약 이름 검색. 식약처 DUR 품목(전문의약품 포함)과 e약은요(쉬운 설명)를 합침: `{source(mfds/demo), isDemoData, items[{itemSeq, name, company, kind, className, ingredients[], durTypes[], guide{efficacy, usage, warning, caution, interaction, sideEffect, storage} \| null, matchedOption{name, drugClass, by(ingredient/class/option)} \| null}]}`. `matchedOption`은 입력 화면 약 보기 중 해당하는 것의 추정. 실패 시 약 보기에서 찾음 |
 | GET | `/api/address/search?q&limit` | 도로명주소 검색(행정안전부, 키가 없으면 카카오 주소 검색) `{source(juso/kakao/demo), isDemoData, items[{roadAddress, jibunAddress, zipCode, buildingName, regionCode, lat?, lng?}]}` |
 | GET | `/api/geocode?address` | 주소 → 좌표(카카오 로컬) `{address, lat, lng, source(kakao/demo), isDemoData}`. 실패 시 서울시청 좌표 |
@@ -36,7 +38,7 @@
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
-| POST | `/api/checkups/upload` | multipart `file`(PDF 또는 이미지) 또는 `files`(여러 개, 최대 4개 — 넘으면 422). 여러 장이면 장마다 읽어 합치고, 같은 항목은 더 확실하게 읽은 값을 씀. `ocr.files`에 장 수. 결과지에서 수치를 읽어 `status: "pending_review"` 검진을 만들고 `ocr{engine, fields[{code, name, value, unit, confidence, needsReview}], missing[{code, name, unit}], message}` 를 돌려줌. `engine`: `pdf-text`(글자 있는 PDF를 바로 읽음), `ocr`(사진·스캔 PDF를 무료 OCR로 읽음), `mock`(서버에 OCR 모델이 없어 견본 값). 인식 점수가 낮거나 값이 사람 범위를 벗어나거나 항목 이름을 추정한 경우 `needsReview: true`. 수치를 하나도 못 찾으면 422 |
+| POST | `/api/checkups/upload` | multipart `file`(PDF 또는 이미지) 또는 `files`(여러 개, 최대 4개 — 넘으면 422). 여러 장이면 장마다 읽어 합치고, 같은 항목은 더 확실하게 읽은 값을 씀. `ocr.files`에 장 수. 결과지에서 수치를 읽어 `status: "pending_review"` 검진을 만들고 `ocr{engine, fields[{code, name, value, unit, confidence, needsReview}], missing[{code, name, unit}], message}` 를 돌려줌. `engine`: `pdf-text`(글자 있는 PDF를 바로 읽음), `ocr`(사진·스캔 PDF를 무료 OCR로 읽음), `mock`(서버에 OCR 모델이 없어 견본 값). 인식 점수가 낮거나 값이 사람 범위를 벗어나거나 항목 이름을 추정한 경우 `needsReview: true`. 검진 날짜는 결과지에 적힌 날짜 중 가장 이른 것(못 읽으면 올린 날). 수치를 하나도 못 찾으면 422 |
 | PATCH | `/api/checkups/{id}` | 사용자가 확인·수정. `{values?: {code: number}, date?: "YYYY-MM-DD", confirm: true}` → 해석 상세(아래 3번 형식) 반환 |
 | DELETE | `/api/checkups/{id}` | 잘못 올린 결과 삭제 |
 | GET | `/api/checkups` | 검진 목록(최신순) `[{id, date, source(pdf/photo), status, fileName, summary}]` |
@@ -108,8 +110,8 @@
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | GET | `/api/supplements/catalog` | 선택 가능한 영양제 전체 |
-| GET | `/api/supplements?includeEnded=false` | 복용 중 목록 `[{id, supplementId, name, ingredients, dose, claim, timeSlots, paused, startedAt, endedAt, source}]` |
-| POST | `/api/supplements` | 추가 `{supplementId, timeSlots?, source?}` → 201. 이미 복용 중이면 409 |
+| GET | `/api/supplements?includeEnded=false` | 복용 중 목록 `[{id, supplementId, name, ingredients, dose, claim, timeSlots, recommendedSlots, altSlots, timingReason, slotNote, paused, startedAt, endedAt, source}]`. `recommendedSlots`는 권장 시간대, `altSlots`는 붐빌 때 옮겨도 되는 시간대, `slotNote`는 옮겨 둔 경우의 안내(아니면 null) |
+| POST | `/api/supplements` | 추가 `{supplementId, timeSlots?, source?}` → 201. 이미 복용 중이면 409. `timeSlots`를 안 보내면 권장 시간대에 넣되, 그 시간대가 한도만큼 차 있으면 `altSlots` 중 덜 붐비는 곳으로 옮김(아래) |
 | PATCH | `/api/supplements/{id}` | 시간대 변경·일시정지 `{timeSlots?, paused?}` |
 | DELETE | `/api/supplements/{id}` | 복용 중단(기록은 남김) |
 | GET | `/api/supplements/check` | 중복 성분 점검 `{duplicates[], interactions[], ok}`. `interactions`는 복용 목록과 입력 화면의 `currentSupplements`(칼슘·비타민K 등 포함)를 모두 약과 대조 |
@@ -119,6 +121,8 @@
 
 `supplementId` 는 두 가지입니다: 영양제 종류는 문자열(`"omega3"`), 복용 목록의 한 줄은 숫자 `id`. 복용 체크·수정에는 숫자 `id` 를 씁니다.
 시간대(`timeSlot`): `morning` / `lunch` / `evening` / `bedtime`.
+
+시간대 나누기(`intake_rules.json`의 `slotBalance`): 한 시간대 한도는 3개, 새로 넣는 것까지 7개 이상 먹으면 4개. 식사 뒤 아무 때나 먹어도 되는 영양제만 옮기고, 사용자가 고른 시간대와 시간이 정해진 영양제(철분, 바나바잎 등)는 그대로 둡니다.
 
 ## 6. 변화 리포트
 
@@ -200,7 +204,7 @@
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | POST | `/api/demo/reset` | 체험 계정의 기록을 가상 인물 처음 상태로 되돌림. 가입한 계정은 403 |
-| GET | `/api/health` | 서버 상태 확인. `publicApis{dataGoKr, juso, kakao}`: 서버에 키가 들어 있는지(true/false)만 알려 줌 |
+| GET | `/api/health` | 서버 상태 확인. `publicApis{dataGoKr, juso, kakao, kakaoJs}`: 서버에 키가 들어 있는지(true/false)만 알려 줌 |
 
 ## 시연 시나리오와 데이터
 

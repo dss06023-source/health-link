@@ -6,6 +6,8 @@ from app.main import app
 
 out = {}
 with TestClient(app) as c:
+    # 기록 API는 로그인이 필요하다. 가상 인물 기록이 든 체험 계정으로 만든다.
+    c.post("/api/auth/guest")
     c.post("/api/demo/reset")
     def put(key, r):
         out[key] = {"status": r.status_code, "body": r.json()}
