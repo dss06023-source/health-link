@@ -14,15 +14,18 @@
 | PUT | `/api/users/me` | 시작 화면 입력 저장. 보낸 필드만 바뀜: `name`, `birthYear`, `gender`(M/F), `heightCm`, `lifestyle{…}`(아래 보기의 키, 보낸 키만 바뀜), `medications[]`, `currentSupplements[]`(영양제 id), `conditions[]`, `allergies[]`, `customAllergies[]`(직접 입력), `consent{sensitiveData, agreedAt}`, `location{lat,lng}`. 보기에 없는 값은 422. 보기에 없는 약은 직접 입력으로 저장하고 `unknownMedications`로 알려 줌 |
 | GET | `/api/options` | 입력 화면 보기 전체. `medicationGroups[{id, label, items[{name, drugClass, rules}]}]`, `supplements[{id, name, rules}]`, `lifestyle[{key, label, type(choice/multi/number/boolean), options?, min?, max?, sex?}]`, `conditions[{value, label, rules}]`, `allergies[{value, label}]`, `conditionNote`, `customAllowed`. `rules: false`인 보기는 저장만 하고 추천·경고 규칙이 아직 없음 |
 | GET | `/api/medications` | 입력 화면의 약 보기 `[{name, drugClass}]`. 예전 이름(아토르바스타틴 등 처방명)은 목록에 없지만 저장하면 규칙이 그대로 적용됨 |
-| GET | `/api/checkup-centers?lat&lng&limit` | 가까운 검진기관(가상) `[{id, name, address, phone, distanceKm, bookingUrl}]`. 좌표 생략 시 사용자 위치 |
+| GET | `/api/checkup-centers?lat&lng&limit` | 가까운 검진기관 `[{id, name, address, phone, lat, lng, kind, exams[], tags[], distanceKm, bookingUrl, isDemoData, source}]`. 좌표가 속한 시군구(카카오 좌표→법정동 코드)의 건보공단 지정 검진기관을 거리순으로. `source`: `nhis`(실제) / `demo`(키가 없거나 호출 실패 시 가상 5곳). 좌표 생략 시 사용자 위치 |
+| GET | `/api/drugs/search?q&limit` | 약 이름 검색. 식약처 DUR 품목(전문의약품 포함)과 e약은요(쉬운 설명)를 합침: `{source(mfds/demo), isDemoData, items[{itemSeq, name, company, kind, className, ingredients[], durTypes[], guide{efficacy, usage, warning, caution, interaction, sideEffect, storage} \| null, matchedOption{name, drugClass, by(ingredient/class/option)} \| null}]}`. `matchedOption`은 입력 화면 약 보기 중 해당하는 것의 추정. 실패 시 약 보기에서 찾음 |
+| GET | `/api/address/search?q&limit` | 도로명주소 검색(행정안전부) `{source(juso/demo), isDemoData, items[{roadAddress, jibunAddress, zipCode, buildingName, regionCode}]}` |
+| GET | `/api/geocode?address` | 주소 → 좌표(카카오 로컬) `{address, lat, lng, source(kakao/demo), isDemoData}`. 실패 시 서울시청 좌표 |
 
 대상 연도 규칙: 20세 이상, 출생연도 짝·홀과 올해 짝·홀이 같으면 대상(2년 주기).
 
-## 2. 결과 연동 (모의 OCR)
+## 2. 결과 연동 (OCR)
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
-| POST | `/api/checkups/upload` | multipart `file`(PDF 또는 이미지). 항상 같은 2026년 샘플 수치로 `status: "pending_review"` 검진을 만들고 `ocr.fields[{code, name, value, unit, confidence, needsReview}]` 를 돌려줌. 사진이면 HDL·감마지티피에 `needsReview: true` |
+| POST | `/api/checkups/upload` | multipart `file`(PDF 또는 이미지). 결과지에서 수치를 읽어 `status: "pending_review"` 검진을 만들고 `ocr{engine, fields[{code, name, value, unit, confidence, needsReview}], missing[{code, name, unit}], message}` 를 돌려줌. `engine`: `pdf-text`(글자 있는 PDF를 바로 읽음), `ocr`(사진·스캔 PDF를 무료 OCR로 읽음), `mock`(서버에 OCR 모델이 없어 견본 값). 인식 점수가 낮거나 값이 사람 범위를 벗어나거나 항목 이름을 추정한 경우 `needsReview: true`. 수치를 하나도 못 찾으면 422 |
 | PATCH | `/api/checkups/{id}` | 사용자가 확인·수정. `{values?: {code: number}, date?: "YYYY-MM-DD", confirm: true}` → 해석 상세(아래 3번 형식) 반환 |
 | DELETE | `/api/checkups/{id}` | 잘못 올린 결과 삭제 |
 | GET | `/api/checkups` | 검진 목록(최신순) `[{id, date, source(pdf/photo), status, fileName, summary}]` |
@@ -181,7 +184,7 @@
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | POST | `/api/demo/reset` | 가상 데이터를 처음 상태로 되돌림(리허설마다 사용) |
-| GET | `/api/health` | 서버 상태 확인 |
+| GET | `/api/health` | 서버 상태 확인. `publicApis{dataGoKr, juso, kakao}`: 서버에 키가 들어 있는지(true/false)만 알려 줌 |
 
 ## 시연 시나리오와 데이터
 

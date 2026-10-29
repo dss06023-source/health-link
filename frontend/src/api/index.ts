@@ -14,11 +14,14 @@ export async function getCenters(): Promise<CheckupCenter[]> {
 }
 
 // 백엔드는 업로드한 결과를 '확인 대기'로 저장하고 id를 돌려준다. 확정은 store.addCheckup에서 한다.
-export async function uploadCheckup(file: File | null): Promise<{ id: number | null; items: CheckupItem[] }> {
+// missing은 결과지에서 못 찾은 항목(값 NaN), review는 다시 확인할 항목 코드, message는 서버 안내 문구다.
+export interface UploadResult { id: number | null; items: CheckupItem[]; missing: CheckupItem[]; review: string[]; engine: string | null; message: string | null }
+
+export async function uploadCheckup(file: File | null): Promise<UploadResult> {
   if (USE_API) {
-    if (!file) throw new Error('서버 연결 모드에서는 실제 파일을 골라 주세요. 아무 PDF나 사진이어도 샘플 수치로 인식됩니다.')
+    if (!file) throw new Error('서버 연결 모드에서는 실제 결과지 사진이나 PDF를 골라 주세요.')
     return remote.upload(file)
   }
   await wait(400)
-  return { id: null, items: OCR_RESULT }
+  return { id: null, items: OCR_RESULT, missing: [], review: [], engine: null, message: null }
 }

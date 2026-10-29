@@ -2183,8 +2183,8 @@
             "name": "HDL 콜레스테롤",
             "value": 47,
             "unit": "mg/dL",
-            "confidence": 0.72,
-            "needsReview": true
+            "confidence": 0.98,
+            "needsReview": false
           },
           {
             "code": "tg",
@@ -2215,8 +2215,8 @@
             "name": "감마지티피(γ-GTP)",
             "value": 58,
             "unit": "U/L",
-            "confidence": 0.72,
-            "needsReview": true
+            "confidence": 0.98,
+            "needsReview": false
           },
           {
             "code": "hb",
@@ -2235,7 +2235,24 @@
             "needsReview": false
           }
         ],
-        "message": "인식한 수치를 확인해 주세요. 틀린 값은 고친 뒤 확정하세요."
+        "missing": [
+          {
+            "code": "waist",
+            "name": "허리둘레",
+            "unit": "cm"
+          },
+          {
+            "code": "creatinine",
+            "name": "혈청 크레아티닌",
+            "unit": "mg/dL"
+          },
+          {
+            "code": "egfr",
+            "name": "신사구체여과율(e-GFR)",
+            "unit": "mL/min/1.73m²"
+          }
+        ],
+        "message": "사진 인식 모델이 없는 서버라 견본 값을 보여 줍니다. 실제 결과지 값과 다릅니다."
       }
     }
   },
@@ -4012,6 +4029,160 @@
         "아토르바스타틴"
       ],
       "message": "검진 1건을 가져왔습니다. 처방 기록에 복용 약 목록에 없는 약이 있습니다(암로디핀). 추가하면 추천 경고에 반영됩니다."
+    }
+  },
+  "POST /api/checkups/upload (글자 있는 PDF)": {
+    "status": 200,
+    "body": {
+      "id": 4,
+      "date": "2026-10-29",
+      "source": "pdf",
+      "status": "pending_review",
+      "fileName": "결과통보서.pdf",
+      "values": {
+        "sbp": 126,
+        "dbp": 82,
+        "fbs": 101,
+        "tc": 205,
+        "ldl": 128,
+        "hdl": 47,
+        "tg": 162,
+        "ast": 31,
+        "alt": 37,
+        "ggt": 58,
+        "hb": 14.9,
+        "bmi": 24.4,
+        "waist": 86,
+        "creatinine": 0.9,
+        "egfr": 92
+      },
+      "ocr": {
+        "engine": "pdf-text",
+        "fields": [
+          {
+            "code": "sbp",
+            "name": "수축기 혈압",
+            "value": 126,
+            "unit": "mmHg",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "dbp",
+            "name": "이완기 혈압",
+            "value": 82,
+            "unit": "mmHg",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "fbs",
+            "name": "공복혈당",
+            "value": 101,
+            "unit": "mg/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "tc",
+            "name": "총콜레스테롤",
+            "value": 205,
+            "unit": "mg/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "ldl",
+            "name": "LDL 콜레스테롤",
+            "value": 128,
+            "unit": "mg/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "hdl",
+            "name": "HDL 콜레스테롤",
+            "value": 47,
+            "unit": "mg/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "tg",
+            "name": "중성지방",
+            "value": 162,
+            "unit": "mg/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "ast",
+            "name": "AST",
+            "value": 31,
+            "unit": "U/L",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "alt",
+            "name": "ALT",
+            "value": 37,
+            "unit": "U/L",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "ggt",
+            "name": "감마지티피(γ-GTP)",
+            "value": 58,
+            "unit": "U/L",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "hb",
+            "name": "혈색소",
+            "value": 14.9,
+            "unit": "g/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "bmi",
+            "name": "체질량지수(BMI)",
+            "value": 24.4,
+            "unit": "kg/m²",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "waist",
+            "name": "허리둘레",
+            "value": 86,
+            "unit": "cm",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "creatinine",
+            "name": "혈청 크레아티닌",
+            "value": 0.9,
+            "unit": "mg/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "egfr",
+            "name": "신사구체여과율(e-GFR)",
+            "value": 92,
+            "unit": "mL/min/1.73m²",
+            "confidence": 1.0,
+            "needsReview": false
+          }
+        ],
+        "missing": [],
+        "message": "인식한 수치를 확인해 주세요. 틀린 값은 고친 뒤 확정하세요."
+      }
     }
   }
 }

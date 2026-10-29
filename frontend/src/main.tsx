@@ -1,6 +1,5 @@
-// 글꼴: 주요 글자와 앱 이름은 카페24 써라운드, 나머지는 도현(둘 다 OFL).
-import '@noonnu/cafe24-ssurround/index.css'
-import '@fontsource/do-hyeon/400.css'
+// 글꼴: 페이퍼로지 400(OFL) 한 가지.
+import './fonts.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
