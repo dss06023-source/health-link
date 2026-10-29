@@ -65,6 +65,7 @@ DEMO_USER = {
     "allergies": [],
     "customAllergies": [],
     "consent": {"sensitiveData": True, "agreedAt": "2024-10-20"},
+    "address": {"sido": "서울특별시", "sigungu": "중구", "roadAddress": "서울특별시 중구 세종대로 110", "detailAddress": ""},
     "location": {"lat": 37.5665, "lng": 126.9780},
     "reminders": {
         "enabled": True,

@@ -141,6 +141,27 @@ def search_address(keyword, limit=10):
     } for j in results.get("juso") or []]
 
 
+@cached
+def search_address_kakao(keyword, limit=10):
+    """행안부 키가 없을 때 카카오 주소 검색으로 대신 찾는다. 좌표도 함께 온다."""
+    data = _kakao("kakao-address", KAKAO_ADDRESS_URL, {"query": keyword, "size": min(limit, 30)})
+    if data is None:
+        return None
+    items = []
+    for d in data.get("documents") or []:
+        road = d.get("road_address") or {}
+        jibun = d.get("address") or {}
+        items.append({
+            "roadAddress": road.get("address_name") or None,
+            "jibunAddress": jibun.get("address_name") or d.get("address_name"),
+            "zipCode": road.get("zone_no") or None,
+            "buildingName": road.get("building_name") or None,
+            "regionCode": jibun.get("b_code") or None,
+            "lat": float(d["y"]), "lng": float(d["x"]),
+        })
+    return items
+
+
 # ---------- 건강검진기관 ----------
 
 # 검진기관 API의 검진 종류 칸(1이면 그 검진을 한다).

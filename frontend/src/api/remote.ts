@@ -1,8 +1,9 @@
 import type { JobType,
-  CenterPlace, Checkup, CheckupCenter, CheckupItem, IntakeLog, Measurement, MydataResult, MydataState, Recommendation, ReminderTimes,
+  Address, AddressHit, CenterPlace, Checkup, CheckupCenter, CheckupItem, IntakeLog, Measurement, MydataResult, MydataState, Recommendation, ReminderTimes,
   Supplement, Timing, UserProfile, Warning,
 } from '../types'
 import type { UploadResult } from './index'
+import { regionLabel } from '../data/regions'
 
 // backend/(FastAPI, docs/api.md) 응답을 화면이 쓰는 모양으로 바꾼다.
 const BASE = import.meta.env.VITE_API_BASE ?? ''
@@ -27,6 +28,7 @@ const firstEntry = (o: Record<string, string>) => Object.entries(o)[0] ?? ['', '
 interface RUser {
   name: string; birthYear: number; gender: 'M' | 'F'; heightCm?: number; medications: string[]; lastCheckupDate: string | null
   jobType?: JobType; confirmedTargetYear?: number | null
+  address?: Address
   liverHighRisk?: boolean; packYears?: number | null; cancerSpecialCase?: string[]; colonoscopyYear?: number | null
   currentSupplements?: string[]; conditions?: string[]; allergies?: string[]; customAllergies?: string[]
   lifestyle: {
@@ -115,7 +117,8 @@ export async function loadAll() {
 
   const L = user.lifestyle
   const profile: UserProfile = {
-    name: user.name, birthYear: user.birthYear, sex: user.gender, region: '서울',
+    name: user.name, birthYear: user.birthYear, sex: user.gender,
+    region: user.address ? regionLabel(user.address.sido, user.address.sigungu) : '서울', address: user.address,
     lastCheckupYear: user.lastCheckupDate ? Number(user.lastCheckupDate.slice(0, 4)) : null,
     medications: user.medications, currentSupplements: toLabel(codes.supplement, user.currentSupplements),
     lifestyle: {
@@ -198,6 +201,7 @@ export const remote = {
     const pregnant = p.sex === 'F' && !!p.pregnant
     return call('/api/users/me', json('PUT', {
       name: p.name, birthYear: p.birthYear, gender: p.sex, medications: p.medications,
+      ...(p.address?.sido && { address: p.address }),
       ...(p.jobType && { jobType: p.jobType }), confirmedTargetYear: p.confirmedTargetYear ?? 0,
       liverHighRisk: !!p.liverHighRisk, packYears: p.packYears ?? 0, cancerSpecialCase: p.cancerSpecialCase ?? [], colonoscopyYear: p.colonoscopyYear ?? 0,
       currentSupplements: toCode(codes.supplement, p.currentSupplements),
@@ -221,6 +225,8 @@ export const remote = {
   intake: (id: string, timing: Timing, taken: boolean, date: string) =>
     call('/api/intake-logs', json('POST', { supplementId: Number(id), timeSlot: timing, taken, date })),
   reset: () => call('/api/demo/reset', { method: 'POST' }),
+  searchAddress: async (q: string) =>
+    (await call<{ items: AddressHit[] }>(`/api/address/search?${new URLSearchParams({ q })}`)).items,
 
   // 중간 점검(가정 측정)
   addMeasurement: (m: Omit<Measurement, 'id'>) =>

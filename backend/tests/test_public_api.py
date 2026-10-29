@@ -113,6 +113,32 @@ def test_encoded_data_go_kr_key_is_decoded(monkeypatch):
     assert public_api._key("DATA_GO_KR_KEY") == "abc+def=="
 
 
+def test_address_search_falls_back_to_kakao_without_juso(client, keys, monkeypatch):
+    monkeypatch.delenv("JUSO_API_KEY")
+    addr = client.get("/api/address/search", params={"q": "세종대로 110 kakao"}).json()
+    assert addr["source"] == "kakao"
+    assert addr["items"][0] == {"roadAddress": "서울 중구 세종대로 110", "jibunAddress": "서울 중구 태평로1가 31",
+                                "zipCode": None, "buildingName": None, "regionCode": None, "lat": 37.5665, "lng": 126.978}
+
+
+def test_saving_address_moves_checkup_center_search(client, keys):
+    me = client.put("/api/users/me", json={"address": {
+        "sido": "서울특별시", "sigungu": "중구", "roadAddress": "서울 중구 세종대로 110", "detailAddress": "3층"}}).json()
+    assert me["address"]["detailAddress"] == "3층" and me["location"] == {"lat": 37.5665, "lng": 126.978}
+    assert client.get("/api/checkup-centers").json()[0]["source"] == "nhis"
+
+
+def test_address_without_geocode_uses_sido_center(client):
+    me = client.put("/api/users/me", json={"address": {"sido": "부산광역시", "sigungu": "해운대구"}}).json()
+    assert me["location"] == {"lat": 35.1796, "lng": 129.0756}
+    assert me["address"] == {"sido": "부산광역시", "sigungu": "해운대구", "roadAddress": "", "detailAddress": "", "zipCode": ""}
+
+
+def test_picked_address_keeps_its_coordinates_and_bad_sido_is_rejected(client):
+    me = client.put("/api/users/me", json={"address": {"sido": "제주특별자치도", "sigungu": "서귀포시",
+                                                        "roadAddress": "제주 서귀포시 중앙로 1", "lat": 33.25, "lng": 126.56}}).json()
+    assert me["location"] == {"lat": 33.25, "lng": 126.56}
+    assert client.put("/api/users/me", json={"address": {"sido": "서울"}}).status_code == 422
 def test_center_place_uses_kakao_keyword_match(client, keys):
     r = client.get("/api/checkup-centers/place", params={"name": "가까운의원", "lat": 37.5665, "lng": 126.979}).json()
     assert r["found"] and r["phone"] == "02-777-7777" and r["placeUrl"].endswith("/7")
