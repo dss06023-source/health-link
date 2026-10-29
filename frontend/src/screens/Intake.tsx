@@ -100,7 +100,7 @@ export default function Intake() {
       </div>
 
       <p className="small muted row note-line">
-        <Icon name="bell" size={16} />알림 시각이 지나도 체크하지 않으면 화면 아래에 알림이 뜹니다.
+        <Icon name="bell" size={16} />알림 시각이 지나도 체크하지 않으면 화면 아래에 알림이 뜹니다.{' '}
         {perm === 'default' && <button className="btn flat sm strong" onClick={async () => setPerm(await requestNotify())}>브라우저 알림도 받기</button>}
         {perm === 'granted' && <span>브라우저 알림 켜짐</span>}
         {perm === 'denied' && <span>브라우저 알림이 막혀 있어 화면 안에서만 알립니다.</span>}

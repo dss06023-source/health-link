@@ -25,7 +25,7 @@ export function Icon({ name, color = 'currentColor', size = 20 }: { name: IconNa
 }
 
 // 앱 아이콘(시안 4-T): 순환 화살표(검진 주기) · ㅅ(잇는 선) · 캡슐(영양제)로 "잇"을 그린다.
-// ink는 고리와 캡슐, link는 ㅅ 색. 아이콘은 초록 바탕, 이름 속 "잇"은 바탕 없이 쓴다.
+// ink는 고리와 캡슐, link는 ㅅ 색. 아이콘은 초록 바탕, 이름 속 "잇"은 바탕 없이 민트(ㅇ·ㅣ)와 초록(ㅅ)으로 쓴다.
 function ItShapes({ ink, link }: { ink: string; link: string }) {
   return (
     <g transform="translate(-4 30)">
@@ -57,7 +57,7 @@ export function Wordmark() {
       <AppIcon />
       <span className="wm-text" aria-hidden="true">
         건강
-        <svg className="wm-it" viewBox="48 104 390 328"><ItShapes ink="currentColor" link="var(--accent)" /></svg>
+        <svg className="wm-it" viewBox="48 104 390 328"><ItShapes ink="var(--mint)" link="var(--accent)" /></svg>
         다
       </span>
     </span>

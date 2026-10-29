@@ -3,7 +3,7 @@
    - 위쪽은 보는 영역(가운데 큰 제목), 누르는 것은 그 아래에 둔다. 휴대폰에선 아래 탭 4개, 넓은 화면에선 위쪽 탭.
    - 한 화면의 주 버튼은 초록 채움 하나, 나머지는 글자 버튼. 상태는 색과 함께 글자(정상/경계/질환의심)로 말한다. */
 :root {
-  --bg: #f2f4f2;
+  --bg: #ffffff;
   --block: #ffffff;
   --surface: #ffffff;
   --line: #e1e7e2;
@@ -13,6 +13,8 @@
   --chip-bg: #eef1ee;
   --seg-bg: #e3e8e4;
   --input-bg: #f4f6f4;
+  --block-edge: #b7dcc5;
+  --mint: #2aa874;
   --seg-on: #ffffff;
   --accent: #1f7a4d;
   --accent-ink: #ffffff;
@@ -37,7 +39,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0b0f0c; --block: #1a201c; --surface: #1a201c; --line: #2b3430; --fg: #e5ede7; --muted: #9daea3;
-    --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25; --seg-on: #3a443d;
+    --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25; --seg-on: #3a443d; --block-edge: #2b3d31; --mint: #a8f5c4;
     --accent: #5cc48d; --accent-ink: #0d1a12; --accent-soft: #1d3a29;
     --caution: #e2a948; --caution-soft: #3a2e17; --danger: #ef7d74; --danger-ink: #1a0d0c; --danger-soft: #3d1f1d;
     --snack-bg: #e1e8e3; --snack-fg: #111814; --snack-act: #1f7a4d;
@@ -46,7 +48,7 @@
 }
 :root[data-theme="dark"] {
   --bg: #0b0f0c; --block: #1a201c; --surface: #1a201c; --line: #2b3430; --fg: #e5ede7; --muted: #9daea3;
-  --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25; --seg-on: #3a443d;
+  --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25; --seg-on: #3a443d; --block-edge: #2b3d31; --mint: #a8f5c4;
   --accent: #5cc48d; --accent-ink: #0d1a12; --accent-soft: #1d3a29;
   --caution: #e2a948; --caution-soft: #3a2e17; --danger: #ef7d74; --danger-ink: #1a0d0c; --danger-soft: #3d1f1d;
   --snack-bg: #e1e8e3; --snack-fg: #111814; --snack-act: #1f7a4d;
@@ -125,8 +127,8 @@ a { color: inherit; }
 .demo-foot b { color: var(--fg); }
 
 /* ---- 묶음(블록)과 목록 ---- */
-.sec { background: var(--block); border-radius: var(--rb); padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.sec.tint-caution { background: var(--caution-soft); }
+.sec { background: var(--block); border: 1px solid var(--block-edge); border-radius: var(--rb); padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.sec.tint-caution { background: var(--caution-soft); border-color: transparent; }
 .sec-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; }
 .count { font-size: 14.5px; color: var(--muted); }
 .subhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; padding: 0 12px 8px; font-size: 15px; font-weight: 800; color: var(--muted); }
@@ -141,7 +143,7 @@ a { color: inherit; }
 .callout.caution { background: var(--caution-soft); }
 .foot-note { padding: 10px 12px 0; }
 
-.list { list-style: none; margin: 0; padding: 6px 0; background: var(--block); border-radius: var(--rb); overflow: hidden; }
+.list { list-style: none; margin: 0; padding: 6px 0; background: var(--block); border: 1px solid var(--block-edge); border-radius: var(--rb); overflow: hidden; }
 .list > li, .rows > li { position: relative; }
 .list > li + li::before, .rows > li + li::before {
   content: ""; position: absolute; top: 0; left: 20px; right: 20px; height: 1px; background: var(--line);
@@ -306,7 +308,7 @@ button.li:hover { background: var(--hover); }
 .link-row.off .evid, .link-row.off .supp, .link-row.off .wire { opacity: .45; }
 
 .strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-.pouch { display: flex; flex-direction: column; gap: 4px; padding: 18px 20px 12px; min-width: 0; background: var(--block); border-radius: var(--rb); }
+.pouch { display: flex; flex-direction: column; gap: 4px; padding: 18px 20px 12px; min-width: 0; background: var(--block); border: 1px solid var(--block-edge); border-radius: var(--rb); }
 .pouch-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
 .pouch-head b { font-size: 18px; }
 .pouch-head input {
