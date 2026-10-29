@@ -86,12 +86,16 @@ def ingredient_overlaps(catalog_ids):
 
 
 def interaction_warnings(catalog_id, med_classes, medications):
-    out = []
+    out = {}
     for rule in ref.INTERACTIONS:
         if rule["supplement"] == catalog_id and rule["drugClass"] in med_classes:
             drugs = [m for m in medications if ref.MEDICATIONS.get(m) == rule["drugClass"]]
-            out.append({"type": "interaction", "level": rule["level"], "drugs": drugs, "message": rule["message"]})
-    return out
+            # 항응고제·항혈소판제처럼 계열이 달라도 문구가 같으면 한 건으로 합친다.
+            if rule["message"] in out:
+                out[rule["message"]]["drugs"] += drugs
+            else:
+                out[rule["message"]] = {"type": "interaction", "level": rule["level"], "drugs": drugs, "message": rule["message"]}
+    return list(out.values())
 
 
 def _spacing_target_present(target, taking, med_classes):

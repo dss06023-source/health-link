@@ -11,8 +11,9 @@
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | GET | `/api/users/me` | 기본 정보 + 검진 알림. `age`, `isTargetThisYear`, `nextCheckupYear`, `checkupDue`(올해 대상인데 미수검), `message`, `lastCheckupDate` |
-| PUT | `/api/users/me` | 시작 화면 입력 저장. 보낸 필드만 바뀜: `name`, `birthYear`, `gender`(M/F), `heightCm`, `lifestyle{smoking, drinkingPerWeek, exercisePerWeek, lowSunlight, pregnant?, breastfeeding?}`, `medications[]`, `consent{sensitiveData, agreedAt}`, `location{lat,lng}` |
-| GET | `/api/medications` | 선택 가능한 약 목록 `[{name, drugClass}]` (상호작용 규칙이 있는 약만) |
+| PUT | `/api/users/me` | 시작 화면 입력 저장. 보낸 필드만 바뀜: `name`, `birthYear`, `gender`(M/F), `heightCm`, `lifestyle{…}`(아래 보기의 키, 보낸 키만 바뀜), `medications[]`, `currentSupplements[]`(영양제 id), `conditions[]`, `allergies[]`, `customAllergies[]`(직접 입력), `consent{sensitiveData, agreedAt}`, `location{lat,lng}`. 보기에 없는 값은 422. 보기에 없는 약은 직접 입력으로 저장하고 `unknownMedications`로 알려 줌 |
+| GET | `/api/options` | 입력 화면 보기 전체. `medicationGroups[{id, label, items[{name, drugClass, rules}]}]`, `supplements[{id, name, rules}]`, `lifestyle[{key, label, type(choice/multi/number/boolean), options?, min?, max?, sex?}]`, `conditions[{value, label, rules}]`, `allergies[{value, label}]`, `conditionNote`, `customAllowed`. `rules: false`인 보기는 저장만 하고 추천·경고 규칙이 아직 없음 |
+| GET | `/api/medications` | 입력 화면의 약 보기 `[{name, drugClass}]`. 예전 이름(아토르바스타틴 등 처방명)은 목록에 없지만 저장하면 규칙이 그대로 적용됨 |
 | GET | `/api/checkup-centers?lat&lng&limit` | 가까운 검진기관(가상) `[{id, name, address, phone, distanceKm, bookingUrl}]`. 좌표 생략 시 사용자 위치 |
 
 대상 연도 규칙: 20세 이상, 출생연도 짝·홀과 올해 짝·홀이 같으면 대상(2년 주기).
