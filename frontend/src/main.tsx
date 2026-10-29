@@ -1,5 +1,5 @@
-// 글꼴: 모든 글자를 카페24 써라운드(OFL)로 쓴다.
-import '@noonnu/cafe24-ssurround/index.css'
+// 글꼴: 모든 글자를 주아(OFL)로 쓴다.
+import '@fontsource/jua/400.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
