@@ -142,3 +142,46 @@ def test_demo_reset(client):
     upload_and_confirm(client)
     client.post("/api/demo/reset")
     assert len(client.get("/api/checkups").json()) == 1
+
+
+def test_age_items_follow_nhis_table(client):
+    # 2026년 기준. 1986년생 남성은 40세: B형간염·생활습관평가·치면세균막, 남성 이상지질혈증(24세부터 4년마다)도 해당.
+    me = client.get("/api/users/me").json()
+    ids = {i["id"] for i in me["checkupItems"]}
+    assert {"lipid", "hepB", "lifestyle", "plaque", "depression"} <= ids and "bone" not in ids
+    # 1960년생 여성은 66세: 골밀도·인지기능·노인신체기능
+    me = client.put("/api/users/me", json={"birthYear": 1960, "gender": "F"}).json()
+    ids = {i["id"] for i in me["checkupItems"]}
+    assert {"bone", "cognitive", "elderly", "lungFunction"} <= ids and "lipid" not in ids  # 여성은 40세부터 4년마다라 66세는 아님
+
+
+def test_cancer_screening_rules(client):
+    cancers = lambda me: {c["id"]: c for c in me["cancerScreenings"]}
+    # 1976년생(50세) 남성: 위암 2년 주기 대상, 대장암 매년, 간암은 고위험군만
+    c = cancers(client.put("/api/users/me", json={"birthYear": 1976}).json())
+    assert c["stomach"]["status"] == "target" and c["colorectal"]["status"] == "target"
+    assert c["liver"]["status"] == "highRiskOnly" and "lung" not in c
+    c = cancers(client.put("/api/users/me", json={"liverHighRisk": True, "colonoscopyYear": 2023, "cancerSpecialCase": ["stomach"]}).json())
+    assert c["liver"]["status"] == "target" and c["colorectal"]["status"] == "excluded" and c["stomach"]["status"] == "excluded"
+    # 1971년생(55세): 짝수 해라 위암은 내년, 폐암은 30갑년 이상 현재 흡연자만
+    me = client.put("/api/users/me", json={"birthYear": 1971, "cancerSpecialCase": [], "colonoscopyYear": 0,
+                                           "lifestyle": {"smoking": "current"}, "packYears": 20}).json()
+    c = cancers(me)
+    assert c["stomach"]["status"] == "notThisYear" and c["lung"]["status"] == "highRiskOnly"
+    # 30갑년이면 고위험군이지만 2년 주기라 홀수년생은 내년
+    assert cancers(client.put("/api/users/me", json={"packYears": 30}).json())["lung"]["status"] == "notThisYear"
+    assert cancers(client.put("/api/users/me", json={"birthYear": 1972}).json())["lung"]["status"] == "target"
+    assert client.put("/api/users/me", json={"cancerSpecialCase": ["x"]}).status_code == 422
+
+
+def test_confirm_test_after_suspected_hypertension(client):
+    upload_and_confirm(client, values={"sbp": 150, "dbp": 95, "fbs": 90, "tc": 180, "ldl": 100, "hdl": 55, "tg": 120})
+    me = client.get("/api/users/me").json()
+    assert me["confirmTest"]["diseases"] == ["고혈압"] and me["confirmTest"]["deadline"] == "2027-03-31"
+    assert any("환수" in n for n in me["notes"])
+
+
+def test_missed_last_year_note(client):
+    # 1985년생은 2026년 대상이 아니고 2025년 검진 기록도 없다.
+    me = client.put("/api/users/me", json={"birthYear": 1985, "jobType": "office"}).json()
+    assert any("1577-1000" in n for n in me["notes"]) and any("추가등록" in n for n in me["notes"])

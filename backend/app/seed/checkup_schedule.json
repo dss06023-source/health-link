@@ -1,0 +1,55 @@
+{
+  "source": "국민건강보험공단 검진대상조회 안내문과 「2026년 건강검진 안내」 책자(사용자 제공, 2026-10-29 반영). 둘이 다르면 책자를 따름. 나이는 검진연도 - 출생연도.",
+  "general": {
+    "minAge": 20,
+    "deadline": "12-31",
+    "note": "일반건강검진은 2년에 1회(직장가입자 비사무직은 1년에 1회)만 받을 수 있고, 횟수를 넘겨 받으면 검진비용이 환수됩니다."
+  },
+  "deadlines": {
+    "general": "해당 연도 12월 31일",
+    "cancerStage2": "다음 연도 1월 31일",
+    "confirmTest": "다음 연도 3월 31일"
+  },
+  "commonItems": "진찰 및 상담, 신체계측(신장·체중·허리둘레·비만도), 시력·청력, 혈압, 흉부방사선, 혈액검사(혈색소·공복혈당·AST·ALT·γ-GTP·혈청크레아티닌·e-GFR), 요검사, 구강검진",
+  "ageItems": [
+    { "id": "lipid", "name": "이상지질혈증 검사(총·HDL·LDL 콜레스테롤, 중성지방)", "sex": "M", "from": 24, "every": 4 },
+    { "id": "lipid", "name": "이상지질혈증 검사(총·HDL·LDL 콜레스테롤, 중성지방)", "sex": "F", "from": 40, "every": 4 },
+    { "id": "hepB", "name": "B형간염 검사", "ages": [40], "note": "보균자·면역자는 제외" },
+    { "id": "hepC", "name": "C형간염 검사", "ages": [56] },
+    { "id": "bone", "name": "골밀도 검사", "sex": "F", "ages": [54, 60, 66] },
+    { "id": "lungFunction", "name": "폐기능검사", "ages": [56, 66], "note": "만성폐쇄성폐질환 조기 발견, 2026년 새로 도입" },
+    { "id": "cognitive", "name": "인지기능장애 검사", "from": 66, "every": 2 },
+    { "id": "depression", "name": "정신건강검사(우울증)", "from": 20, "to": 34, "every": 2 },
+    { "id": "depression", "name": "정신건강검사(우울증)", "bands": [[35, 39], [40, 49], [50, 59], [60, 69], [70, 79]] },
+    { "id": "psychosis", "name": "정신건강검사(조기정신증)", "from": 20, "to": 34, "every": 2 },
+    { "id": "lifestyle", "name": "생활습관평가", "ages": [40, 50, 60, 70] },
+    { "id": "elderly", "name": "노인신체기능검사", "ages": [66, 70, 80] },
+    { "id": "plaque", "name": "치면세균막검사(구강검진)", "ages": [40] }
+  ],
+  "cancers": [
+    { "id": "stomach", "name": "위암", "test": "위내시경", "minAge": 40, "cycle": "biennial" },
+    { "id": "colorectal", "name": "대장암", "test": "분변잠혈검사(대변검사)", "minAge": 50, "cycle": "yearly", "colonoscopyExcludeYears": 5 },
+    { "id": "liver", "name": "간암", "test": "간초음파·혈액검사", "minAge": 40, "cycle": "halfYearly", "highRisk": "liver",
+      "highRiskText": "B형간염 표면항원 양성, C형간염 항체 양성, B·C형 간염에 의한 만성 간질환, 간경변증" },
+    { "id": "breast", "name": "유방암", "test": "유방촬영", "sex": "F", "minAge": 40, "cycle": "biennial" },
+    { "id": "cervical", "name": "자궁경부암", "test": "자궁경부세포검사", "sex": "F", "minAge": 20, "cycle": "biennial" },
+    { "id": "lung", "name": "폐암", "test": "저선량 흉부CT", "minAge": 54, "maxAge": 74, "cycle": "biennial", "highRisk": "lung", "packYears": 30,
+      "highRiskText": "흡연력 30갑년 이상이고 현재 흡연(갑년 = 하루 갑 수 × 피운 햇수). 30갑년 이상으로 폐암검진을 받은 뒤 끊은 지 15년 이내도 74세까지 대상" }
+  ],
+  "confirmTest": {
+    "targets": [
+      { "id": "hypertension", "name": "고혈압", "codes": ["sbp", "dbp"] },
+      { "id": "diabetes", "name": "당뇨병", "codes": ["fbs"] },
+      { "id": "dyslipidemia", "name": "이상지질혈증", "codes": ["tc", "ldl", "hdl", "tg"] }
+    ],
+    "allDiseases": ["고혈압", "당뇨병", "이상지질혈증", "C형간염", "우울증", "조기정신증", "폐결핵"],
+    "where": "가까운 병·의원 외래(상급종합병원·치과·한의원·요양병원·정신병원 제외, 폐결핵·C형간염은 상급종합병원도 가능)",
+    "note": "일반검진에서 7개 질환(고혈압·당뇨병·이상지질혈증·C형간염·우울증·조기정신증·폐결핵) 의심이 나오면 처음 1회는 본인부담 없이 확진검사와 진료를 받을 수 있습니다. C형간염은 진료비를 낸 뒤 따로 정산합니다."
+  },
+  "notes": {
+    "missedLastYear": "올해 대상이 아니어도 작년에 검진을 받지 않았다면 공단 지사 방문이나 고객센터(1577-1000) 신청으로 받을 수 있습니다.",
+    "missedWorker": "직장가입자는 소속 회사에 추가등록을 요청하세요. 암검진은 본인이 공단 홈페이지·앱·1577-1000·지사로 직접 추가등록할 수 있습니다.",
+    "cancerExcluded": "암 산정특례자, 대장내시경 후 5년이 지나지 않은 분은 해당 암검진 대상에서 빠집니다. 원하면 추가등록할 수 있습니다.",
+    "overLimit": "올해 일반건강검진을 이미 받았습니다. 횟수를 넘겨 다시 받으면 검진비용이 환수됩니다."
+  }
+}

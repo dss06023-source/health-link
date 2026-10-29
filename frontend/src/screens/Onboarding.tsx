@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../store'
+import { CANCERS } from '../data/rules'
 import { Icon, Sheet, Wordmark } from '../ui'
 import { ALLERGY_OPTIONS, CONDITION_OPTIONS, DIET_OPTIONS, MEDICATION_GROUPS, SAMPLE_PROFILE, SUPPLEMENT_OPTIONS } from '../data/mock'
 import type { Lifestyle, UserProfile } from '../types'
@@ -99,6 +100,23 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
               value={p.confirmedTargetYear === thisYear ? 1 : 0} onChange={(v) => upd({ confirmedTargetYear: v ? thisYear : null })} />
           </div>
           <p className="small muted">비사무직(현장·생산·판매직 등) 직장가입자는 해마다 대상입니다. 작년에 못 받아 추가 등록했다면 공단 조회 결과로 '대상자'를 고르세요. 고른 값이 출생연도 짝·홀 규칙보다 우선합니다.</p>
+        </section>
+
+        <section className="sec">
+          <div className="sec-head"><h2>암검진 대상 확인</h2></div>
+          <div className="grid-2">
+            <Seg label="간암 고위험군" options={[[0, '아니요·모름'], [1, '예']]} value={p.liverHighRisk ? 1 : 0} onChange={(v) => upd({ liverHighRisk: v === 1 })} />
+            <div className="field"><label htmlFor="ob-pack">흡연량 (갑년)</label>
+              <input id="ob-pack" type="number" min={0} max={200} placeholder="하루 갑 수 × 피운 햇수" value={p.packYears ?? ''}
+                onChange={(e) => upd({ packYears: e.target.value ? Number(e.target.value) : null })} /></div>
+            <div className="field"><label htmlFor="ob-colo">마지막 대장내시경 연도</label>
+              <input id="ob-colo" type="number" min={1990} max={thisYear} placeholder="받은 적 없으면 비워 두세요" value={p.colonoscopyYear ?? ''}
+                onChange={(e) => upd({ colonoscopyYear: e.target.value ? Number(e.target.value) : null })} /></div>
+          </div>
+          <div className="field"><span className="label">암 산정특례 중인 암</span>
+            <Pick options={CANCERS.map((c) => c.name)} value={CANCERS.filter((c) => p.cancerSpecialCase?.includes(c.id)).map((c) => c.name)}
+              onChange={(v) => upd({ cancerSpecialCase: CANCERS.filter((c) => v.includes(c.name)).map((c) => c.id) })} /></div>
+          <p className="small muted">간암 고위험군은 B형간염 표면항원 양성, C형간염 항체 양성, B·C형 간염에 의한 만성 간질환, 간경변증입니다. 폐암검진은 54~74세이면서 30갑년 이상 흡연한 분이 대상입니다. 암 산정특례 중이거나 대장내시경 후 5년이 지나지 않았으면 해당 암검진에서 빠지고, 원하면 추가등록할 수 있습니다.</p>
         </section>
 
         <div>

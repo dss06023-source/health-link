@@ -4,6 +4,7 @@ import { checkupTarget, interpret } from './data/rules'
 import { Icon, Wordmark } from './ui'
 import { USE_API } from './api'
 import Home from './screens/Home'
+import Guide from './screens/Guide'
 import Upload from './screens/Upload'
 import Results from './screens/Results'
 import Recommend from './screens/Recommend'
@@ -13,7 +14,7 @@ import Onboarding from './screens/Onboarding'
 import Measure from './screens/Measure'
 import { ReminderWatcher } from './reminders'
 
-export type Route = 'home' | 'upload' | 'results' | 'recommend' | 'intake' | 'measure' | 'report'
+export type Route = 'home' | 'guide' | 'upload' | 'results' | 'recommend' | 'intake' | 'measure' | 'report'
 
 // 아래 탭 4개(One UI는 5개 이하 권장). 한 탭 안의 두 화면은 탭 아래 나눔 버튼으로 오간다.
 // 주소(#results 등)는 예전과 같게 두어 링크와 서버 연결 작업이 그대로 동작한다.
@@ -23,8 +24,9 @@ const TABS: { id: string; label: string; routes: [Route, string][] }[] = [
   { id: 'care', label: '영양', routes: [['recommend', '맞춤 추천'], ['intake', '복용 관리']] },
   { id: 'log', label: '기록', routes: [['measure', '중간 점검'], ['report', '변화 리포트']] },
 ]
-const ROUTES = TABS.flatMap((t) => t.routes.map(([r]) => r))
-const tabOf = (r: Route) => TABS.find((t) => t.routes.some(([x]) => x === r))!
+// 검진 주의사항(guide)은 홈의 버튼으로 여는 화면이라 홈 탭에 속하지만 나눔 버튼은 만들지 않는다.
+const ROUTES: Route[] = [...TABS.flatMap((t) => t.routes.map(([r]) => r)), 'guide']
+const tabOf = (r: Route) => TABS.find((t) => t.routes.some(([x]) => x === r)) ?? TABS[0]
 
 type AppStore = ReturnType<typeof useStore>
 
@@ -49,6 +51,7 @@ function heroOf(route: Route, s: AppStore): { title: string; sub: string } {
       const n = interpret(last.items, p.sex).filter((i) => i.status !== 'normal').length
       return { title: n ? `${n}개 항목이 기준을 벗어났어요` : '모든 항목이 정상이에요', sub: `${last.label} · ${last.date}` }
     }
+    case 'guide': return { title: '건강검진 주의사항', sub: `${p.name} 님에게 해당하는 안내만 모았어요` }
     case 'upload': return { title: '검진 결과지 등록', sub: '사진이나 PDF를 올리면 수치를 읽어 와요' }
     case 'recommend': return { title: '맞춤 영양 구성', sub: '검진 수치, 생활습관, 복용 약을 함께 봤어요' }
     case 'intake': {
@@ -127,6 +130,7 @@ function Shell() {
         )}
         <div className="page">
           {route === 'home' && <Home go={go} />}
+          {route === 'guide' && <Guide go={go} />}
           {route === 'upload' && <Upload go={go} />}
           {route === 'results' && <Results go={go} />}
           {route === 'recommend' && <Recommend go={go} />}
