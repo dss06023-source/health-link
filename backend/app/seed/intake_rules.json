@@ -118,8 +118,10 @@
     "ingredientMax": "같은 성분이 여러 제품에 겹치면 합계를 고시된 dailyIntake.max와도 비교한다(EPA·DHA 2000mg, HCA 1500mg 등)."
   },
   "slotBalance": {
-    "_about": "복용 관리에 넣을 때 권장 시간대에 이미 maxPerSlot개 이상 있으면, altSlots가 있는 영양제는 덜 붐비는 시간대로 옮긴다. 사용자가 고른 시간대와 이미 넣은 영양제는 건드리지 않는다.",
+    "_about": "복용 관리에 넣을 때 권장 시간대에 이미 한도만큼 있으면, altSlots가 있는 영양제는 덜 붐비는 시간대로 옮긴다. 한도는 새로 넣는 것까지 합친 영양제 수가 manyFrom개 이상이면 maxPerSlotMany, 아니면 maxPerSlot(2026-10-29 사용자 결정). 사용자가 고른 시간대와 이미 넣은 영양제는 건드리지 않는다.",
     "maxPerSlot": 3,
+    "manyFrom": 7,
+    "maxPerSlotMany": 4,
     "note": "{from}에 먹을 것이 많아 {to}으로 나눴습니다. 식사 뒤에 먹으면 되는 영양제라 시간대를 옮겨도 됩니다."
   },
   "spacing": [

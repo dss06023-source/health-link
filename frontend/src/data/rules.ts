@@ -404,8 +404,9 @@ export function checkWarnings(names: string[], p: UserProfile, items: Interprete
 export const TIMING_LABEL: Record<Supplement['timing'], string> = { morning: '아침', lunch: '점심', evening: '저녁' }
 
 // 서버 intake_rules slotBalance·supplements altSlots와 같은 규칙(서버 없는 시연 모드용).
-// 권장 시간대에 이미 3개 이상이면, 식후 아무 때나 먹어도 되는 영양제는 덜 붐비는 시간대로 나눈다.
-const MAX_PER_SLOT = 3
+// 권장 시간대가 한도만큼 차 있으면, 식후 아무 때나 먹어도 되는 영양제는 덜 붐비는 시간대로 나눈다.
+// 한도는 새로 넣는 것까지 7개 이상 먹으면 4개, 아니면 3개.
+const slotLimit = (total: number) => (total >= 7 ? 4 : 3)
 export const ALT_TIMINGS: Record<string, Supplement['timing'][]> = {
   omega3: ['lunch', 'evening'], milkthistle: ['lunch', 'evening'], coq10: ['lunch', 'evening'], vitd: ['lunch', 'evening'],
   multivitamin: ['lunch'], b12: ['lunch'], vitamin_k: ['lunch', 'evening'], folic_acid: ['lunch', 'evening'],
@@ -414,7 +415,8 @@ export const ALT_TIMINGS: Record<string, Supplement['timing'][]> = {
 export function balanceTiming(id: string, timing: Supplement['timing'], existing: Supplement[]): Pick<Supplement, 'timing' | 'altTimings' | 'slotNote'> {
   const alts = ALT_TIMINGS[id] ?? []
   const count = (t: Supplement['timing']) => existing.filter((s) => !s.paused && s.timing === t).length
-  if (!alts.length || count(timing) < MAX_PER_SLOT) return { timing, altTimings: alts }
+  const limit = slotLimit(existing.filter((s) => !s.paused).length + 1)
+  if (!alts.length || count(timing) < limit) return { timing, altTimings: alts }
   const best = alts.reduce((a, b) => (count(b) < count(a) ? b : a))
   if (count(best) >= count(timing)) return { timing, altTimings: alts }
   return { timing: best, altTimings: alts, slotNote: `${TIMING_LABEL[timing]}에 먹을 것이 많아 ${TIMING_LABEL[best]}으로 나눴습니다. 식사 뒤에 먹으면 되는 영양제라 시간대를 옮겨도 됩니다.` }

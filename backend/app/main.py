@@ -82,13 +82,17 @@ def slot_note(info, slots):
 
 
 def default_slots(conn, catalog_id):
-    """복용 관리에 넣을 때의 시간대. 권장 시간대에 이미 maxPerSlot개 이상이면 altSlots 중 덜 붐비는 곳으로 옮긴다."""
+    """복용 관리에 넣을 때의 시간대. 권장 시간대가 한도만큼 차 있으면 altSlots 중 덜 붐비는 곳으로 옮긴다.
+    한도는 먹는 영양제가 많으면(새로 넣는 것 포함 manyFrom개 이상) maxPerSlotMany, 아니면 maxPerSlot."""
     info = ref.SUPPLEMENTS[catalog_id]
     slots, alts = info["timeSlots"], info.get("altSlots", [])
     if len(slots) != 1 or not alts:
         return slots
-    counts = Counter(slot for s in active_supplements(conn, include_paused=False) for slot in s["timeSlots"])
-    if counts[slots[0]] < ref.SLOT_BALANCE["maxPerSlot"]:
+    active = active_supplements(conn, include_paused=False)
+    rule = ref.SLOT_BALANCE
+    limit = rule["maxPerSlotMany"] if len(active) + 1 >= rule["manyFrom"] else rule["maxPerSlot"]
+    counts = Counter(slot for s in active for slot in s["timeSlots"])
+    if counts[slots[0]] < limit:
         return slots
     best = min(alts, key=lambda slot: (counts[slot], alts.index(slot)))
     return [best] if counts[best] < counts[slots[0]] else slots

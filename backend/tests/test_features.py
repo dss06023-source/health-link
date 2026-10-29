@@ -155,3 +155,13 @@ def test_crowded_morning_moves_flexible_supplement(client):
 def test_user_chosen_slot_is_kept(client):
     s = client.post("/api/supplements", json={"supplementId": "coq10", "timeSlots": ["morning"]}).json()
     assert s["timeSlots"] == ["morning"] and s["slotNote"] is None
+
+
+def test_many_supplements_allow_four_per_slot(client):
+    # 시연 인물(아침 3·점심 1)에 저녁 고정인 홍국·칼슘을 더해 6개.
+    for cid in ("red_yeast_rice", "calcium"):
+        client.post("/api/supplements", json={"supplementId": cid})
+    # 7개째부터는 한 시간대에 4개까지라 코엔자임Q10은 아침에 남는다.
+    assert client.post("/api/supplements", json={"supplementId": "coq10"}).json()["timeSlots"] == ["morning"]
+    # 아침이 4개가 되면 다음 것은 덜 붐비는 점심(1개)으로 간다.
+    assert client.post("/api/supplements", json={"supplementId": "lutein"}).json()["timeSlots"] == ["lunch"]
