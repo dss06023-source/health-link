@@ -185,3 +185,20 @@ def test_missed_last_year_note(client):
     # 1985년생은 2026년 대상이 아니고 2025년 검진 기록도 없다.
     me = client.put("/api/users/me", json={"birthYear": 1985, "jobType": "office"}).json()
     assert any("1577-1000" in n for n in me["notes"]) and any("추가등록" in n for n in me["notes"])
+
+
+def test_profile_supplements_and_intake_list_are_one(client):
+    def plan():
+        return {s["supplementId"] for s in client.get("/api/supplements").json()}
+
+    # 시연 인물의 복용 관리 목록이 내 정보에도 보인다.
+    assert {"omega3", "milk_thistle", "multivitamin", "vitamin_d"} <= set(client.get("/api/users/me").json()["currentSupplements"])
+    # 내 정보에서 빼면 복용 관리에서 중단되고, 새로 고르면 추가된다. 유산균처럼 복용 관리에 없는 보기는 정보에만 남는다.
+    me = client.put("/api/users/me", json={"currentSupplements": ["omega3", "milk_thistle", "probiotics", "coq10"]}).json()
+    assert set(me["currentSupplements"]) == {"omega3", "milk_thistle", "probiotics", "coq10"}
+    assert {"vitamin_d", "multivitamin"}.isdisjoint(plan()) and {"omega3", "coq10"} <= plan()
+    ended = [s for s in client.get("/api/supplements", params={"includeEnded": True}).json() if s["supplementId"] == "vitamin_d"]
+    assert ended and ended[0]["endedAt"]
+    # 추천에서 복용을 시작하면 내 정보에도 체크된다.
+    client.post("/api/supplements", json={"supplementId": "vitamin_d"})
+    assert "vitamin_d" in client.get("/api/users/me").json()["currentSupplements"]

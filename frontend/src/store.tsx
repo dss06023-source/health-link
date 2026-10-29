@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type {
   Checkup, CheckupItem, IntakeLog, Measurement, MydataResult, MydataState, Recommendation, ReminderTimes, Supplement, Timing, UserProfile,
 } from './types'
-import { FOLLOWUP_ITEMS, MYDATA_CHECKUP, MYDATA_INSTITUTION, MYDATA_PRESCRIPTIONS, OCR_RESULT, PAST_CHECKUP, SAMPLE_PROFILE } from './data/mock'
+import { FOLLOWUP_ITEMS, MYDATA_CHECKUP, MYDATA_INSTITUTION, MYDATA_PRESCRIPTIONS, OCR_RESULT, PAST_CHECKUP, SAMPLE_PROFILE, SUPPLEMENT_OPTIONS } from './data/mock'
 import { seededMeasurements } from './data/measure'
 import { USE_API } from './api'
 import { loadAll, remote } from './api/remote'
@@ -42,6 +42,13 @@ function seededIntake(supps: Supplement[], from: Date, to: Date): IntakeLog {
 }
 
 // 첫 화면: 2026년 검진을 이미 올리고 6개월째 복용 중인 상태
+// 내 정보의 '먹고 있는 영양제'와 복용 관리 목록은 하나다(서버 current_supplements와 같은 규칙).
+// 보기에 있는 이름은 복용 관리 목록을 따르고, 복용 관리에 없는 보기(유산균 등)는 내 정보에만 남는다.
+const isOption = (name: string) => SUPPLEMENT_OPTIONS.includes(name)
+function withTaking(current: string[], supplements: Supplement[]) {
+  return [...new Set([...current, ...supplements.map((x) => x.name).filter(isOption)])]
+}
+
 function fullDemo(): AppState {
   const today = new Date()
   const start = addDays(today, -186)
@@ -58,7 +65,7 @@ function fullDemo(): AppState {
   return {
     ...NEW_FIELDS,
     measurements,
-    profile: { ...SAMPLE_PROFILE, lastCheckupYear: today.getFullYear() },
+    profile: { ...SAMPLE_PROFILE, lastCheckupYear: today.getFullYear(), currentSupplements: withTaking(SAMPLE_PROFILE.currentSupplements, supplements) },
     checkups: [PAST_CHECKUP, { id: 'c-now', date: ymd(addDays(start, -2)), source: 'ocr', label: `${today.getFullYear()} 일반건강검진`, items: OCR_RESULT }],
     followup: { id: 'f1', date: ymd(addDays(today, -8)), source: 'followup', label: '6개월 중간 점검', items: FOLLOWUP_ITEMS },
     supplements,
@@ -129,7 +136,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const run = (p: Promise<unknown>) => { p.then(refresh, (e) => setRemoteError(e instanceof Error ? e.message : String(e))) }
 
   const local = useMemo<Actions>(() => ({
-    setProfile: (p) => set((x) => ({ ...x, profile: p })),
+    // 내 정보에서 뺀 영양제는 복용 관리에서도 뺀다.
+    setProfile: (p) => set((x) => ({
+      ...x, profile: p,
+      supplements: x.supplements.filter((m) => !isOption(m.name) || p.currentSupplements.includes(m.name)),
+    })),
     addCheckup: (items, source) => set((x) => {
       const now = new Date()
       const c: Checkup = { id: `c${Date.now()}`, date: ymd(now), source, label: `${now.getFullYear()} 일반건강검진`, items }
@@ -137,6 +148,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }),
     addSupplements: (recs) => set((x) => ({
       ...x,
+      profile: x.profile && { ...x.profile, currentSupplements: withTaking(x.profile.currentSupplements, recs.map((r) => ({ name: r.name } as Supplement))) },
       supplements: [
         ...x.supplements,
         ...recs.filter((r) => !x.supplements.some((s) => s.id === r.id)).map((r) => ({
@@ -145,7 +157,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ],
     })),
     updateSupplement: (id, patch) => set((x) => ({ ...x, supplements: x.supplements.map((s) => (s.id === id ? { ...s, ...patch } : s)) })),
-    removeSupplement: (id) => set((x) => ({ ...x, supplements: x.supplements.filter((s) => s.id !== id) })),
+    removeSupplement: (id) => set((x) => {
+      const name = x.supplements.find((m) => m.id === id)?.name
+      return {
+        ...x,
+        supplements: x.supplements.filter((m) => m.id !== id),
+        profile: x.profile && { ...x.profile, currentSupplements: x.profile.currentSupplements.filter((n) => n !== name) },
+      }
+    }),
     toggleIntake: (date, id) => set((x) => ({ ...x, intake: { ...x.intake, [date]: { ...x.intake[date], [id]: !x.intake[date]?.[id] } } })),
     reserve: (name, slot) => set((x) => ({ ...x, reservedCenter: { name, slot } })),
     addFollowup: () => set((x) => ({ ...x, followup: { id: `f${Date.now()}`, date: ymd(new Date()), source: 'followup', label: '6개월 중간 점검(가상)', items: FOLLOWUP_ITEMS } })),
