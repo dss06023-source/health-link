@@ -1,5 +1,6 @@
-// 글꼴: 모든 글자를 주아(OFL)로 쓴다.
+// 글꼴: 한글은 주아, 영문·숫자는 Pretendard(둘 다 OFL).
 import '@fontsource/jua/400.css'
+import './fonts.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
