@@ -238,7 +238,7 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
 
         <div className="stack" style={{ gap: 12 }}>
           <p className="small muted" style={{ padding: '0 4px' }}>복용 약과 질환은 건강에 관한 민감정보입니다. {USE_API
-            ? '입력한 정보는 내 계정에만 저장되고 다른 사람은 볼 수 없습니다. 시연용 서비스이므로 실제 정보는 입력하지 마십시오.'
+            ? <>입력한 정보는 내 계정에만 저장되고 다른 사람은 볼 수 없습니다.<br />시연용 서비스이므로 실제 정보는 입력하지 마십시오.</>
             : '시연 모드에서는 이 브라우저에만 저장되고 서버로 보내지 않습니다.'}</p>
           <div className="actions">
             {initial && <button type="button" className="btn flat" onClick={onCancel}>취소</button>}
