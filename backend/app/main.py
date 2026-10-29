@@ -2,6 +2,8 @@
 
 import json
 import math
+import os
+from pathlib import Path
 from contextlib import asynccontextmanager
 from datetime import date, timedelta
 from typing import Optional
@@ -590,3 +592,11 @@ def health():
 from .features import router as features_router  # noqa: E402
 
 app.include_router(features_router)
+
+
+# 배포할 때는 빌드한 화면(frontend/dist)을 같은 주소에서 내보낸다. API 경로를 모두 붙인 뒤에 마운트해야 한다.
+_frontend = os.environ.get("FRONTEND_DIST")
+if _frontend and Path(_frontend).is_dir():
+    from fastapi.staticfiles import StaticFiles
+
+    app.mount("/", StaticFiles(directory=_frontend, html=True), name="frontend")
