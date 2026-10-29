@@ -1,4 +1,8 @@
-"""SQLite 저장소와 가짜 데이터 시드. 시연에는 가상 인물 1명만 쓴다."""
+"""저장소와 가짜 데이터 시드. 시연에는 가상 인물 1명만 쓴다.
+
+DATABASE_URL(postgresql://…)이 있으면 Postgres(Neon 등)에 저장해 서버가 잠들거나 다시 배포돼도 남는다.
+없으면 서버 안 SQLite 파일을 쓴다(개발·시험용). 두 경우 모두 같은 SQL(? 자리표시)로 다룬다.
+"""
 
 import json
 import os
@@ -103,7 +107,64 @@ def today():
     return date.fromisoformat(override) if override else datetime.now(ZoneInfo("Asia/Seoul")).date()
 
 
+class _Row(dict):
+    """sqlite3.Row처럼 이름과 순서 둘 다로 꺼낼 수 있는 행."""
+
+    def __getitem__(self, key):
+        return list(self.values())[key] if isinstance(key, int) else super().__getitem__(key)
+
+
+class _Cursor:
+    def __init__(self, cur, lastrowid=None):
+        self._cur, self.lastrowid = cur, lastrowid
+
+    def fetchone(self):
+        return self._cur.fetchone()
+
+    def fetchall(self):
+        return self._cur.fetchall()
+
+    def __iter__(self):
+        return iter(self._cur)
+
+
+class _PgConn:
+    """psycopg 연결을 sqlite3 연결처럼 쓰게 감싼다. with 블록이 끝나면 커밋하고 닫는다."""
+
+    def __init__(self, url):
+        import psycopg
+
+        self._conn = psycopg.connect(url, row_factory=lambda cur: lambda values: _Row(
+            zip([c.name for c in cur.description], values)))
+
+    def execute(self, sql, params=()):
+        sql = sql.replace("?", "%s")
+        is_insert = sql.lstrip().upper().startswith("INSERT")
+        if is_insert:
+            sql += " RETURNING id"
+        cur = self._conn.execute(sql, params)
+        return _Cursor(cur, cur.fetchone()["id"] if is_insert else None)
+
+    def executescript(self, script):
+        for statement in script.split(";"):
+            if statement.strip():
+                self._conn.execute(statement)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, *_):
+        if exc_type is None:
+            self._conn.commit()
+        else:
+            self._conn.rollback()
+        self._conn.close()
+
+
 def connect():
+    url = os.environ.get("DATABASE_URL")
+    if url:
+        return _PgConn(url)
     os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -115,7 +176,8 @@ def init(reset=False):
         if reset:
             for table in ("users", "checkups", "supplements", "intake_logs", "measurements"):
                 conn.execute(f"DROP TABLE IF EXISTS {table}")
-        conn.executescript(SCHEMA)
+        conn.executescript(SCHEMA if isinstance(conn, sqlite3.Connection)
+                           else SCHEMA.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY"))
         if conn.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0:
             seed(conn)
 
