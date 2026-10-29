@@ -9,7 +9,9 @@ export const SAMPLE_PROFILE: UserProfile = {
   lastCheckupYear: 2024,
   medications: ['아스피린'],
   currentSupplements: ['종합비타민'],
-  lifestyle: { smoking: false, drinkingPerWeek: 2, exercisePerWeek: 1, lowOutdoor: true },
+  lifestyle: { smoking: false, smokingStatus: 'past', drinkingPerWeek: 2, drinksPerSession: 4, exercisePerWeek: 1, lowOutdoor: true, sleepHours: 6, diet: ['외식 잦음', '짠 음식'] },
+  conditions: [],
+  allergies: [],
   heightCm: 175,
 }
 
@@ -42,8 +44,22 @@ export const CENTERS: CheckupCenter[] = [
   { id: 'h3', name: '잇다가정의학과(가상)', address: '서울 마포구 (시연용 주소)', distanceKm: 2.1, slots: ['11/5(목) 09:30'], tags: ['일반'] },
 ]
 
-export const MEDICATION_OPTIONS = ['아스피린', '와파린', '스타틴', '메트포르민', '레보티록신', '혈압약']
-export const SUPPLEMENT_OPTIONS = ['종합비타민', '오메가-3', '비타민D', '칼슘', '철분', '홍국']
+// 입력 화면의 보기. 약은 계열로 묶고, 영양제와 상호작용 규칙이 있는 약만 이름을 따로 둔다.
+export const MEDICATION_GROUPS: { group: string; items: string[] }[] = [
+  { group: '혈압', items: ['혈압약'] },
+  { group: '콜레스테롤', items: ['스타틴', '기타 고지혈증약'] },
+  { group: '당뇨', items: ['메트포르민', '인슐린', '기타 당뇨약'] },
+  { group: '피를 묽게 하는 약', items: ['아스피린', '와파린', '클로피도그렐', '기타 항응고제'] },
+  { group: '갑상선', items: ['레보티록신'] },
+  { group: '위장', items: ['위산억제제'] },
+  { group: '뼈', items: ['골다공증약'] },
+  { group: '그 밖의 약', items: ['항생제', '항우울제', '호르몬제·피임약', '항경련제'] },
+]
+export const MEDICATION_OPTIONS = MEDICATION_GROUPS.flatMap((g) => g.items)
+export const SUPPLEMENT_OPTIONS = ['종합비타민', '비타민B군', '비타민C', '비타민D', '비타민K', '칼슘', '마그네슘', '아연', '철분', '엽산', '오메가-3', '유산균', '루테인', '밀크씨슬', '홍국', '코엔자임Q10']
+export const CONDITION_OPTIONS = ['고혈압', '당뇨', '이상지질혈증', '간질환', '신장질환', '갑상선질환']
+export const ALLERGY_OPTIONS = ['갑각류', '대두', '우유']
+export const DIET_OPTIONS = ['아침 거름', '짠 음식', '채식', '유제품 안 먹음', '외식 잦음']
 
 // 마이데이터(가상)로 가져오는 기록. 시연 모드에서만 쓴다(서버 연결 모드는 backend가 돌려준다).
 export const MYDATA_CHECKUP: Checkup = {

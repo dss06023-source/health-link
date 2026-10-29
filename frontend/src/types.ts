@@ -7,6 +7,11 @@ export interface Lifestyle {
   drinkingPerWeek: number
   exercisePerWeek: number
   lowOutdoor: boolean
+  // 아래는 입력 화면 확장으로 생긴 값. 예전 저장 데이터에는 없을 수 있다.
+  smokingStatus?: 'never' | 'past' | 'current'
+  drinksPerSession?: number
+  sleepHours?: number
+  diet?: string[]
 }
 
 export interface UserProfile {
@@ -19,6 +24,9 @@ export interface UserProfile {
   currentSupplements: string[]
   lifestyle: Lifestyle
   heightCm?: number
+  conditions?: string[]
+  allergies?: string[]
+  pregnant?: boolean
 }
 
 export interface CheckupItem {

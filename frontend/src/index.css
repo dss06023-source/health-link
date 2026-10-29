@@ -382,3 +382,8 @@ td input {
   .toast { left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); max-width: none; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* 입력 화면: 약 계열 이름 | 보기 칩 */
+.opt-row { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 8px 16px; align-items: center; }
+@media (max-width: 820px) { .opt-row { grid-template-columns: minmax(0, 1fr); } }
+.field select:disabled { opacity: .5; }
