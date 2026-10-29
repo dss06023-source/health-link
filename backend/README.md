@@ -18,6 +18,8 @@ uvicorn app.main:app --reload --port 8000
 - 브라우저에서 http://localhost:8000/docs 를 열면 모든 API를 직접 눌러 볼 수 있습니다.
 - 시연 전 처음 상태로 되돌리기: `/docs` 에서 `POST /api/demo/reset` 실행.
 - 데이터 파일은 `backend/data/demo.db` 에 생깁니다(지워도 다음 실행 때 다시 만들어짐).
+- 환경 변수 `DATABASE_URL`(postgresql://…)을 주면 SQLite 대신 그 Postgres(예: Neon 무료)에 저장합니다. 배포한 서버는 이것을 써야 잠들거나 다시 배포돼도 입력이 남습니다.
+- Postgres로 시험: `TEST_DATABASE_URL=postgresql://… python -m pytest` (시험마다 표를 지우므로 실제 DB 주소를 넣지 마세요)
 
 ## 결과지 인식(OCR)
 

@@ -4,7 +4,7 @@
 
 | 폴더 | 내용 |
 |---|---|
-| `backend/` | API 서버 (Python FastAPI + SQLite) |
+| `backend/` | API 서버 (Python FastAPI + SQLite, 배포 때는 Postgres) |
 | `frontend/` | 웹 화면 (React + Vite + TypeScript) |
 | `docs/` | API 규격 등 문서 |
 
@@ -18,5 +18,6 @@
 2. 대시보드에서 **New → Blueprint**를 누르고 이 저장소를 고릅니다.
 3. 키 입력 칸(`DATA_GO_KR_KEY`, `JUSO_API_KEY`, `KAKAO_REST_API_KEY`)에 각 키를 넣고 만듭니다. 키는 저장소에 적지 않습니다.
 4. 빌드가 끝나면 `https://health-itda.onrender.com` 같은 주소가 생깁니다.
+5. 입력을 계속 남기려면 [neon.tech](https://neon.tech)에서 무료 Postgres를 만들고(지역 Singapore), 연결 주소를 Render의 Environment에 `DATABASE_URL`로 넣습니다.
 
-무료 조건: 15분 동안 접속이 없으면 잠들고 다음 접속 때 1분쯤 걸려 깨어납니다. 잠들 때 저장 내용이 초기화됩니다(가상 데이터로 다시 시작). 사진 인식은 CPU가 작아 느릴 수 있습니다.
+무료 조건: 15분 동안 접속이 없으면 잠들고 다음 접속 때 1분쯤 걸려 깨어납니다. `DATABASE_URL`이 없으면 잠들 때 저장 내용이 초기화됩니다(가상 데이터로 다시 시작). 사진 인식은 CPU가 작아 느릴 수 있습니다.

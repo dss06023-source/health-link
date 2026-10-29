@@ -14,3 +14,17 @@ def _no_public_api_keys(monkeypatch):
         monkeypatch.delenv(name, raising=False)
     from app import public_api
     public_api._cache.clear()
+
+
+@pytest.fixture(autouse=True)
+def _postgres(monkeypatch):
+    # TEST_DATABASE_URL을 주면 같은 시험을 Postgres로 돌린다. 시험마다 빈 DB에서 시작한다.
+    url = __import__("os").environ.get("TEST_DATABASE_URL")
+    if not url:
+        monkeypatch.delenv("DATABASE_URL", raising=False)
+        return
+    monkeypatch.setenv("DATABASE_URL", url)
+    import psycopg
+
+    with psycopg.connect(url, autocommit=True) as conn:
+        conn.execute("DROP TABLE IF EXISTS users, checkups, supplements, intake_logs, measurements")

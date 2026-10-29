@@ -6,7 +6,8 @@ services:
     plan: free
     region: singapore
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /api/users/me
+    # DB를 건드리지 않는 주소로 확인해야 Neon DB가 쉬는 동안 깨우지 않는다.
+    healthCheckPath: /api/options
     autoDeploy: true
     envVars:
       # 키 값은 저장소에 적지 않는다. 처음 만들 때 대시보드에서 입력한다.
@@ -15,4 +16,7 @@ services:
       - key: JUSO_API_KEY
         sync: false
       - key: KAKAO_REST_API_KEY
+        sync: false
+      # Neon 등 Postgres 연결 주소. 비어 있으면 서버 안 SQLite를 써서 잠들 때 입력이 사라진다.
+      - key: DATABASE_URL
         sync: false
