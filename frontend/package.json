@@ -10,8 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fontsource/do-hyeon": "5.3.0",
-    "@noonnu/cafe24-ssurround": "0.1.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
