@@ -155,14 +155,34 @@ class _Cursor:
         return iter(self._cur)
 
 
+def _row_factory(cur):
+    return lambda values: _Row(zip([c.name for c in cur.description], values))
+
+
+_pools: dict = {}
+
+
+def _pool(url):
+    """Neon 연결을 요청마다 새로 맺지 않고 재사용한다(접속 한 번에 수십~수백 ms). 꺼내기 전에 살아 있는지 확인한다."""
+    if url not in _pools:
+        from psycopg_pool import ConnectionPool
+
+        _pools[url] = ConnectionPool(url, min_size=1, max_size=10, max_idle=240, open=True,
+                                     kwargs={"row_factory": _row_factory}, check=ConnectionPool.check_connection)
+    return _pools[url]
+
+
+def close_pools():
+    while _pools:
+        _pools.popitem()[1].close()
+
+
 class _PgConn:
-    """psycopg 연결을 sqlite3 연결처럼 쓰게 감싼다. with 블록이 끝나면 커밋하고 닫는다."""
+    """psycopg 연결을 sqlite3 연결처럼 쓰게 감싼다. with 블록이 끝나면 커밋하고 연결을 풀에 돌려준다."""
 
     def __init__(self, url):
-        import psycopg
-
-        self._conn = psycopg.connect(url, row_factory=lambda cur: lambda values: _Row(
-            zip([c.name for c in cur.description], values)))
+        self._pool = _pool(url)
+        self._conn = self._pool.getconn()
 
     def execute(self, sql, params=()):
         sql = sql.replace("?", "%s")
@@ -185,7 +205,7 @@ class _PgConn:
             self._conn.commit()
         else:
             self._conn.rollback()
-        self._conn.close()
+        self._pool.putconn(self._conn)
 
 
 def connect():

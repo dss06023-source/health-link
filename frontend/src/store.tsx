@@ -150,10 +150,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => { if (!USE_API) try { localStorage.setItem(KEY, JSON.stringify(s)) } catch { /* 무시 */ } }, [s])
 
   // 서버 연결 모드: 바꾼 뒤에는 서버 상태를 통째로 다시 읽는다(시연 규모라 충분히 빠르다).
+  // 불러오기가 여러 번 겹치면 마지막에 시작한 것만 화면에 반영한다(늦게 도착한 옛 응답이 덮어쓰지 않게).
+  const loadSeq = useRef(0)
+  // 저장 중인 복용 체크. 서버 응답이 오기 전에 끝난 불러오기에도 이 값을 얹는다.
+  const pendingIntake = useRef<Record<string, boolean>>({})
+  const withPending = (intake: IntakeLog) => {
+    const out = { ...intake }
+    for (const [k, v] of Object.entries(pendingIntake.current)) {
+      const [date, id] = k.split('|')
+      out[date] = { ...out[date], [id]: v }
+    }
+    return out
+  }
   const refresh = useMemo(() => async () => {
+    const my = ++loadSeq.current
     try {
       const { state, extras: ex } = await loadAll()
-      set((x) => ({ ...x, ...state, followup: null }))
+      if (my !== loadSeq.current) return
+      set((x) => ({ ...x, ...state, intake: withPending(state.intake), followup: null }))
       setExtras(ex); setRemoteError(null)
     } catch (e) {
       if (e instanceof AuthError) { setAccount(null); return }
@@ -255,10 +269,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     addSupplements: (recs) => run(Promise.all(recs.map((r) => remote.addSupplement(r.id)))),
     updateSupplement: (id, patch) => { local.updateSupplement(id, patch); run(remote.patchSupplement(id, patch)) },
     removeSupplement: (id) => { local.removeSupplement(id); run(remote.removeSupplement(id)) },
+    // 체크는 화면에 바로 반영하고 저장 요청만 보낸다(전체 다시 불러오기 없음). 실패하면 되돌린다.
     toggleIntake: (date, id) => {
-      const supp = s.supplements.find((x) => x.id === id)
-      local.toggleIntake(date, id)
-      if (supp) run(remote.intake(id, supp.timing, !s.intake[date]?.[id], date))
+      const x = current.current
+      const supp = x.supplements.find((m) => m.id === id)
+      if (!supp) return
+      const next = !x.intake[date]?.[id]
+      const key = `${date}|${id}`
+      pendingIntake.current[key] = next
+      loadSeq.current++ // 이미 진행 중인 불러오기는 이 체크 전 상태라 버린다
+      set((y) => ({ ...y, intake: { ...y.intake, [date]: { ...y.intake[date], [id]: next } } }))
+      remote.intake(id, supp.timing, next, date).then(() => {
+        if (pendingIntake.current[key] === next) delete pendingIntake.current[key]
+      }, (e) => {
+        if (pendingIntake.current[key] !== next) return // 그 사이 다시 눌렀으면 새 값을 따른다
+        delete pendingIntake.current[key]
+        set((y) => ({ ...y, intake: { ...y.intake, [date]: { ...y.intake[date], [id]: !next } } }))
+        if (e instanceof AuthError) setAccount(null)
+        else setRemoteError(e instanceof Error ? e.message : String(e))
+      })
     },
     resetFresh: () => run(remote.reset()),
     resetFull: () => run(remote.reset()),
