@@ -3,8 +3,10 @@
 - 글자가 든 PDF는 OCR 없이 글자를 바로 꺼낸다(pdfplumber).
 - 사진과 글자 없는(스캔) PDF는 무료 공개 OCR(RapidOCR + PP-OCRv5 한국어 인식 모델)로 읽는다.
   모델은 저장소에 넣지 않고 scripts/get_ocr_models.py로 받는다. 없으면 사진은 읽지 못한다.
-읽은 글자를 행 단위로 묶고, 항목 이름 뒤에 처음 나오는 숫자를 그 항목의 결과로 본다
-(결과통보서는 '검사항목 | 결과 | 정상A | 정상B | 질환의심' 순서라 결과가 이름 바로 뒤에 온다).
+항목 이름 상자와 같은 높이에서 오른쪽으로 가장 가까운 숫자를 그 항목의 결과로 본다
+(결과통보서는 '검사항목 | 결과 | 참고치 …' 순서라 결과가 이름 바로 뒤에 온다). 공식 양식(「건강검진 실시기준」
+별지 제6호서식)처럼 결과 칸이 이름보다 조금 아래·위에 있어도 맞게 짝짓는다. '100미만'·'남13-16.5' 같은 참고치와
+'(수축기 140 이상 …)' 같은 괄호 안 안내 숫자는 결과로 보지 않는다. 못 찾은 항목은 행 단위 방식으로 한 번 더 찾는다.
 파일은 메모리에서만 다루고 저장하지 않는다.
 """
 
@@ -95,6 +97,11 @@ def _skew(boxes):
 
 
 def image_rows(data):
+    return _rows_from_boxes(image_items(data))
+
+
+def image_items(data):
+    """사진 → [(x0, y, h, text, score, x1)] 글자 상자 목록."""
     import numpy as np
     from PIL import Image, ImageOps
 
@@ -113,30 +120,39 @@ def image_rows(data):
     items = []
     for box, text, score in zip(result.boxes, result.txts, result.scores):
         ys = [p[1] for p in box]
-        items.append((min(p[0] for p in box), sum(ys) / 4, max(ys) - min(ys), text, float(score)))
-    return _rows_from_boxes(items)
+        xs = [p[0] for p in box]
+        items.append((min(xs), sum(ys) / 4, max(ys) - min(ys), text, float(score), max(xs)))
+    return items
+
+
+PAGE_GAP = 100000  # 쪽마다 y에 더해 다른 쪽 글자가 같은 줄로 섞이지 않게 한다.
 
 
 def pdf_rows(data):
-    """글자가 든 PDF면 그 글자를, 없으면 페이지를 그림으로 바꿔 OCR한 결과를 돌려준다."""
+    items, engine = pdf_items(data)
+    return _rows_from_boxes(items), engine
+
+
+def pdf_items(data):
+    """글자가 든 PDF면 그 글자를, 없으면 페이지를 그림으로 바꿔 OCR한 글자 상자를 돌려준다."""
     import pdfplumber
 
-    rows = []
+    items = []
     with pdfplumber.open(io.BytesIO(data)) as pdf:
-        for page in pdf.pages[:5]:
+        for n, page in enumerate(pdf.pages[:5]):
             words = page.extract_words(keep_blank_chars=False, use_text_flow=False)
-            items = [(w["x0"], (w["top"] + w["bottom"]) / 2, w["bottom"] - w["top"], w["text"], 1.0) for w in words]
-            rows += _rows_from_boxes(items)
-    if any(rows):
-        return rows, "pdf-text"
+            items += [(w["x0"], n * PAGE_GAP + (w["top"] + w["bottom"]) / 2, w["bottom"] - w["top"], w["text"], 1.0,
+                       w["x1"]) for w in words]
+    if items:
+        return items, "pdf-text"
     import pypdfium2
 
     doc = pypdfium2.PdfDocument(data)
     for i in range(min(len(doc), 5)):
         buf = io.BytesIO()
         doc[i].render(scale=2.5).to_pil().save(buf, format="PNG")
-        rows += image_rows(buf.getvalue())
-    return rows, "ocr"
+        items += [(it[0], i * PAGE_GAP + it[1], *it[2:]) for it in image_items(buf.getvalue())]
+    return items, "ocr"
 
 
 def _find_label(text):
@@ -204,6 +220,58 @@ def parse_rows(rows):
     return found
 
 
+REFERENCE = re.compile(r"미만|이하|이상|초과|^[(\[]?[남여]|\d\s*[-~]\s*\d")
+BP_PAIR = re.compile(r"(?<![\d.\-/])(\d{2,3})/(\d{2,3})(?![\d.\-/])")
+
+
+def _same_line(a, b):
+    return abs(a[1] - b[1]) < max(a[2], b[2]) * 0.8
+
+
+def _blood_pressure(items):
+    """'126/82 mmHg', '126 / 82', 글자가 '1 2 6 / 8 2'처럼 흩어진 경우까지 혈압 한 쌍을 찾는다."""
+    for row in _rows_from_boxes(items):
+        text = " ".join(t for t, _ in row)
+        if "mmHg" not in text and "혈압" not in text:
+            continue
+        text = re.sub(r"(?<!\S)\d(?: \d)+(?!\S)", lambda m: m.group(0).replace(" ", ""), text)
+        text = re.sub(r"\s*/\s*", "/", text)
+        for m in BP_PAIR.finditer(text):
+            sbp, dbp = int(m.group(1)), int(m.group(2))
+            if re.match(r"\s*(미만|이하|이상|초과)", text[m.end():]):  # '120/80미만'은 참고치다.
+                continue
+            if sbp > dbp:
+                score = min((s for t, s in row if m.group(1) in t.replace(" ", "")), default=1.0)
+                return {"sbp": (float(sbp), score), "dbp": (float(dbp), score)}
+    return {}
+
+
+def parse_items(items):
+    """글자 상자 목록에서 항목별 값을 찾는다. {code: (value, score)}"""
+    found = _blood_pressure(items)
+    for label in sorted(items, key=lambda i: (i[1], i[0])):
+        code, end = _find_label(label[3])
+        if code in (None, "bp") or code in found:
+            continue
+        if code in ("sbp", "dbp") and "/" in label[3]:  # '(수축기/이완기)'는 칸 이름일 뿐이다.
+            continue
+        # 같은 상자 안에 이름과 값이 함께 읽힌 경우('혈색소(g/dL) 14.9')
+        rest = label[3][end:].split()
+        if rest and not rest[0].startswith("(") and NUMBER.match(rest[0]):
+            found[code] = (float(rest[0]), label[4])
+            continue
+        line = sorted((i for i in items if i is not label and i[0] >= label[5] - 2 and _same_line(i, label)),
+                      key=lambda i: i[0])
+        depth = label[3].count("(") - label[3].count(")")  # '(수축기'처럼 괄호 안 안내 문구면 값을 찾지 않는다.
+        for item in line:
+            token = item[3].split()[0] if item[3].split() else ""
+            if depth <= 0 and NUMBER.match(token) and not REFERENCE.search(item[3]):
+                found[code] = (float(token), item[4])
+                break
+            depth += item[3].count("(") - item[3].count(")")
+    return found
+
+
 def fields(found, names_units):
     out = []
     for code, (value, score) in found.items():
@@ -224,7 +292,11 @@ def read(data, is_pdf):
     if os.environ.get("HEALTH_ITDA_OCR") == "mock":
         raise OCRUnavailable("모의 모드")
     if is_pdf:
-        rows, engine = pdf_rows(data)
+        items, engine = pdf_items(data)
     else:
-        rows, engine = image_rows(data), "ocr"
-    return parse_rows(rows), engine
+        items, engine = image_items(data), "ocr"
+    found = parse_items(items)
+    for code, value in parse_rows(_rows_from_boxes(items)).items():
+        if code not in ("sbp", "dbp"):  # 혈압은 쌍으로만 믿는다. 행 방식은 안내 문구의 '140'을 잡은 적이 있다.
+            found.setdefault(code, value)
+    return found, engine
