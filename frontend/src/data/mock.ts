@@ -39,9 +39,9 @@ export const FOLLOWUP_ITEMS: CheckupItem[] =
   toItems({ SBP: 126, DBP: 81, FBS: 101, TC: 209, LDL: 137, HDL: 46, TG: 158, AST: 31, ALT: 37, GGT: 56, HB: 14.9, BMI: 25.3, WAIST: 89, EGFR: 89 })
 
 export const CENTERS: CheckupCenter[] = [
-  { id: 'h1', name: '하늘내과의원(가상)', address: '서울 마포구 (시연용 주소)', distanceKm: 0.6, slots: ['11/3(화) 08:30', '11/4(수) 09:00', '11/6(금) 08:00'], kind: '의원', exams: ['일반', '위암'] },
-  { id: 'h2', name: '초록건강검진센터(가상)', address: '서울 마포구 (시연용 주소)', distanceKm: 1.4, slots: ['11/2(월) 08:00', '11/7(토) 08:30'], kind: '의원', exams: ['일반', '위암', '대장암'] },
-  { id: 'h3', name: '잇다가정의학과(가상)', address: '서울 마포구 (시연용 주소)', distanceKm: 2.1, slots: ['11/5(목) 09:30'], kind: '의원', exams: ['일반', '구강'] },
+  { id: 'h1', name: '하늘내과의원(가상)', address: '서울 마포구 (시연용 주소)', distanceKm: 0.6, slots: ['11/3(화) 08:30', '11/4(수) 09:00', '11/6(금) 08:00'], kind: '의원', exams: ['일반', '위암'], phone: '02-000-0101', lat: 37.5563, lng: 126.9220 },
+  { id: 'h2', name: '초록건강검진센터(가상)', address: '서울 마포구 (시연용 주소)', distanceKm: 1.4, slots: ['11/2(월) 08:00', '11/7(토) 08:30'], kind: '의원', exams: ['일반', '위암', '대장암'], phone: '02-000-0102', lat: 37.5480, lng: 126.9135 },
+  { id: 'h3', name: '잇다가정의학과(가상)', address: '서울 마포구 (시연용 주소)', distanceKm: 2.1, slots: ['11/5(목) 09:30'], kind: '의원', exams: ['일반', '구강'], phone: '02-000-0103', lat: 37.5660, lng: 126.9010 },
 ]
 
 // 입력 화면의 보기. 약은 계열로 묶고, 영양제와 상호작용 규칙이 있는 약만 이름을 따로 둔다.

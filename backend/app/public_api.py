@@ -27,6 +27,7 @@ DUR_URL = DATA_GO_KR + "/1471000/DURPrdlstInfoService03/getDurPrdlstInfoList03"
 JUSO_URL = "https://business.juso.go.kr/addrlink/addrLinkApi.do"
 KAKAO_ADDRESS_URL = "https://dapi.kakao.com/v2/local/search/address.json"
 KAKAO_REGION_URL = "https://dapi.kakao.com/v2/local/geo/coord2regioncode.json"
+KAKAO_KEYWORD_URL = "https://dapi.kakao.com/v2/local/search/keyword.json"
 
 _cache: dict = {}
 
@@ -43,6 +44,7 @@ def configured():
         "dataGoKr": bool(_key("DATA_GO_KR_KEY")),
         "juso": bool(_key("JUSO_API_KEY")),
         "kakao": bool(_key("KAKAO_REST_API_KEY")),
+        "kakaoJs": bool(_key("KAKAO_JS_KEY")),
     }
 
 
@@ -185,6 +187,31 @@ def checkup_centers(lat, lng, rows=300):
             "exams": [label for tag, label in EXAM_TYPES if f.get(tag) == "1"],
         })
     return centers
+
+
+@cached
+def place(name, lat, lng):
+    """카카오 장소 검색으로 기관 좌표 근처(300m)에서 같은 이름을 찾는다. 전화·카카오맵 장소 주소를 준다."""
+    data = _kakao("kakao-keyword", KAKAO_KEYWORD_URL,
+                  {"query": name, "x": lng, "y": lat, "radius": 300, "sort": "distance", "size": 5})
+    docs = (data or {}).get("documents") or []
+    if not docs:
+        return None
+    squeeze = lambda t: re.sub(r"[\s()]", "", t or "")
+    # 이름이 겹치는 곳을 먼저, 없으면 가장 가까운 곳.
+    d = next((d for d in docs if squeeze(name) in squeeze(d.get("place_name")) or squeeze(d.get("place_name")) in squeeze(name)), docs[0])
+    return {
+        "placeName": d.get("place_name"),
+        "phone": d.get("phone") or None,
+        "placeUrl": d.get("place_url") or None,
+        "roadAddress": d.get("road_address_name") or None,
+        "category": d.get("category_name") or None,
+    }
+
+
+def kakao_js_key():
+    """지도 화면용 카카오 JavaScript 키. 브라우저에 보내도 되는 키이고, 카카오 앱의 사이트 도메인에서만 동작한다."""
+    return _key("KAKAO_JS_KEY") or None
 
 
 # ---------- 약 검색: e약은요(쉬운 설명) + DUR 품목(전문의약품 포함, 금기 종류) ----------
