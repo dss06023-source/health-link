@@ -11,7 +11,7 @@
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | GET | `/api/users/me` | 기본 정보 + 검진 알림. `age`, `isTargetThisYear`, `nextCheckupYear`, `checkupDue`(올해 대상인데 미수검), `message`, `lastCheckupDate` |
-| PUT | `/api/users/me` | 시작 화면 입력 저장. 보낸 필드만 바뀜: `name`, `birthYear`, `gender`(M/F), `heightCm`, `lifestyle{smoking, drinkingPerWeek, exercisePerWeek, lowSunlight}`, `medications[]`, `consent{sensitiveData, agreedAt}`, `location{lat,lng}` |
+| PUT | `/api/users/me` | 시작 화면 입력 저장. 보낸 필드만 바뀜: `name`, `birthYear`, `gender`(M/F), `heightCm`, `lifestyle{smoking, drinkingPerWeek, exercisePerWeek, lowSunlight, pregnant?, breastfeeding?}`, `medications[]`, `consent{sensitiveData, agreedAt}`, `location{lat,lng}` |
 | GET | `/api/medications` | 선택 가능한 약 목록 `[{name, drugClass}]` (상호작용 규칙이 있는 약만) |
 | GET | `/api/checkup-centers?lat&lng&limit` | 가까운 검진기관(가상) `[{id, name, address, phone, distanceKm, bookingUrl}]`. 좌표 생략 시 사용자 위치 |
 
@@ -50,7 +50,9 @@
   "disclaimer": "…"
 }
 ```
-항목 코드(12개): `sbp` 수축기 혈압, `dbp` 이완기 혈압, `fbs` 공복혈당, `tc` 총콜레스테롤, `ldl`, `hdl`, `tg` 중성지방, `ast`, `alt`, `ggt` 감마지티피, `hb` 혈색소, `bmi`. 그룹: 혈압·혈당·지질·간기능·빈혈·비만.
+항목 코드(15개): `sbp` 수축기 혈압, `dbp` 이완기 혈압, `fbs` 공복혈당, `tc` 총콜레스테롤, `ldl`, `hdl`, `tg` 중성지방, `ast`, `alt`, `ggt` 감마지티피, `hb` 혈색소, `bmi`, `waist` 허리둘레, `creatinine` 혈청 크레아티닌, `egfr` 신사구체여과율. 그룹: 혈압·혈당·지질·간기능·빈혈·비만·신장기능. 샘플 검진에는 앞의 12개만 들어 있습니다.
+
+판정 기준은 「건강검진 실시기준」 별표 4(정상A=`normal`, 정상B(경계)=`caution`, 질환의심=`danger`)를 따르며 `backend/app/seed/checkup_criteria.json` 에 있습니다.
 
 ## 4. 맞춤 추천
 
@@ -62,16 +64,22 @@
   "recommendations": [{
     "supplementId": "banaba", "name": "바나바잎 추출물", "ingredients": {"코로솔산": "1.3mg"},
     "dose": "1일 1회 1정", "timing": "아침 식전", "timeSlots": ["morning"],
-    "claim": "식후 혈당상승 억제에 도움을 줄 수 있음", "priority": 1,
+    "claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
+    "dailyIntake": {"ingredient": "코로솔산", "min": 0.45, "max": 1.3, "unit": "mg"},
+    "cautions": ["혈당을 낮추는 약을 먹고 있으면 전문가와 상담하세요."], "priority": 1,
     "reasons": [{"code": "fbs", "name": "공복혈당", "value": 108, "unit": "mg/dL", "status": "caution"}],
     "lifestyleReasons": [], "alreadyTaking": false, "warnings": []
   }],
   "excluded": [{"supplementId": "red_yeast_rice", "name": "홍국", "reasons": [], "message": "홍국의 모나콜린K는 스타틴 계열 약과 …추천에서 뺐습니다."}],
   "warnings": [{"type": "duplicate", "level": "info", "supplementId": "vitamin_d", "message": "…"}],
+  "notes": [{"items": ["hdl"], "message": "HDL 콜레스테롤을 올리는 기능성을 인정받은 건강기능식품 원료는 없습니다. …"}],
   "disclaimer": "…"
 }
 ```
-- `warnings[].type`: `duplicate`(성분 중복) / `interaction`(약물 상호작용, `drugs[]` 포함) / `condition`(검진 수치 때문에 주의)
+- `warnings[].type`: `duplicate`(성분 중복) / `interaction`(약물 상호작용, `drugs[]` 포함) / `condition`(검진 수치 때문에 주의) / `spacing`(함께 먹는 영양제와 시간 간격, `hours` 포함)
+- `excluded` 이유: 약물 상호작용, 검진 수치, 생애주기(`lifestyle.pregnant`·`breastfeeding`·`child` 가 true), 함께 먹지 않도록 묶인 원료(가르시니아·녹차추출물은 하나만).
+- `notes`: 기준치 밖이지만 권할 영양제가 없는 항목(HDL, 저체중, 콩팥 수치)의 안내.
+- `dailyIntake`: 식약처 고시 1일 섭취량 범위. `cautions`: 제품 표시 섭취 주의사항 요약. 둘 다 `/api/supplements/catalog` 에도 들어 있습니다.
 - `warnings[].level`: `info` / `caution`. `avoid` 등급은 `excluded` 로 빠짐.
 - 같은 입력이면 항상 같은 결과(규칙표 기반).
 

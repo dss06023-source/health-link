@@ -1,0 +1,147 @@
+{
+  "_about": "국가건강검진(일반) 항목별 판정 기준. normal=정상A, caution=정상B(경계), danger=질환의심으로 옮겼다.",
+  "_source": {
+    "title": "건강검진 실시기준 [별표 4] 일반건강검진 및 의료급여생애전환기검진 결과 판정기준 (보건복지부 고시)",
+    "url": "https://www.law.go.kr/LSW/flDownload.do?flSeq=160922523",
+    "checkedAt": "2026-10-28",
+    "alsoChecked": "건강검진 실시기준 [별지 제6호서식] 일반건강검진 결과통보서의 참고치"
+  },
+  "_bandFormat": "low/high는 위에서부터 차례로 검사한다. lt=미만, le=이하, 경계값이 없는 줄은 '나머지 전부'. high에서 어느 줄에도 걸리지 않으면 danger.",
+  "items": {
+    "sbp": {
+      "name": "수축기 혈압", "unit": "mmHg", "group": "혈압",
+      "high": [{"lt": 120, "status": "normal"}, {"lt": 140, "status": "caution"}],
+      "normalRange": "120 미만",
+      "official": {"normalA": "120 미만", "normalB": "120~139", "suspect": "140 이상"},
+      "about": "심장이 피를 내보낼 때 혈관에 걸리는 압력입니다."
+    },
+    "dbp": {
+      "name": "이완기 혈압", "unit": "mmHg", "group": "혈압",
+      "high": [{"lt": 80, "status": "normal"}, {"lt": 90, "status": "caution"}],
+      "normalRange": "80 미만",
+      "official": {"normalA": "80 미만", "normalB": "80~89", "suspect": "90 이상"},
+      "about": "심장이 쉬는 동안 혈관에 남아 있는 압력입니다."
+    },
+    "fbs": {
+      "name": "공복혈당", "unit": "mg/dL", "group": "혈당",
+      "high": [{"lt": 100, "status": "normal"}, {"lt": 126, "status": "caution"}],
+      "normalRange": "100 미만",
+      "official": {"normalA": "100 미만", "normalB": "100~125", "suspect": "126 이상"},
+      "about": "8시간 이상 굶은 뒤 잰 혈액 속 포도당 양입니다."
+    },
+    "tc": {
+      "name": "총콜레스테롤", "unit": "mg/dL", "group": "지질",
+      "high": [{"lt": 200, "status": "normal"}, {"lt": 240, "status": "caution"}],
+      "normalRange": "200 미만",
+      "official": {"normalA": "200 미만", "normalB": "200~239", "suspect": "240 이상"},
+      "about": "혈액 속 콜레스테롤을 모두 더한 양입니다."
+    },
+    "ldl": {
+      "name": "LDL 콜레스테롤", "unit": "mg/dL", "group": "지질",
+      "high": [{"lt": 130, "status": "normal"}, {"lt": 160, "status": "caution"}],
+      "normalRange": "130 미만",
+      "official": {"normalA": "130 미만", "normalB": "130~159", "suspect": "160 이상"},
+      "note": "원문 주석: 당뇨병을 동반한 경우 LDL 기준은 100 미만이며 의사 판단 시 수정 가능. 시연 앱은 진단을 하지 않으므로 적용하지 않는다.",
+      "about": "혈관 벽에 쌓이기 쉬운 콜레스테롤입니다."
+    },
+    "hdl": {
+      "name": "HDL 콜레스테롤", "unit": "mg/dL", "group": "지질",
+      "low": [{"lt": 40, "status": "danger"}, {"lt": 60, "status": "caution"}],
+      "normalRange": "60 이상",
+      "official": {"normalA": "60 이상", "normalB": "40~59", "suspect": "40 미만"},
+      "about": "혈관에서 콜레스테롤을 실어 나르는 콜레스테롤로, 높을수록 좋습니다."
+    },
+    "tg": {
+      "name": "중성지방", "unit": "mg/dL", "group": "지질",
+      "high": [{"lt": 150, "status": "normal"}, {"lt": 200, "status": "caution"}],
+      "normalRange": "150 미만",
+      "official": {"normalA": "150 미만", "normalB": "150~199", "suspect": "200 이상"},
+      "about": "몸에 저장되는 지방의 한 형태로, 식사·음주의 영향을 많이 받습니다."
+    },
+    "ast": {
+      "name": "AST", "unit": "U/L", "group": "간기능",
+      "high": [{"le": 40, "status": "normal"}, {"le": 50, "status": "caution"}],
+      "normalRange": "40 이하",
+      "official": {"normalA": "40 이하", "normalB": "41~50", "suspect": "51 이상"},
+      "about": "간·근육에 있는 효소로, 간세포가 손상되면 혈액에 늘어납니다."
+    },
+    "alt": {
+      "name": "ALT", "unit": "U/L", "group": "간기능",
+      "high": [{"le": 35, "status": "normal"}, {"le": 45, "status": "caution"}],
+      "normalRange": "35 이하",
+      "official": {"normalA": "35 이하", "normalB": "36~45", "suspect": "46 이상"},
+      "about": "주로 간에 있는 효소로, 간 상태를 볼 때 쓰는 대표 수치입니다."
+    },
+    "ggt": {
+      "name": "감마지티피(γ-GTP)", "unit": "U/L", "group": "간기능",
+      "high": {
+        "M": [{"le": 63, "status": "normal"}, {"le": 77, "status": "caution"}],
+        "F": [{"le": 35, "status": "normal"}, {"le": 45, "status": "caution"}]
+      },
+      "normalRange": {"M": "63 이하", "F": "35 이하"},
+      "official": {
+        "normalA": {"M": "11~63", "F": "8~35"},
+        "normalB": {"M": "64~77", "F": "36~45"},
+        "suspect": {"M": "78 이상", "F": "46 이상"}
+      },
+      "note": "정상A의 하한(남 11, 여 8)보다 낮은 값은 원문에 판정 구간이 없어 정상으로 둔다.",
+      "about": "음주·약물의 영향을 잘 받는 간 효소입니다."
+    },
+    "hb": {
+      "name": "혈색소", "unit": "g/dL", "group": "빈혈",
+      "low": {
+        "M": [{"lt": 12, "status": "danger"}, {"lt": 13, "status": "caution"}],
+        "F": [{"lt": 10, "status": "danger"}, {"lt": 12, "status": "caution"}]
+      },
+      "high": {
+        "M": [{"le": 16.5, "status": "normal"}, {"status": "caution"}],
+        "F": [{"le": 15.5, "status": "normal"}, {"status": "caution"}]
+      },
+      "normalRange": {"M": "13~16.5", "F": "12~15.5"},
+      "official": {
+        "normalA": {"M": "13.0~16.5", "F": "12.0~15.5"},
+        "normalB": {"M": "12.0~12.9", "F": "10.0~11.9"},
+        "suspect": {"M": "12.0 미만", "F": "10.0 미만"}
+      },
+      "note": "정상A 상한(남 16.5, 여 15.5)을 넘는 값은 원문에 구간이 없다. 정상A 밖이므로 시연에서는 caution(확인 권장)으로 둔다.",
+      "about": "산소를 나르는 적혈구 속 단백질의 양입니다."
+    },
+    "bmi": {
+      "name": "체질량지수(BMI)", "unit": "kg/m²", "group": "비만",
+      "low": [{"lt": 18.5, "status": "danger"}],
+      "high": [{"lt": 25, "status": "normal"}, {"lt": 30, "status": "caution"}],
+      "normalRange": "18.5~24.9",
+      "official": {"normalA": "18.5~24.9", "normalB": "25~29.9", "suspect": "18.5 미만 또는 30 이상"},
+      "note": "대한비만학회 진료지침은 23~24.9를 비만 전단계, 25 이상을 비만으로 본다. 검진 결과지와 맞추기 위해 국가검진 기준을 쓴다.",
+      "about": "몸무게(kg)를 키(m)의 제곱으로 나눈 값입니다."
+    },
+    "waist": {
+      "name": "허리둘레", "unit": "cm", "group": "비만",
+      "high": {"M": [{"lt": 90, "status": "normal"}], "F": [{"lt": 85, "status": "normal"}]},
+      "normalRange": {"M": "90 미만", "F": "85 미만"},
+      "official": {
+        "normalA": {"M": "90 미만", "F": "85 미만"},
+        "normalB": null,
+        "suspect": {"M": "90 이상", "F": "85 이상"}
+      },
+      "about": "배 둘레로, 내장지방이 얼마나 쌓였는지 짐작하는 데 씁니다."
+    },
+    "creatinine": {
+      "name": "혈청 크레아티닌", "unit": "mg/dL", "group": "신장기능",
+      "high": [{"le": 1.5, "status": "normal"}],
+      "normalRange": "1.5 이하",
+      "official": {"normalA": "1.5 이하", "normalB": null, "suspect": "1.5 초과"},
+      "about": "근육이 쓰고 남은 물질로, 콩팥이 걸러 내지 못하면 혈액에 늘어납니다."
+    },
+    "egfr": {
+      "name": "신사구체여과율(e-GFR)", "unit": "mL/min/1.73m²", "group": "신장기능",
+      "low": [{"lt": 60, "status": "danger"}],
+      "normalRange": "60 이상",
+      "official": {"normalA": "60 이상", "normalB": null, "suspect": "60 미만"},
+      "about": "콩팥이 1분 동안 혈액을 얼마나 걸러 내는지 계산한 값입니다."
+    }
+  },
+  "notImplemented": {
+    "urineProtein": "요단백은 음성(-)/약양성(±)/양성(+1 이상) 3단계 범주형이라 숫자 판정 함수에 넣지 않았다. 결과지 입력 화면이 범주 입력을 지원하면 추가한다."
+  }
+}

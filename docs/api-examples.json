@@ -146,6 +146,15 @@
             "morning"
           ],
           "claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
+          "dailyIntake": {
+            "ingredient": "코로솔산",
+            "min": 0.45,
+            "max": 1.3,
+            "unit": "mg"
+          },
+          "cautions": [
+            "혈당을 낮추는 약을 먹고 있으면 전문가와 상담하세요."
+          ],
           "priority": 1,
           "reasons": [
             {
@@ -172,6 +181,16 @@
             "morning"
           ],
           "claim": "혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음",
+          "dailyIntake": {
+            "ingredient": "EPA·DHA",
+            "min": 500,
+            "max": 2000,
+            "unit": "mg"
+          },
+          "cautions": [
+            "항응고제·항혈소판제·혈압강하제 등 의약품을 복용 중이면 전문가와 상담하세요.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+          ],
           "priority": 1,
           "reasons": [
             {
@@ -198,6 +217,17 @@
             "morning"
           ],
           "claim": "높은 혈압 감소에 도움을 줄 수 있음",
+          "dailyIntake": {
+            "ingredient": "코엔자임Q10",
+            "min": 90,
+            "max": 100,
+            "unit": "mg"
+          },
+          "cautions": [
+            "수유부는 섭취를 피하세요.",
+            "항응고제를 먹고 있으면 전문가와 상담하세요.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+          ],
           "priority": 2,
           "reasons": [
             {
@@ -220,6 +250,48 @@
           "warnings": []
         },
         {
+          "supplementId": "indigestible_dextrin",
+          "name": "난소화성말토덱스트린",
+          "ingredients": {
+            "식이섬유(난소화성말토덱스트린)": "5g"
+          },
+          "dose": "1일 1회 1포",
+          "timing": "점심 식사와 함께 물에 타서",
+          "timeSlots": [
+            "lunch"
+          ],
+          "claim": "식후 혈당상승 억제·혈중 중성지질 개선에 도움을 줄 수 있음",
+          "dailyIntake": {
+            "ingredient": "식이섬유(난소화성말토덱스트린)",
+            "min": 5,
+            "max": 30,
+            "unit": "g"
+          },
+          "cautions": [
+            "한 번에 많이 먹으면 배에 가스가 차거나 설사를 할 수 있습니다. 물을 충분히 드세요."
+          ],
+          "priority": 2,
+          "reasons": [
+            {
+              "code": "fbs",
+              "name": "공복혈당",
+              "value": 108,
+              "unit": "mg/dL",
+              "status": "caution"
+            },
+            {
+              "code": "tg",
+              "name": "중성지방",
+              "value": 210,
+              "unit": "mg/dL",
+              "status": "danger"
+            }
+          ],
+          "lifestyleReasons": [],
+          "alreadyTaking": false,
+          "warnings": []
+        },
+        {
           "supplementId": "milk_thistle",
           "name": "밀크씨슬",
           "ingredients": {
@@ -231,6 +303,15 @@
             "morning"
           ],
           "claim": "간 건강에 도움을 줄 수 있음",
+          "dailyIntake": {
+            "ingredient": "실리마린",
+            "min": 130,
+            "max": 130,
+            "unit": "mg"
+          },
+          "cautions": [
+            "국화과 식물에 알레르기가 있으면 섭취에 주의하세요."
+          ],
           "priority": 2,
           "reasons": [
             {
@@ -253,6 +334,59 @@
           "warnings": []
         },
         {
+          "supplementId": "plant_sterol",
+          "name": "식물스테롤",
+          "ingredients": {
+            "식물스테롤": "1600mg"
+          },
+          "dose": "1일 2회 1정",
+          "timing": "식사와 함께",
+          "timeSlots": [
+            "morning",
+            "evening"
+          ],
+          "claim": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+          "dailyIntake": {
+            "ingredient": "식물스테롤",
+            "min": 800,
+            "max": 3000,
+            "unit": "mg"
+          },
+          "cautions": [
+            "콜레스테롤 약을 대신하지 않습니다. 약을 먹고 있으면 의료진과 상의한 뒤 드세요.",
+            "배가 더부룩하거나 설사·변비가 생길 수 있습니다."
+          ],
+          "priority": 2,
+          "reasons": [
+            {
+              "code": "ldl",
+              "name": "LDL 콜레스테롤",
+              "value": 152,
+              "unit": "mg/dL",
+              "status": "caution"
+            },
+            {
+              "code": "tc",
+              "name": "총콜레스테롤",
+              "value": 228,
+              "unit": "mg/dL",
+              "status": "caution"
+            }
+          ],
+          "lifestyleReasons": [],
+          "alreadyTaking": false,
+          "warnings": [
+            {
+              "type": "interaction",
+              "level": "caution",
+              "drugs": [
+                "아토르바스타틴"
+              ],
+              "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하세요."
+            }
+          ]
+        },
+        {
           "supplementId": "vitamin_d",
           "name": "비타민D",
           "ingredients": {
@@ -264,6 +398,15 @@
             "morning"
           ],
           "claim": "칼슘과 인이 흡수되고 이용되는데 필요, 뼈의 형성과 유지에 필요",
+          "dailyIntake": {
+            "ingredient": "비타민D",
+            "min": 3,
+            "max": 25,
+            "unit": "μg"
+          },
+          "cautions": [
+            "지용성이라 식사와 함께 먹는 편이 흡수에 좋습니다."
+          ],
           "priority": 3,
           "reasons": [],
           "lifestyleReasons": [
@@ -309,6 +452,34 @@
           "message": "홍국의 모나콜린K는 스타틴 계열 약과 작용이 같아 함께 먹으면 부작용 위험이 커질 수 있습니다. 추천에서 뺐습니다."
         },
         {
+          "supplementId": "green_tea",
+          "name": "녹차추출물",
+          "reasons": [
+            {
+              "code": "ldl",
+              "name": "LDL 콜레스테롤",
+              "value": 152,
+              "unit": "mg/dL",
+              "status": "caution"
+            },
+            {
+              "code": "tc",
+              "name": "총콜레스테롤",
+              "value": 228,
+              "unit": "mg/dL",
+              "status": "caution"
+            },
+            {
+              "code": "bmi",
+              "name": "체질량지수(BMI)",
+              "value": 25.6,
+              "unit": "kg/m²",
+              "status": "caution"
+            }
+          ],
+          "message": "간 수치가 기준치 밖일 때는 녹차추출물 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."
+        },
+        {
           "supplementId": "garcinia",
           "name": "가르시니아",
           "reasons": [
@@ -317,13 +488,22 @@
               "name": "체질량지수(BMI)",
               "value": 25.6,
               "unit": "kg/m²",
-              "status": "danger"
+              "status": "caution"
             }
           ],
           "message": "간 수치가 기준치 밖일 때는 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."
         }
       ],
       "warnings": [
+        {
+          "type": "interaction",
+          "level": "caution",
+          "drugs": [
+            "아토르바스타틴"
+          ],
+          "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하세요.",
+          "supplementId": "plant_sterol"
+        },
         {
           "type": "duplicate",
           "level": "info",
@@ -336,6 +516,14 @@
           "upperLimit": "100μg",
           "message": "비타민D 성분이 종합비타민, 비타민D에 함께 들어 있습니다. 하루 합계 35μg(상한 100μg)입니다.",
           "supplementId": "vitamin_d"
+        }
+      ],
+      "notes": [
+        {
+          "items": [
+            "hdl"
+          ],
+          "message": "HDL 콜레스테롤을 올리는 기능성을 인정받은 건강기능식품 원료는 없습니다. 유산소 운동과 금연이 먼저입니다."
         }
       ],
       "disclaimer": "이 추천은 검진 수치와 규칙표에 따른 참고 정보이며 진단이나 치료를 대신하지 않습니다. 복용 중인 약이 있거나 주의 항목이 있으면 의사·약사와 상담하세요."
@@ -386,7 +574,7 @@
           "비타민D": "10μg",
           "철": "8mg",
           "비타민C": "100mg",
-          "비타민B군": "1일분"
+          "비타민B6": "1.5mg"
         },
         "dose": "1일 1회 1정",
         "claim": "에너지 생성과 정상적인 면역기능에 필요",
@@ -935,10 +1123,10 @@
           "group": "지질",
           "value": 47,
           "unit": "mg/dL",
-          "normalRange": "40 이상",
-          "status": "normal",
-          "direction": null,
-          "explanation": "혈관에서 콜레스테롤을 실어 나르는 콜레스테롤로, 높을수록 좋습니다. 기준치 범위 안입니다.",
+          "normalRange": "60 이상",
+          "status": "caution",
+          "direction": "low",
+          "explanation": "혈관에서 콜레스테롤을 실어 나르는 콜레스테롤로, 높을수록 좋습니다. 기준치보다 조금 낮습니다. 생활습관 점검을 권합니다.",
           "consultDoctor": false,
           "history": [
             {
@@ -1045,7 +1233,7 @@
           "group": "빈혈",
           "value": 14.9,
           "unit": "g/dL",
-          "normalRange": "13 이상",
+          "normalRange": "13~16.5",
           "status": "normal",
           "direction": null,
           "explanation": "산소를 나르는 적혈구 속 단백질의 양입니다. 기준치 범위 안입니다.",
@@ -1067,10 +1255,10 @@
           "group": "비만",
           "value": 24.4,
           "unit": "kg/m²",
-          "normalRange": "18.5~22.9",
-          "status": "caution",
-          "direction": "high",
-          "explanation": "몸무게(kg)를 키(m)의 제곱으로 나눈 값입니다. 기준치보다 조금 높습니다. 생활습관 점검을 권합니다.",
+          "normalRange": "18.5~24.9",
+          "status": "normal",
+          "direction": null,
+          "explanation": "몸무게(kg)를 키(m)의 제곱으로 나눈 값입니다. 기준치 범위 안입니다.",
           "consultDoctor": false,
           "history": [
             {
@@ -1089,9 +1277,9 @@
         "dbp",
         "fbs",
         "tc",
+        "hdl",
         "tg",
-        "alt",
-        "bmi"
+        "alt"
       ],
       "values": {
         "sbp": 126,
@@ -1134,9 +1322,9 @@
         "fileName": "2024_건강검진결과.pdf",
         "summary": {
           "overall": "danger",
-          "headline": "수축기 혈압, 이완기 혈압, 공복혈당 외 6개 항목이 기준치를 벗어났습니다. 의사 상담을 권장합니다.",
+          "headline": "수축기 혈압, 이완기 혈압, 공복혈당 외 7개 항목이 기준치를 벗어났습니다. 의사 상담을 권장합니다.",
           "totalCount": 12,
-          "cautionCount": 9
+          "cautionCount": 10
         }
       }
     ]
@@ -1162,6 +1350,15 @@
             "morning"
           ],
           "claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
+          "dailyIntake": {
+            "ingredient": "코로솔산",
+            "min": 0.45,
+            "max": 1.3,
+            "unit": "mg"
+          },
+          "cautions": [
+            "혈당을 낮추는 약을 먹고 있으면 전문가와 상담하세요."
+          ],
           "priority": 1,
           "reasons": [
             {
@@ -1188,6 +1385,16 @@
             "morning"
           ],
           "claim": "혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음",
+          "dailyIntake": {
+            "ingredient": "EPA·DHA",
+            "min": 500,
+            "max": 2000,
+            "unit": "mg"
+          },
+          "cautions": [
+            "항응고제·항혈소판제·혈압강하제 등 의약품을 복용 중이면 전문가와 상담하세요.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+          ],
           "priority": 1,
           "reasons": [
             {
@@ -1214,6 +1421,17 @@
             "morning"
           ],
           "claim": "높은 혈압 감소에 도움을 줄 수 있음",
+          "dailyIntake": {
+            "ingredient": "코엔자임Q10",
+            "min": 90,
+            "max": 100,
+            "unit": "mg"
+          },
+          "cautions": [
+            "수유부는 섭취를 피하세요.",
+            "항응고제를 먹고 있으면 전문가와 상담하세요.",
+            "이상사례가 나타나면 섭취를 멈추고 전문가와 상담하세요."
+          ],
           "priority": 2,
           "reasons": [
             {
@@ -1236,6 +1454,48 @@
           "warnings": []
         },
         {
+          "supplementId": "indigestible_dextrin",
+          "name": "난소화성말토덱스트린",
+          "ingredients": {
+            "식이섬유(난소화성말토덱스트린)": "5g"
+          },
+          "dose": "1일 1회 1포",
+          "timing": "점심 식사와 함께 물에 타서",
+          "timeSlots": [
+            "lunch"
+          ],
+          "claim": "식후 혈당상승 억제·혈중 중성지질 개선에 도움을 줄 수 있음",
+          "dailyIntake": {
+            "ingredient": "식이섬유(난소화성말토덱스트린)",
+            "min": 5,
+            "max": 30,
+            "unit": "g"
+          },
+          "cautions": [
+            "한 번에 많이 먹으면 배에 가스가 차거나 설사를 할 수 있습니다. 물을 충분히 드세요."
+          ],
+          "priority": 2,
+          "reasons": [
+            {
+              "code": "fbs",
+              "name": "공복혈당",
+              "value": 101,
+              "unit": "mg/dL",
+              "status": "caution"
+            },
+            {
+              "code": "tg",
+              "name": "중성지방",
+              "value": 162,
+              "unit": "mg/dL",
+              "status": "caution"
+            }
+          ],
+          "lifestyleReasons": [],
+          "alreadyTaking": false,
+          "warnings": []
+        },
+        {
           "supplementId": "milk_thistle",
           "name": "밀크씨슬",
           "ingredients": {
@@ -1247,6 +1507,15 @@
             "morning"
           ],
           "claim": "간 건강에 도움을 줄 수 있음",
+          "dailyIntake": {
+            "ingredient": "실리마린",
+            "min": 130,
+            "max": 130,
+            "unit": "mg"
+          },
+          "cautions": [
+            "국화과 식물에 알레르기가 있으면 섭취에 주의하세요."
+          ],
           "priority": 2,
           "reasons": [
             {
@@ -1262,6 +1531,52 @@
           "warnings": []
         },
         {
+          "supplementId": "plant_sterol",
+          "name": "식물스테롤",
+          "ingredients": {
+            "식물스테롤": "1600mg"
+          },
+          "dose": "1일 2회 1정",
+          "timing": "식사와 함께",
+          "timeSlots": [
+            "morning",
+            "evening"
+          ],
+          "claim": "혈중 콜레스테롤 개선에 도움을 줄 수 있음",
+          "dailyIntake": {
+            "ingredient": "식물스테롤",
+            "min": 800,
+            "max": 3000,
+            "unit": "mg"
+          },
+          "cautions": [
+            "콜레스테롤 약을 대신하지 않습니다. 약을 먹고 있으면 의료진과 상의한 뒤 드세요.",
+            "배가 더부룩하거나 설사·변비가 생길 수 있습니다."
+          ],
+          "priority": 2,
+          "reasons": [
+            {
+              "code": "tc",
+              "name": "총콜레스테롤",
+              "value": 205,
+              "unit": "mg/dL",
+              "status": "caution"
+            }
+          ],
+          "lifestyleReasons": [],
+          "alreadyTaking": false,
+          "warnings": [
+            {
+              "type": "interaction",
+              "level": "caution",
+              "drugs": [
+                "아토르바스타틴"
+              ],
+              "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하세요."
+            }
+          ]
+        },
+        {
           "supplementId": "vitamin_d",
           "name": "비타민D",
           "ingredients": {
@@ -1273,6 +1588,15 @@
             "morning"
           ],
           "claim": "칼슘과 인이 흡수되고 이용되는데 필요, 뼈의 형성과 유지에 필요",
+          "dailyIntake": {
+            "ingredient": "비타민D",
+            "min": 3,
+            "max": 25,
+            "unit": "μg"
+          },
+          "cautions": [
+            "지용성이라 식사와 함께 먹는 편이 흡수에 좋습니다."
+          ],
           "priority": 3,
           "reasons": [],
           "lifestyleReasons": [
@@ -1311,21 +1635,30 @@
           "message": "홍국의 모나콜린K는 스타틴 계열 약과 작용이 같아 함께 먹으면 부작용 위험이 커질 수 있습니다. 추천에서 뺐습니다."
         },
         {
-          "supplementId": "garcinia",
-          "name": "가르시니아",
+          "supplementId": "green_tea",
+          "name": "녹차추출물",
           "reasons": [
             {
-              "code": "bmi",
-              "name": "체질량지수(BMI)",
-              "value": 24.4,
-              "unit": "kg/m²",
+              "code": "tc",
+              "name": "총콜레스테롤",
+              "value": 205,
+              "unit": "mg/dL",
               "status": "caution"
             }
           ],
-          "message": "간 수치가 기준치 밖일 때는 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."
+          "message": "간 수치가 기준치 밖일 때는 녹차추출물 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."
         }
       ],
       "warnings": [
+        {
+          "type": "interaction",
+          "level": "caution",
+          "drugs": [
+            "아토르바스타틴"
+          ],
+          "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하세요.",
+          "supplementId": "plant_sterol"
+        },
         {
           "type": "duplicate",
           "level": "info",
@@ -1338,6 +1671,14 @@
           "upperLimit": "100μg",
           "message": "비타민D 성분이 종합비타민, 비타민D에 함께 들어 있습니다. 하루 합계 35μg(상한 100μg)입니다.",
           "supplementId": "vitamin_d"
+        }
+      ],
+      "notes": [
+        {
+          "items": [
+            "hdl"
+          ],
+          "message": "HDL 콜레스테롤을 올리는 기능성을 인정받은 건강기능식품 원료는 없습니다. 유산소 운동과 금연이 먼저입니다."
         }
       ],
       "disclaimer": "이 추천은 검진 수치와 규칙표에 따른 참고 정보이며 진단이나 치료를 대신하지 않습니다. 복용 중인 약이 있거나 주의 항목이 있으면 의사·약사와 상담하세요."
@@ -1424,14 +1765,14 @@
           "code": "hdl",
           "name": "HDL 콜레스테롤",
           "unit": "mg/dL",
-          "normalRange": "40 이상",
+          "normalRange": "60 이상",
           "before": 44,
           "after": 47,
           "change": 3,
-          "beforeStatus": "normal",
-          "afterStatus": "normal",
+          "beforeStatus": "caution",
+          "afterStatus": "caution",
           "statusChanged": false,
-          "trend": "same"
+          "trend": "improved"
         },
         {
           "code": "tg",
@@ -1489,7 +1830,7 @@
           "code": "hb",
           "name": "혈색소",
           "unit": "g/dL",
-          "normalRange": "13 이상",
+          "normalRange": "13~16.5",
           "before": 14.8,
           "after": 14.9,
           "change": 0.1,
@@ -1502,21 +1843,21 @@
           "code": "bmi",
           "name": "체질량지수(BMI)",
           "unit": "kg/m²",
-          "normalRange": "18.5~22.9",
+          "normalRange": "18.5~24.9",
           "before": 25.6,
           "after": 24.4,
           "change": -1.2,
-          "beforeStatus": "danger",
-          "afterStatus": "caution",
+          "beforeStatus": "caution",
+          "afterStatus": "normal",
           "statusChanged": true,
           "trend": "improved"
         }
       ],
       "summary": {
-        "improved": 9,
-        "same": 3,
+        "improved": 10,
+        "same": 2,
         "worsened": 0,
-        "headline": "기준치에 가까워진 항목 9개, 멀어진 항목 0개입니다."
+        "headline": "기준치에 가까워진 항목 10개, 멀어진 항목 0개입니다."
       },
       "note": "검진 수치는 식사·운동·음주·약 등 여러 요인의 영향을 받습니다. 이 비교는 영양제의 효과를 뜻하지 않습니다.",
       "supplementsDuring": [

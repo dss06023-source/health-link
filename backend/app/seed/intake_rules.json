@@ -1,0 +1,95 @@
+{
+  "_about": "추천·섭취 규칙. 검진 항목 상태 → 영양제, 약·상태·생애주기에 따른 제외/주의, 성분 상한, 복용 간격.",
+  "recommendations": [
+    {"supplement": "omega3", "items": ["tg"], "priority": 1},
+    {"supplement": "indigestible_dextrin", "items": ["fbs", "tg"], "priority": 2},
+    {"supplement": "red_yeast_rice", "items": ["ldl", "tc"], "priority": 2},
+    {"supplement": "plant_sterol", "items": ["ldl", "tc"], "priority": 2},
+    {"supplement": "green_tea", "items": ["ldl", "tc", "bmi"], "direction": "high", "priority": 3},
+    {"supplement": "banaba", "items": ["fbs"], "priority": 1},
+    {"supplement": "milk_thistle", "items": ["alt", "ast", "ggt"], "priority": 2},
+    {"supplement": "coq10", "items": ["sbp", "dbp"], "priority": 2},
+    {"supplement": "iron", "items": ["hb"], "direction": "low", "priority": 1},
+    {"supplement": "garcinia", "items": ["bmi", "waist"], "direction": "high", "priority": 3}
+  ],
+  "noSupplement": [
+    {"items": ["hdl"], "message": "HDL 콜레스테롤을 올리는 기능성을 인정받은 건강기능식품 원료는 없습니다. 유산소 운동과 금연이 먼저입니다."},
+    {"items": ["bmi"], "direction": "low", "message": "저체중은 영양제보다 식사량과 단백질 섭취를 먼저 점검하세요."},
+    {"items": ["creatinine", "egfr"], "message": "콩팥 기능 수치는 영양제로 관리하지 않습니다. 의사와 상담하세요."}
+  ],
+  "lifestyle": [
+    {"supplement": "vitamin_d", "field": "lowSunlight", "reason": "실내 생활이 길어 햇빛 노출이 적다고 답했습니다.", "priority": 3}
+  ],
+  "interactions": [
+    {"supplement": "red_yeast_rice", "drugClass": "statin", "level": "avoid",
+     "message": "홍국의 모나콜린K는 스타틴 계열 약과 작용이 같아 함께 먹으면 부작용 위험이 커질 수 있습니다. 추천에서 뺐습니다."},
+    {"supplement": "plant_sterol", "drugClass": "statin", "level": "caution",
+     "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하세요."},
+    {"supplement": "omega3", "drugClass": "anticoagulant", "level": "caution",
+     "message": "항응고·항혈소판제와 함께 먹으면 출혈 경향이 커질 수 있습니다. 의사·약사와 상담하세요."},
+    {"supplement": "omega3", "drugClass": "antihypertensive", "level": "caution",
+     "message": "혈압약을 먹고 있으면 오메가-3를 더하기 전에 의사·약사와 상담하세요."},
+    {"supplement": "coq10", "drugClass": "anticoagulant", "level": "caution",
+     "message": "와파린의 효과를 떨어뜨릴 수 있습니다. 의사·약사와 상담하세요."},
+    {"supplement": "banaba", "drugClass": "antidiabetic", "level": "caution",
+     "message": "혈당강하제와 함께 먹으면 혈당이 지나치게 떨어질 수 있습니다. 의사·약사와 상담하세요."},
+    {"supplement": "indigestible_dextrin", "drugClass": "antidiabetic", "level": "caution",
+     "message": "혈당강하제를 먹고 있으면 식후 혈당이 더 낮아질 수 있습니다. 의사·약사와 상담하세요."},
+    {"supplement": "garcinia", "drugClass": "antidiabetic", "level": "caution",
+     "message": "당뇨약과 함께 먹으면 부작용이 늘 수 있다는 보고가 있습니다. 의사·약사와 상담하세요."},
+    {"supplement": "garcinia", "drugClass": "statin", "level": "caution",
+     "message": "콜레스테롤 약과 함께 먹으면 부작용이 늘 수 있다는 보고가 있습니다. 의사·약사와 상담하세요."},
+    {"supplement": "garcinia", "drugClass": "anticoagulant", "level": "caution",
+     "message": "혈소판 응집에 영향을 줄 수 있어 항응고제와 함께 먹을 때 주의가 필요합니다. 의사·약사와 상담하세요."},
+    {"supplement": "iron", "drugClass": "thyroid", "level": "caution",
+     "message": "갑상선 호르몬제의 흡수를 방해할 수 있어 4시간 이상 간격을 두세요."}
+  ],
+  "conditionCautions": [
+    {"supplement": "garcinia", "items": ["alt", "ast"], "level": "avoid",
+     "message": "간 수치가 기준치 밖일 때는 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."},
+    {"supplement": "green_tea", "items": ["alt", "ast"], "level": "avoid",
+     "message": "간 수치가 기준치 밖일 때는 녹차추출물 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."},
+    {"supplement": "red_yeast_rice", "items": ["alt", "ast", "creatinine", "egfr"], "level": "caution",
+     "message": "간·콩팥 수치가 기준치 밖이면 홍국 섭취 전 의사 상담이 필요합니다."},
+    {"supplement": "garcinia", "items": ["creatinine", "egfr"], "level": "avoid",
+     "message": "콩팥 수치가 기준치 밖일 때는 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."}
+  ],
+  "lifeStage": {
+    "_about": "user.lifestyle의 pregnant / breastfeeding / child 값이 true이면, 영양제의 lifeStageAvoid와 겹칠 때 추천에서 뺀다.",
+    "labels": {"pregnant": "임신 중", "breastfeeding": "수유 중", "child": "어린이"}
+  },
+  "notTogether": [
+    {"supplements": ["garcinia", "green_tea"],
+     "message": "간 관련 주의사항이 있는 원료끼리는 함께 먹지 않도록 한 가지만 추천합니다.",
+     "basis": "식약처 2026년 「건강기능식품의 기준 및 규격」 개정 행정예고: 간 질환 관련 주의사항이 있는 기능성 원료 간 혼합 금지"}
+  ],
+  "upperLimits": {
+    "_about": "성인 하루 섭취 상한(음식 포함). 2020 한국인 영양소 섭취기준(보건복지부·한국영양학회). 1차 원문 대조 전.",
+    "values": {
+      "비타민D": {"amount": 100, "unit": "μg"},
+      "철": {"amount": 45, "unit": "mg"},
+      "비타민C": {"amount": 2000, "unit": "mg"},
+      "비타민B6": {"amount": 100, "unit": "mg"},
+      "아연": {"amount": 35, "unit": "mg"},
+      "칼슘": {"amount": 2500, "unit": "mg"},
+      "비타민A": {"amount": 3000, "unit": "μg"},
+      "엽산": {"amount": 1000, "unit": "μg"},
+      "셀레늄": {"amount": 400, "unit": "μg"}
+    },
+    "ingredientMax": "같은 성분이 여러 제품에 겹치면 합계를 고시된 dailyIntake.max와도 비교한다(EPA·DHA 2000mg, HCA 1500mg 등)."
+  },
+  "spacing": [
+    {"a": "iron", "b": "nutrient:칼슘", "hours": 2, "message": "철분과 칼슘은 서로 흡수를 방해하니 2시간 이상 간격을 두세요."},
+    {"a": "green_tea", "b": "iron", "hours": 2, "message": "녹차 카테킨은 철 흡수를 줄일 수 있어 철분과 2시간 이상 간격을 두세요."}
+  ],
+  "medications": {
+    "아토르바스타틴": "statin",
+    "로수바스타틴": "statin",
+    "와파린": "anticoagulant",
+    "아스피린(저용량)": "anticoagulant",
+    "메트포르민": "antidiabetic",
+    "레보티록신": "thyroid",
+    "암로디핀": "antihypertensive"
+  },
+  "disclaimer": "이 추천은 검진 수치와 규칙표에 따른 참고 정보이며 진단이나 치료를 대신하지 않습니다. 복용 중인 약이 있거나 주의 항목이 있으면 의사·약사와 상담하세요."
+}
