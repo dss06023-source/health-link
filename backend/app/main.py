@@ -13,6 +13,7 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from . import checkup_schedule as sched
 from . import db, logic, measure, ocr, options, public_api
 from . import reference as ref
 
@@ -89,6 +90,7 @@ def checkup_notice(user, conn):
     # 일반건강검진: 20세 이상, 2년 주기, 출생연도 짝·홀에 맞춰 대상 연도가 정해진다.
     # 예외 두 가지는 앱이 알 수 없어 사용자가 고른다. 비사무직 직장가입자는 매년 대상이고,
     # 전년도 미수검 추가 등록 등으로 공단 조회 결과가 다르면 그 해에 한해 공단 결과를 따른다.
+    # 성·연령별 검사, 암검진, 확진검사는 checkup_schedule.py(공단 검진대상조회 안내문 기준)에서 계산한다.
     parity = age >= 20 and (user["birthYear"] % 2) == (year % 2)
     yearly = user.get("jobType") == "nonOffice"
     if user.get("confirmedTargetYear") == year:
@@ -106,6 +108,13 @@ def checkup_notice(user, conn):
     else:
         next_year = year + (2 if parity else 1)
     due = is_target and not done
+    notes = []
+    if done:
+        notes.append(sched.S["notes"]["overLimit"])
+    elif not is_target and age >= 20 and not any(c["date"].startswith(str(year - 1)) for c in confirmed_checkups(conn)):
+        notes.append(sched.S["notes"]["missedLastYear"])
+        if user.get("jobType") in ("office", "nonOffice"):
+            notes.append(sched.S["notes"]["missedWorker"])
     if due:
         why = {"confirmed": " (공단 조회 결과)", "nonOffice": " (비사무직은 매년 대상)"}.get(reason, "")
         message = f"{year}년 국가건강검진 대상자입니다{why}. 아직 검진 기록이 없습니다. 연말 전에 받으세요."
@@ -114,7 +123,11 @@ def checkup_notice(user, conn):
     else:
         message = f"다음 국가건강검진은 {next_year}년입니다."
     return {"age": age, "isTargetThisYear": is_target, "targetReason": reason, "nextCheckupYear": next_year,
-            "checkupDue": due, "message": message}
+            "checkupDue": due, "message": message,
+            "checkupItems": sched.age_items(age, user.get("gender", "M")) if is_target else [],
+            "cancerScreenings": sched.cancers(user, year),
+            "confirmTest": sched.confirm_test(confirmed_checkups(conn), user.get("gender", "M"), db.today()),
+            "notes": notes}
 
 
 class UserUpdate(BaseModel):
@@ -124,6 +137,11 @@ class UserUpdate(BaseModel):
     heightCm: Optional[float] = None
     jobType: Optional[str] = None  # office·nonOffice·other
     confirmedTargetYear: Optional[int] = None  # 공단 조회에서 대상자로 나온 해. 0이면 지운다.
+    # 암검진 대상 판정에 쓰는 값. 0이면 지운다.
+    liverHighRisk: Optional[bool] = None  # B·C형 간염, 만성 간질환, 간경변
+    packYears: Optional[float] = None  # 흡연 갑년(하루 갑 수 × 햇수)
+    cancerSpecialCase: Optional[list[str]] = None  # 암 산정특례 중인 암(stomach 등)
+    colonoscopyYear: Optional[int] = None  # 마지막 대장내시경 연도
     lifestyle: Optional[dict] = None
     medications: Optional[list[str]] = None
     currentSupplements: Optional[list[str]] = None
@@ -153,6 +171,9 @@ def update_me(body: UserUpdate):
         raise HTTPException(422, "gender는 M 또는 F입니다.")
     if body.jobType and body.jobType not in ("office", "nonOffice", "other"):
         raise HTTPException(422, "jobType은 office, nonOffice, other 중 하나입니다.")
+    bad_cancer = [c for c in body.cancerSpecialCase or [] if c not in sched.CANCER_IDS]
+    if bad_cancer:
+        raise HTTPException(422, "cancerSpecialCase는 " + ", ".join(sched.CANCER_IDS) + " 중에서 고릅니다.")
     errors = options.check_codes(body.currentSupplements, options.SUPPLEMENTS, "영양제")
     errors += options.check_codes(body.conditions, options.CONDITIONS, "질환")
     errors += options.check_codes(body.allergies, options.ALLERGIES, "알레르기")
@@ -167,8 +188,9 @@ def update_me(body: UserUpdate):
     with db.connect() as conn:
         user = load_user(conn)
         changes = body.model_dump(exclude_none=True)
-        if changes.get("confirmedTargetYear") == 0:
-            changes["confirmedTargetYear"] = None
+        for key in ("confirmedTargetYear", "colonoscopyYear", "packYears"):
+            if changes.get(key) == 0:
+                changes[key] = None
         if lifestyle is not None:
             changes["lifestyle"] = {**user.get("lifestyle", {}), **lifestyle}
         user.update(changes)

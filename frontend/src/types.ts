@@ -30,6 +30,11 @@ export interface UserProfile {
   // 검진 대상 예외. 앱이 알 수 없어 사용자가 고른다.
   jobType?: JobType
   confirmedTargetYear?: number | null
+  // 암검진 대상 판정. 앱이 알 수 없어 사용자가 고른다.
+  liverHighRisk?: boolean // B·C형 간염, 만성 간질환, 간경변
+  packYears?: number | null // 흡연 갑년 = 하루 갑 수 × 피운 햇수
+  cancerSpecialCase?: string[] // 암 산정특례 중인 암 id
+  colonoscopyYear?: number | null
 }
 
 export type JobType = 'office' | 'nonOffice' | 'other'
@@ -106,7 +111,26 @@ export interface CheckupTarget {
   done: boolean
   deadline: string
   daysLeft: number
-  extras: string[]
+  items: { id: string; name: string; note?: string }[] // 올해 더해지는 성·연령별 검사
+  cancers: CancerScreening[]
+  notes: string[]
+}
+
+export interface CancerScreening {
+  id: string
+  name: string
+  test: string
+  // 올해 대상 / 고위험군만 대상(해당 안 함) / 확인 필요 / 대상에서 빠짐 / 2년 주기라 내년
+  status: 'target' | 'highRiskOnly' | 'maybe' | 'excluded' | 'notThisYear'
+  note?: string
+  nextYear?: number
+}
+
+export interface ConfirmTest {
+  diseases: string[]
+  deadline: string
+  where: string
+  message: string
 }
 
 // 중간 점검: 가정용 기기로 잰 값

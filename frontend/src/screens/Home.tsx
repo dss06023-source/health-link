@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
 import type { Route } from '../App'
 import { getCenters } from '../api'
-import { checkupTarget, interpret } from '../data/rules'
+import { checkupTarget, confirmTest, interpret } from '../data/rules'
 import { latestCheckup, useStore, ymd } from '../store'
-import type { CheckupCenter } from '../types'
+import type { CancerScreening, CheckupCenter } from '../types'
 import { Disclaimer, Icon, Sheet } from '../ui'
+
+const CANCER_STATUS: Record<CancerScreening['status'], string> = {
+  target: '올해 대상', highRiskOnly: '해당 없음', maybe: '확인 필요', excluded: '대상 제외', notThisYear: '내년 대상',
+}
 
 export default function Home({ go }: { go: (r: Route) => void }) {
   const s = useStore()
@@ -21,6 +25,7 @@ export default function Home({ go }: { go: (r: Route) => void }) {
   const takenToday = active.filter((x) => s.intake[today]?.[x.id]).length
   const due = t.isTarget && !t.done
   const odd = p.birthYear % 2 ? '홀수' : '짝수'
+  const confirm = confirmTest(last, p.sex)
 
   const todo: { done: boolean; title: string; sub: string; act?: { label: string; to: Route | '#centers' } }[] = [
     due
@@ -44,14 +49,41 @@ export default function Home({ go }: { go: (r: Route) => void }) {
         </p>
         <p className="small muted">{t.reason === 'nonOffice' ? '비사무직 직장가입자는 해마다 무료로 받습니다.'
           : t.reason === 'confirmed' ? '공단 조회 결과에 따라 올해 대상으로 표시합니다.'
-            : <>{odd}년에 태어난 분은 {odd}년에 무료로 받습니다. 공단 조회 결과가 다르면 내 정보에서 바꿀 수 있어요.</>} 비용은 건강보험이 부담합니다.
-          {t.extras.length > 0 && <> 올해 추가 검사: {t.extras.join(', ')}.</>}</p>
+            : <>{odd}년에 태어난 분은 {odd}년에 무료로 받습니다. 공단 조회 결과가 다르면 내 정보에서 바꿀 수 있어요.</>} 비용은 건강보험이 부담합니다.</p>
+        {t.notes.map((n) => <p key={n} className="small muted">{n}</p>)}
         <div className="actions">
           <button className="btn flat" onClick={() => go('upload')}>결과지 등록</button>
           {due ? <button className="btn" onClick={toCenters}>근처 검진기관 보기</button>
             : <button className="btn" onClick={() => go('results')}>검진 해석 보기</button>}
         </div>
       </section>
+
+      {confirm && (
+        <section className="sec">
+          <p><b>확진검사 무료 1회</b> · {confirm.message}</p>
+          <p className="small muted">{confirm.where}에서 진료와 함께 받습니다.</p>
+        </section>
+      )}
+
+      <div>
+        <h2 className="subhead">{t.year}년 검진 항목 <span>공단 검진대상조회 안내 기준</span></h2>
+        <ul className="list">
+          {t.isTarget && (
+            <li className="li"><span className="li-main"><b>일반건강검진 공통</b>
+              <small>진찰·상담, 신체계측, 시력·청력, 혈압, 흉부방사선, 혈액·요검사, 구강검진</small></span></li>
+          )}
+          {t.items.map((i) => (
+            <li key={i.name + (i.note ?? '')} className="li"><span className="li-main"><b>{i.name}</b>
+              <small>{t.year - p.birthYear}세 대상{i.note ? ` · ${i.note}` : ''}</small></span></li>
+          ))}
+          {t.cancers.map((c) => (
+            <li key={c.id} className="li"><span className="li-main"><b>{c.name} 검진 · {c.test}</b>
+              {(c.note || c.nextYear) && <small>{c.note ?? `2년 주기라 ${c.nextYear}년에 받습니다.`}</small>}</span>
+              <span className={`li-end${c.status === 'target' ? ' strong' : ''}`}>{CANCER_STATUS[c.status]}</span></li>
+          ))}
+          {!t.isTarget && !t.cancers.length && <li className="li muted">올해 받을 국가검진 항목이 없습니다.</li>}
+        </ul>
+      </div>
 
       <div>
         <h2 className="subhead">할 일</h2>

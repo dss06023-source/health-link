@@ -1,6 +1,7 @@
 import criteria from './checkup_criteria.json'
+import schedule from './checkup_schedule.json'
 import type {
-  CheckupItem, CheckupTarget, InterpretedItem, Recommendation, Sex, Status,
+  CancerScreening, Checkup, CheckupItem, CheckupTarget, ConfirmTest, InterpretedItem, Recommendation, Sex, Status,
   Supplement, UserProfile, Warning,
 } from '../types'
 
@@ -163,8 +164,42 @@ export function interpret(items: CheckupItem[], sex: Sex): InterpretedItem[] {
   })
 }
 
-// 일반건강검진: 만 20세 이상, 출생연도 짝·홀이 검진연도와 같은 해에 대상(2년 주기).
-// 예외(서버 checkup_notice와 같은 규칙): 비사무직 직장가입자는 매년, 공단 조회에서 대상으로 나온 해는 그 결과를 따른다.
+// 검진 대상 판정. 기준은 checkup_schedule.json(공단 검진대상조회 안내문)이고, 서버 checkup_schedule.py와 같은 규칙이다.
+// 일반건강검진: 만 20세 이상, 출생연도 짝·홀이 검진연도와 같은 해에 대상(2년 주기). 나이는 검진연도 - 출생연도.
+// 예외: 비사무직 직장가입자는 매년, 공단 조회에서 대상으로 나온 해는 그 결과를 따른다.
+type AgeRule = { id: string; name: string; sex?: Sex; ages?: number[]; bands?: number[][]; from?: number; to?: number; every?: number; note?: string }
+type CancerRule = { id: string; name: string; test: string; sex?: Sex; minAge: number; maxAge?: number; cycle: string; highRisk?: string; highRiskText?: string; packYears?: number; colonoscopyExcludeYears?: number }
+const SCHEDULE = schedule as unknown as {
+  ageItems: AgeRule[]; cancers: CancerRule[]
+  confirmTest: { targets: { name: string; codes: string[] }[]; where: string }
+  notes: Record<'missedLastYear' | 'missedWorker' | 'overLimit', string>
+}
+export const CANCERS = SCHEDULE.cancers.map((c) => ({ id: c.id, name: c.name }))
+
+const ageHit = (r: AgeRule, age: number, sex: Sex) =>
+  (!r.sex || r.sex === sex) && (r.ages ? r.ages.includes(age)
+    : r.bands ? r.bands.some(([lo, hi]) => lo <= age && age <= hi)
+      : age >= r.from! && age <= (r.to ?? 200) && (age - r.from!) % r.every! === 0)
+
+function cancerScreenings(p: UserProfile, year: number): CancerScreening[] {
+  const age = year - p.birthYear
+  const parity = p.birthYear % 2 === year % 2 || p.confirmedTargetYear === year
+  const smoking = p.lifestyle.smokingStatus ?? (p.lifestyle.smoking ? 'current' : 'never')
+  return SCHEDULE.cancers.flatMap((c): CancerScreening[] => {
+    if ((c.sex && c.sex !== p.sex) || age < c.minAge || age > (c.maxAge ?? 200)) return []
+    const base = { id: c.id, name: c.name, test: c.test }
+    if (p.cancerSpecialCase?.includes(c.id)) return [{ ...base, status: 'excluded', note: '암 산정특례자는 해당 암검진에서 빠집니다. 원하면 추가등록할 수 있습니다.' }]
+    if (c.colonoscopyExcludeYears && p.colonoscopyYear && year - p.colonoscopyYear < c.colonoscopyExcludeYears)
+      return [{ ...base, status: 'excluded', note: `${p.colonoscopyYear}년 대장내시경 뒤 5년이 지나지 않아 빠집니다. 원하면 추가등록할 수 있습니다.` }]
+    if ((c.highRisk === 'liver' && !p.liverHighRisk) || (c.highRisk === 'lung' && !((p.packYears ?? 0) >= c.packYears! && smoking !== 'never')))
+      return [{ ...base, status: 'highRiskOnly', note: `고위험군만 대상: ${c.highRiskText}` }]
+    if (c.highRisk === 'lung' && smoking === 'past')
+      return [{ ...base, status: 'maybe', note: '담배를 끊었다면 30갑년 이상으로 폐암검진을 받은 적이 있고 끊은 지 15년 이내일 때만 대상입니다.' }]
+    if (c.cycle === 'biennial' && !parity) return [{ ...base, status: 'notThisYear', nextYear: year + 1 }]
+    return [{ ...base, status: 'target', ...(c.cycle === 'halfYearly' && { note: '상·하반기 각 1회' }) }]
+  })
+}
+
 export function checkupTarget(p: UserProfile, today = new Date()): CheckupTarget {
   const year = today.getFullYear()
   const age = year - p.birthYear
@@ -177,11 +212,27 @@ export function checkupTarget(p: UserProfile, today = new Date()): CheckupTarget
   const nextYear = isTarget && !done ? year : yearly ? year + 1 : year + (parity ? 2 : 1)
   const deadline = `${year}-12-31`
   const daysLeft = Math.ceil((new Date(`${year}-12-31T23:59:59`).getTime() - today.getTime()) / 86400000)
-  const extras: string[] = []
-  if (isTarget && age >= 40) extras.push('위암 검진(위내시경)')
-  if (isTarget && age >= 50) extras.push('대장암 검진(분변잠혈)')
-  if (age === 40 || age === 66) extras.push('생애전환기 검진')
-  return { year, isTarget, reason, nextYear, done, deadline, daysLeft, extras }
+  const items = isTarget ? SCHEDULE.ageItems.filter((r) => ageHit(r, age, p.sex)).map(({ id, name, note }) => ({ id, name, note })) : []
+  const notes: string[] = []
+  if (done) notes.push(SCHEDULE.notes.overLimit)
+  else if (!isTarget && age >= 20 && p.lastCheckupYear !== year - 1) {
+    notes.push(SCHEDULE.notes.missedLastYear)
+    if (p.jobType === 'office' || p.jobType === 'nonOffice') notes.push(SCHEDULE.notes.missedWorker)
+  }
+  return { year, isTarget, reason, nextYear, done, deadline, daysLeft, items, cancers: cancerScreenings(p, year), notes }
+}
+
+// 가장 최근 검진에서 고혈압·당뇨병 질환의심이면 다음 해 3월 31일까지 확진검사 1회 무료.
+export function confirmTest(c: Checkup | undefined, sex: Sex, today = new Date()): ConfirmTest | null {
+  if (!c) return null
+  const y = Number(c.date.slice(0, 4))
+  if (today > new Date(`${y + 1}-03-31T23:59:59`)) return null
+  const diseases = SCHEDULE.confirmTest.targets.filter((t) =>
+    t.codes.some((code) => { const it = c.items.find((i) => i.code.toLowerCase() === code); return !!it && judge(it.code, it.value, sex) === 'danger' }))
+    .map((t) => t.name)
+  if (!diseases.length) return null
+  return { diseases, deadline: `${y + 1}-03-31`, where: SCHEDULE.confirmTest.where,
+    message: `${c.date} 검진에서 ${diseases.join('·')} 질환의심이 나와 ${y + 1}년 3월 31일까지 확진검사를 1회 무료로 받을 수 있습니다.` }
 }
 
 // ---- 추천 규칙표 ----
