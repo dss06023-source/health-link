@@ -25,15 +25,15 @@ export function Icon({ name, color = 'currentColor', size = 20 }: { name: IconNa
 }
 
 // 앱 아이콘(시안 4-T): 순환 화살표(검진 주기) · ㅅ(잇는 선) · 캡슐(영양제)로 "잇"을 그린다.
-// ink는 고리와 캡슐, link는 ㅅ 색. 아이콘은 초록 바탕, 이름 속 "잇"은 바탕 없이 민트(ㅇ·ㅣ)와 초록(ㅅ)으로 쓴다.
-function ItShapes({ ink, link }: { ink: string; link: string }) {
+// ink는 고리와 캡슐, link는 ㅅ 색. 아이콘은 초록 바탕, 이름 속 "잇"은 바탕 없이 민트(ㅇ·ㅣ)와 빨강(ㅅ)으로, 획이 겹쳐 보이지 않게 ㅅ을 줄여 띄운다.
+function ItShapes({ ink, link, gap = false }: { ink: string; link: string; gap?: boolean }) {
   return (
     <g transform="translate(-4 30)">
       <path d="M78.4 198.5A72 72 0 1 1 96.5 254.2" fill="none" stroke={ink} strokeWidth="32" strokeLinecap="round" />
       <path d="M71.2 276.9L78.7 216L121.8 231.4Z" fill={ink} stroke={ink} strokeWidth="8" strokeLinejoin="round" />
       <path d="M356 237V350a32 32 0 0 0 64 0V237z" fill={ink} />
       <rect x="356" y="92" width="64" height="290" rx="32" fill="none" stroke={ink} strokeWidth="22" />
-      <path d="M187.8 301.9L313 225.9L335.1 370.6" fill="none" stroke={link} strokeWidth="30" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M187.8 301.9L313 225.9L335.1 370.6" transform={gap ? 'translate(262 300) scale(.78) translate(-262 -300)' : undefined} fill="none" stroke={link} strokeWidth="30" strokeLinecap="round" strokeLinejoin="round" />
     </g>
   )
 }
@@ -57,7 +57,7 @@ export function Wordmark() {
       <AppIcon />
       <span className="wm-text" aria-hidden="true">
         건강
-        <svg className="wm-it" viewBox="48 104 390 328"><ItShapes ink="var(--mint)" link="var(--accent)" /></svg>
+        <svg className="wm-it" viewBox="48 104 390 328"><ItShapes ink="var(--mint)" link="var(--wm-red)" gap /></svg>
         다
       </span>
     </span>

@@ -10,7 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "koddiud-ongothic": "1.0.0",
+    "@fontsource/jua": "5.3.0",
+    "@noonnu/tmoney-round-wind-extra-bold": "0.1.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

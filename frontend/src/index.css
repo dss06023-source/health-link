@@ -28,8 +28,10 @@
   --snack-fg: #ffffff;
   --snack-act: #8fe0b1;
 
-  --font: 'KoddiUD OnGothic', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
-  --num: 'Barlow', 'KoddiUD OnGothic', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --font: 'Jua', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --display: 'TmoneyRoundWindExtraBold', 'Jua', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --num: var(--font);
+  --wm-red: #d8483e;
   --rb: 24px;
   --rbtn: 18px;
   --max: 1120px;
@@ -39,7 +41,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0b0f0c; --block: #1a201c; --surface: #1a201c; --line: #2b3430; --fg: #e5ede7; --muted: #9daea3;
-    --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25; --seg-on: #3a443d; --block-edge: #2b3d31; --mint: #a8f5c4;
+    --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25; --seg-on: #3a443d; --block-edge: #2b3d31; --mint: #a8f5c4; --wm-red: #f07a6f;
     --accent: #5cc48d; --accent-ink: #0d1a12; --accent-soft: #1d3a29;
     --caution: #e2a948; --caution-soft: #3a2e17; --danger: #ef7d74; --danger-ink: #1a0d0c; --danger-soft: #3d1f1d;
     --snack-bg: #e1e8e3; --snack-fg: #111814; --snack-act: #1f7a4d;
@@ -48,7 +50,7 @@
 }
 :root[data-theme="dark"] {
   --bg: #0b0f0c; --block: #1a201c; --surface: #1a201c; --line: #2b3430; --fg: #e5ede7; --muted: #9daea3;
-  --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25; --seg-on: #3a443d; --block-edge: #2b3d31; --mint: #a8f5c4;
+  --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25; --seg-on: #3a443d; --block-edge: #2b3d31; --mint: #a8f5c4; --wm-red: #f07a6f;
   --accent: #5cc48d; --accent-ink: #0d1a12; --accent-soft: #1d3a29;
   --caution: #e2a948; --caution-soft: #3a2e17; --danger: #ef7d74; --danger-ink: #1a0d0c; --danger-soft: #3d1f1d;
   --snack-bg: #e1e8e3; --snack-fg: #111814; --snack-act: #1f7a4d;
@@ -62,6 +64,11 @@ body {
   font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; word-break: keep-all; overflow-wrap: anywhere;
 }
 button, input, select { font: inherit; color: inherit; }
+html { font-synthesis: none; }
+/* 주요 글자: 제목, 탭, 버튼, 큰 수치 */
+h1, h2, h3, .hero h1, .bar-title, .tabs button, .subtabs button, .btn, .subhead, .val-num, .stat b, .pouch-head b, .supp b, .li-main b {
+  font-family: var(--display); font-weight: normal;
+}
 h1, h2, h3 { margin: 0; text-wrap: balance; line-height: 1.35; }
 h1 { font-size: 32px; font-weight: 800; letter-spacing: -.015em; }
 h2 { font-size: 18px; font-weight: 800; }
