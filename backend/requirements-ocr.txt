@@ -1,0 +1,11 @@
+# 사진 결과지 인식(OCR). 없으면 사진은 견본 값으로 대신한다. 설치 뒤 python -m scripts.get_ocr_models
+-r requirements.txt
+rapidocr==3.10.0
+onnxruntime==1.29.0
+opencv-python-headless==5.0.0.93
+pyclipper==1.4.0
+shapely==2.2.0
+omegaconf==2.4.0
+colorlog==6.12.0
+tqdm==4.70.1
+six==1.17.0

@@ -86,12 +86,18 @@ def ingredient_overlaps(catalog_ids):
 
 
 def interaction_warnings(catalog_id, med_classes, medications):
-    out = []
+    out = {}
     for rule in ref.INTERACTIONS:
         if rule["supplement"] == catalog_id and rule["drugClass"] in med_classes:
             drugs = [m for m in medications if ref.MEDICATIONS.get(m) == rule["drugClass"]]
-            out.append({"type": "interaction", "level": rule["level"], "drugs": drugs, "message": rule["message"]})
-    return out
+            # 항응고제·항혈소판제처럼 계열이 달라도 문구가 같으면 한 건으로 합친다.
+            if rule["message"] in out:
+                out[rule["message"]]["drugs"] += drugs
+            else:
+                out[rule["message"]] = {"type": "interaction", "level": rule["level"], "drugs": drugs, "message": rule["message"]}
+                if "hours" in rule:
+                    out[rule["message"]]["hours"] = rule["hours"]
+    return list(out.values())
 
 
 def _spacing_target_present(target, taking, med_classes):
@@ -151,6 +157,9 @@ def recommend(user, values, active_catalog_ids):
                 described.get(code, {}).get("status", ref.NORMAL) != ref.NORMAL for code in rule["items"]
             ):
                 warnings.append({"type": "condition", "level": rule["level"], "message": rule["message"]})
+        for rule in ref.DIAGNOSIS_CAUTIONS:
+            if rule["supplement"] == cid and set(rule["conditions"]) & set(user.get("conditions", [])):
+                warnings.append({"type": "diagnosis", "level": rule["level"], "message": rule["message"]})
         stages = [ref.LIFE_STAGE_LABELS[s] for s in info.get("lifeStageAvoid", []) if lifestyle.get(s)]
         if stages:
             warnings.append({"type": "lifeStage", "level": "avoid",

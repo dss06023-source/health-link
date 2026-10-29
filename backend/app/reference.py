@@ -4,6 +4,7 @@
 - seed/checkup_criteria.json: 국가건강검진 판정 기준(건강검진 실시기준 별표 4, 2026-10-28 대조)
 - seed/supplements.json: 영양제 목록과 고시형 원료 1일 섭취량·주의사항(출처·검증 상태 포함)
 - seed/intake_rules.json: 추천·제외·주의·상한·복용 간격 규칙
+- seed/profile_options.json: 개인정보 입력 화면의 보기(약 계열, 영양제, 생활습관, 질환, 알레르기)
 문구는 질병 판단을 하지 않고 '기준치 범위 안/밖' 사실만 말한다.
 """
 
@@ -22,6 +23,7 @@ def _load(name):
 _criteria = _load("checkup_criteria.json")
 _supplements = _load("supplements.json")
 _rules = _load("intake_rules.json")
+PROFILE_OPTIONS = _load("profile_options.json")
 
 # 판정 구간: low/high를 위에서부터 차례로 검사한다(seed/checkup_criteria.json 참고).
 CHECKUP_ITEMS = _criteria["items"]
@@ -107,8 +109,13 @@ LIFESTYLE_RULES = _rules["lifestyle"]
 # level: avoid(추천 제외) / caution(추천하되 경고)
 INTERACTIONS = _rules["interactions"]
 CONDITION_CAUTIONS = _rules["conditionCautions"]
+# 사용자가 고른 진단받은 질환(user.conditions)에 따른 주의
+DIAGNOSIS_CAUTIONS = _rules["diagnosisCautions"]
 LIFE_STAGE_LABELS = _rules["lifeStage"]["labels"]
 NOT_TOGETHER = _rules["notTogether"]
 SPACING_RULES = _rules["spacing"]
-MEDICATIONS = _rules["medications"]
+MEDICATIONS = dict(_rules["medications"])
+for _group in PROFILE_OPTIONS["medicationGroups"]:
+    for _item in _group["items"]:
+        MEDICATIONS.setdefault(_item["name"], _item["drugClass"])
 DISCLAIMER = _rules["disclaimer"]

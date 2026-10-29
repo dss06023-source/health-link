@@ -36,10 +36,10 @@ def test_upload_rejects_other_files(client):
     assert r.status_code == 415
 
 
-def test_photo_upload_flags_low_confidence_fields(client):
+def test_upload_without_ocr_returns_sample_values(client):
     checkup = client.post("/api/checkups/upload", files={"file": ("a.jpg", b"x", "image/jpeg")}).json()
-    flagged = {f["code"] for f in checkup["ocr"]["fields"] if f["needsReview"]}
-    assert flagged == {"ggt", "hdl"}
+    assert checkup["ocr"]["engine"] == "mock" and "견본" in checkup["ocr"]["message"]
+    assert {f["code"] for f in checkup["ocr"]["missing"]} == {"waist", "creatinine", "egfr"}
 
 
 def test_user_edit_changes_interpretation(client):
@@ -65,7 +65,7 @@ def test_recommendation_excludes_statin_conflict_and_liver_caution(client):
     ids = [x["supplementId"] for x in r["recommendations"]]
     assert "banaba" in ids and "omega3" in ids
     vit_d = next(x for x in r["recommendations"] if x["supplementId"] == "vitamin_d")
-    assert vit_d["alreadyTaking"] and vit_d["warnings"][0]["type"] == "duplicate"
+    assert vit_d["alreadyTaking"] and "duplicate" in {w["type"] for w in vit_d["warnings"]}
 
 
 def test_recommendation_is_deterministic(client):

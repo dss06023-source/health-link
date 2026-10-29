@@ -61,9 +61,14 @@ def test_rules_point_to_known_codes():
     for rule in ref.RECOMMENDATION_RULES + ref.CONDITION_CAUTIONS:
         assert rule["supplement"] in ref.SUPPLEMENTS
         assert set(rule["items"]) <= set(ref.CHECKUP_ITEMS)
+    option_ids = {o["id"] for o in ref.PROFILE_OPTIONS["supplements"]}
     for rule in ref.INTERACTIONS:
-        assert rule["supplement"] in ref.SUPPLEMENTS
+        assert rule["supplement"] in set(ref.SUPPLEMENTS) | option_ids
         assert rule["drugClass"] in set(ref.MEDICATIONS.values())
+    conditions = {c["value"] for c in ref.PROFILE_OPTIONS["conditions"]}
+    for rule in ref.DIAGNOSIS_CAUTIONS:
+        assert rule["supplement"] in ref.SUPPLEMENTS
+        assert set(rule["conditions"]) <= conditions
     for cid, info in ref.SUPPLEMENTS.items():
         assert set(info["lifeStageAvoid"]) <= set(ref.LIFE_STAGE_LABELS), cid
         assert "meta" not in info

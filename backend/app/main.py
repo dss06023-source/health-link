@@ -2,6 +2,9 @@
 
 import json
 import math
+import os
+import re
+from pathlib import Path
 from contextlib import asynccontextmanager
 from datetime import date, timedelta
 from typing import Optional
@@ -10,7 +13,7 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from . import db, logic
+from . import db, logic, measure, ocr, options, public_api
 from . import reference as ref
 
 TIME_SLOTS = ["morning", "lunch", "evening", "bedtime"]
@@ -104,6 +107,10 @@ class UserUpdate(BaseModel):
     heightCm: Optional[float] = None
     lifestyle: Optional[dict] = None
     medications: Optional[list[str]] = None
+    currentSupplements: Optional[list[str]] = None
+    conditions: Optional[list[str]] = None
+    allergies: Optional[list[str]] = None
+    customAllergies: Optional[list[str]] = None
     consent: Optional[dict] = None
     location: Optional[dict] = None
 
@@ -125,10 +132,23 @@ def get_me():
 def update_me(body: UserUpdate):
     if body.gender and body.gender not in ("M", "F"):
         raise HTTPException(422, "gender는 M 또는 F입니다.")
+    errors = options.check_codes(body.currentSupplements, options.SUPPLEMENTS, "영양제")
+    errors += options.check_codes(body.conditions, options.CONDITIONS, "질환")
+    errors += options.check_codes(body.allergies, options.ALLERGIES, "알레르기")
+    lifestyle = None
+    if body.lifestyle is not None:
+        bad, lifestyle = options.check_lifestyle(body.lifestyle)
+        errors += bad
+    if errors:
+        raise HTTPException(422, "보기에 없는 값입니다. " + " / ".join(errors))
+    # 보기에 없는 약은 '직접 입력'으로 저장하고, 상호작용 규칙이 없다고 알린다.
     unknown = [m for m in body.medications or [] if m not in ref.MEDICATIONS]
     with db.connect() as conn:
         user = load_user(conn)
-        user.update(body.model_dump(exclude_none=True))
+        changes = body.model_dump(exclude_none=True)
+        if lifestyle is not None:
+            changes["lifestyle"] = {**user.get("lifestyle", {}), **lifestyle}
+        user.update(changes)
         conn.execute("UPDATE users SET data = ? WHERE id = 1", (json.dumps(user, ensure_ascii=False),))
     result = get_me()
     if unknown:
@@ -136,10 +156,17 @@ def update_me(body: UserUpdate):
     return result
 
 
+@app.get("/api/options")
+def profile_options():
+    """개인정보 입력 화면의 보기. rules가 false인 보기는 저장만 하고 추천·경고에는 아직 쓰지 않는다."""
+    return options.catalog()
+
+
 @app.get("/api/medications")
 def list_medications():
-    """시연용 약 목록(상호작용 규칙이 있는 약만)."""
-    return [{"name": name, "drugClass": cls} for name, cls in ref.MEDICATIONS.items()]
+    """입력 화면의 약 보기. 예전 이름(마이데이터 처방명 등)은 목록에 없지만 저장·규칙에는 계속 쓰인다."""
+    return [{"name": i["name"], "drugClass": i["drugClass"]}
+            for g in ref.PROFILE_OPTIONS["medicationGroups"] for i in g["items"]]
 
 
 CENTERS = [
@@ -159,48 +186,148 @@ def distance_km(lat1, lng1, lat2, lng2):
     return 2 * r * math.asin(math.sqrt(a))
 
 
+DEFAULT_LOCATION = {"lat": 37.5665, "lng": 126.9780}  # 서울시청
+BOOKING_URL = "https://www.nhis.or.kr"
+
+
+def user_location():
+    with db.connect() as conn:
+        return load_user(conn).get("location") or DEFAULT_LOCATION
+
+
 @app.get("/api/checkup-centers")
 def checkup_centers(lat: Optional[float] = None, lng: Optional[float] = None, limit: int = 5):
+    """건보공단 검진기관 API로 같은 시군구 기관을 찾는다. 키가 없거나 실패하면 가상 목록."""
     if lat is None or lng is None:
-        with db.connect() as conn:
-            loc = load_user(conn).get("location") or {"lat": 37.5665, "lng": 126.9780}
+        loc = user_location()
         lat, lng = loc["lat"], loc["lng"]
-    centers = [
-        dict(c, distanceKm=round(distance_km(lat, lng, c["lat"], c["lng"]), 2),
-             bookingUrl="https://www.nhis.or.kr", isDemoData=True)
-        for c in CENTERS
-    ]
+    found = public_api.checkup_centers(lat, lng)
+    if found:
+        centers = [dict(c, tags=[t for t in [c["kind"], *c["exams"]] if t and t != "일반"], bookingUrl=BOOKING_URL,
+                        isDemoData=False, source="nhis") for c in found]
+    else:
+        centers = [dict(c, tags=[], bookingUrl=BOOKING_URL, isDemoData=True, source="demo") for c in CENTERS]
+    for c in centers:
+        c["distanceKm"] = round(distance_km(lat, lng, c["lat"], c["lng"]), 2)
     return sorted(centers, key=lambda c: c["distanceKm"])[:limit]
 
 
-# ---------- 2. 결과 연동(모의 OCR) ----------
+# 식약처 분류 번호 → 이 앱의 약 계열. 성분 이름이 보기와 겹치면 그쪽을 먼저 쓴다.
+DRUG_CLASS_BY_CODE = {
+    "214": "antihypertensive", "396": "antidiabetic", "333": "anticoagulant",
+    "243": "thyroid", "232": "acid_suppressant", "113": "anticonvulsant",
+}
+
+
+def match_option(drug):
+    """검색한 약이 입력 화면의 어느 보기에 해당하는지 추정한다(성분 이름 → 분류 번호 순)."""
+    text = " ".join([drug.get("name") or "", *drug.get("ingredients", [])])
+    for name, drug_class in ref.MEDICATIONS.items():
+        if len(name) >= 3 and not name.startswith("기타") and name in text:
+            return {"name": name, "drugClass": drug_class, "by": "ingredient"}
+    if "스타틴" in text:
+        return {"name": "스타틴", "drugClass": "statin", "by": "ingredient"}
+    code = (re.match(r"\[(\d{3})\]", drug.get("className") or "") or [None, None])[1]
+    drug_class = DRUG_CLASS_BY_CODE.get(code)
+    if drug_class:
+        # 같은 계열 보기가 여럿이면 '기타 …' 보기를 고른다(아마릴을 메트포르민으로 적지 않도록).
+        names = [i["name"] for g in ref.PROFILE_OPTIONS["medicationGroups"] for i in g["items"]
+                 if i["drugClass"] == drug_class]
+        option = next((n for n in names if n.startswith("기타")), names[0] if names else None)
+        return {"name": option, "drugClass": drug_class, "by": "class"}
+    return None
+
+
+@app.get("/api/drugs/search")
+def search_drugs(q: str = Query(..., min_length=1), limit: int = Query(10, ge=1, le=30)):
+    """약 이름 검색. 식약처 e약은요(쉬운 설명)와 DUR 품목(전문의약품·금기 종류)을 합친다.
+    키가 없거나 실패하면 입력 화면의 약 보기에서 찾는다."""
+    found = public_api.search_drugs(q.strip(), limit)
+    if found is None:
+        items = [{"itemSeq": None, "name": i["name"], "company": None, "kind": None, "className": None,
+                  "ingredients": [], "durTypes": [], "guide": None,
+                  "matchedOption": {"name": i["name"], "drugClass": i["drugClass"], "by": "option"}}
+                 for g in ref.PROFILE_OPTIONS["medicationGroups"] for i in g["items"] if q.strip() in i["name"]]
+        return {"source": "demo", "isDemoData": True, "items": items[:limit]}
+    return {"source": "mfds", "isDemoData": False,
+            "items": [dict(d, matchedOption=match_option(d)) for d in found]}
+
+
+DEMO_ADDRESSES = [
+    {"roadAddress": "서울특별시 중구 세종대로 110 (태평로1가)", "jibunAddress": "서울특별시 중구 태평로1가 31",
+     "zipCode": "04524", "buildingName": "서울특별시청", "regionCode": "1114010300",
+     "lat": 37.5665, "lng": 126.9780},
+    {"roadAddress": "서울특별시 마포구 월드컵북로 400", "jibunAddress": "서울특별시 마포구 상암동 1601",
+     "zipCode": "03925", "buildingName": None, "regionCode": "1144012700", "lat": 37.5794, "lng": 126.8895},
+]
+
+
+@app.get("/api/address/search")
+def search_address(q: str = Query(..., min_length=2), limit: int = Query(10, ge=1, le=30)):
+    """도로명주소 검색(행정안전부). 키가 없거나 실패하면 시연용 주소 두 개 중에서 찾는다."""
+    found = public_api.search_address(q.strip(), limit)
+    if found is None:
+        words = q.split()
+        items = [a for a in DEMO_ADDRESSES if all(w in a["roadAddress"] + a["jibunAddress"] for w in words)]
+        return {"source": "demo", "isDemoData": True, "items": items or DEMO_ADDRESSES}
+    return {"source": "juso", "isDemoData": False, "items": found}
+
+
+@app.get("/api/geocode")
+def geocode(address: str = Query(..., min_length=2)):
+    """주소를 좌표로(카카오 로컬). 키가 없거나 실패하면 시연용 주소면 그 좌표, 아니면 서울시청 좌표."""
+    found = public_api.geocode(address.strip())
+    if found:
+        return {**found, "source": "kakao", "isDemoData": False}
+    demo = next((a for a in DEMO_ADDRESSES if address.strip() in (a["roadAddress"], a["jibunAddress"])), None)
+    point = demo or {"roadAddress": None, **DEFAULT_LOCATION}
+    return {"address": point["roadAddress"], "lat": point["lat"], "lng": point["lng"],
+            "source": "demo", "isDemoData": True}
+
+
+# ---------- 2. 결과 연동(OCR) ----------
 
 @app.post("/api/checkups/upload")
 async def upload_checkup(file: UploadFile = File(...)):
-    """결과지 PDF·사진을 받아 모의 OCR 결과를 돌려준다. 파일 내용은 저장하지 않는다."""
+    """결과지 PDF·사진에서 검진 수치를 읽는다. 파일 내용은 저장하지 않는다.
+
+    글자가 든 PDF는 글자를 바로 읽고, 사진·스캔 PDF는 무료 공개 OCR로 읽는다(app/ocr.py).
+    OCR 모델이 설치되지 않은 서버에서는 예전처럼 견본 값을 돌려준다(engine: mock).
+    """
     content_type = file.content_type or ""
     name = file.filename or "upload"
-    if not (content_type.startswith("image/") or content_type == "application/pdf" or name.lower().endswith(".pdf")):
+    is_pdf = name.lower().endswith(".pdf") or content_type == "application/pdf"
+    if not (content_type.startswith("image/") or is_pdf):
         raise HTTPException(415, "PDF 또는 이미지 파일만 올릴 수 있습니다.")
-    await file.read()
-    source = "pdf" if name.lower().endswith(".pdf") or content_type == "application/pdf" else "photo"
-    values = dict(db.CHECKUP_2026_SAMPLE)
+    data = await file.read()
+    source = "pdf" if is_pdf else "photo"
+    names_units = {code: (item["name"], item["unit"]) for code, item in ref.CHECKUP_ITEMS.items()}
+    try:
+        found, engine = ocr.read(data, is_pdf)
+    except ocr.OCRUnavailable:
+        found, engine = None, "mock"
+    except Exception:
+        raise HTTPException(422, "파일을 열지 못했습니다. 다른 사진이나 PDF로 다시 올려 주세요.")
+    if engine == "mock":
+        found = {code: (v, 0.98) for code, v in db.CHECKUP_2026_SAMPLE.items()}
+        message = "사진 인식 모델이 없는 서버라 견본 값을 보여 줍니다. 실제 결과지 값과 다릅니다."
+    elif not found:
+        raise HTTPException(422, "결과지에서 검진 수치를 찾지 못했습니다. 밝은 곳에서 표 전체가 반듯하게 나오도록 다시 찍거나 PDF를 올려 주세요.")
+    else:
+        message = "인식한 수치를 확인해 주세요. 틀린 값은 고친 뒤 확정하세요."
+    fields = ocr.fields(found, names_units)
+    values = {f["code"]: f["value"] for f in fields}
     with db.connect() as conn:
         cur = conn.execute(
             "INSERT INTO checkups (date, source, status, file_name, item_values) VALUES (?, ?, 'pending_review', ?, ?)",
             (db.today().isoformat(), source, name, json.dumps(values)),
         )
         checkup = get_checkup(conn, cur.lastrowid)
-    # 사진은 인식 신뢰도가 낮은 항목을 표시해 사용자가 확인하게 한다.
-    low_confidence = {"ggt", "hdl"} if source == "photo" else set()
     checkup["ocr"] = {
-        "engine": "mock",
-        "fields": [
-            {"code": code, "name": ref.CHECKUP_ITEMS[code]["name"], "value": v, "unit": ref.CHECKUP_ITEMS[code]["unit"],
-             "confidence": 0.72 if code in low_confidence else 0.98, "needsReview": code in low_confidence}
-            for code, v in values.items()
-        ],
-        "message": "인식한 수치를 확인해 주세요. 틀린 값은 고친 뒤 확정하세요.",
+        "engine": engine,
+        "fields": fields,
+        "missing": [{"code": c, "name": n, "unit": u} for c, (n, u) in names_units.items() if c not in values],
+        "message": message,
     }
     return checkup
 
@@ -296,6 +423,8 @@ def recommendations(checkupId: Optional[int] = None):
         user = load_user(conn)
         checkup = get_checkup(conn, resolve_checkup_id(conn, checkupId))
         active = [s["supplementId"] for s in active_supplements(conn)]
+    # 입력 화면에서 '먹고 있다'고 고른 영양제도 중복 점검에 넣는다(규칙표에 있는 것만).
+    active += [c for c in user.get("currentSupplements", []) if c in ref.SUPPLEMENTS and c not in active]
     result = logic.recommend(user, checkup["values"], active)
     return {"checkupId": checkup["id"], "checkupDate": checkup["date"], "medications": user.get("medications", []), **result}
 
@@ -322,10 +451,12 @@ def check_supplements():
         user = load_user(conn)
         active = active_supplements(conn, include_paused=False)
     ids = [s["supplementId"] for s in active]
+    # 입력 화면에서 '먹고 있다'고 고른 영양제(규칙표 밖의 칼슘·비타민K 등 포함)도 약과의 상호작용을 본다.
+    taking = ids + [c for c in user.get("currentSupplements", []) if c not in ids]
     meds = user.get("medications", [])
     classes = logic.medication_classes(meds)
     interactions = [
-        dict(w, supplementId=cid) for cid in ids for w in logic.interaction_warnings(cid, classes, meds)
+        dict(w, supplementId=cid) for cid in taking for w in logic.interaction_warnings(cid, classes, meds)
     ]
     duplicates = logic.ingredient_overlaps(ids)
     return {
@@ -511,6 +642,7 @@ def compare_report(from_: Optional[int] = Query(None, alias="from"), to: Optiona
             before, after = get_checkup(conn, from_), get_checkup(conn, to)
         start, end = date.fromisoformat(before["date"]), date.fromisoformat(after["date"])
         intake = intake_history(conn, start, end)
+        records = measure.load(conn, user.get("heightCm"), before["date"], after["date"])
         during = [
             supplement_row(r) for r in conn.execute(
                 "SELECT * FROM supplements WHERE started_at <= ? AND (ended_at IS NULL OR ended_at >= ?)",
@@ -526,6 +658,7 @@ def compare_report(from_: Optional[int] = Query(None, alias="from"), to: Optiona
             {k: s[k] for k in ("id", "supplementId", "name", "startedAt", "endedAt")} for s in during
         ],
         "adherence": {"rate": intake["rate"], "recordedFrom": intake["recordedFrom"], "daily": intake["daily"]},
+        "measurements": {"series": measure.series(records), "count": len(records), "note": measure.NOTE},
     }
 
 
@@ -540,4 +673,19 @@ def demo_reset():
 
 @app.get("/api/health")
 def health():
-    return {"ok": True}
+    # 어떤 외부 키가 서버에 들어 있는지만 보인다(값은 내보내지 않는다).
+    return {"ok": True, "publicApis": public_api.configured()}
+
+
+# 마이데이터·복용 알림·중간 검사. 위의 도우미 함수를 쓰므로 맨 끝에서 붙인다.
+from .features import router as features_router  # noqa: E402
+
+app.include_router(features_router)
+
+
+# 배포할 때는 빌드한 화면(frontend/dist)을 같은 주소에서 내보낸다. API 경로를 모두 붙인 뒤에 마운트해야 한다.
+_frontend = os.environ.get("FRONTEND_DIST")
+if _frontend and Path(_frontend).is_dir():
+    from fastapi.staticfiles import StaticFiles
+
+    app.mount("/", StaticFiles(directory=_frontend, html=True), name="frontend")

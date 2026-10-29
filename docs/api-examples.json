@@ -7,14 +7,25 @@
       "gender": "M",
       "heightCm": 174,
       "lifestyle": {
-        "smoking": false,
+        "smoking": "never",
         "drinkingPerWeek": 2,
+        "drinksPerSession": 3,
         "exercisePerWeek": 1,
-        "lowSunlight": true
+        "lowSunlight": true,
+        "sleepHours": 6.5,
+        "diet": [
+          "eatOut"
+        ]
       },
       "medications": [
         "아토르바스타틴"
       ],
+      "currentSupplements": [],
+      "conditions": [
+        "dyslipidemia"
+      ],
+      "allergies": [],
+      "customAllergies": [],
       "consent": {
         "sensitiveData": true,
         "agreedAt": "2024-10-20"
@@ -22,6 +33,19 @@
       "location": {
         "lat": 37.5665,
         "lng": 126.978
+      },
+      "reminders": {
+        "enabled": true,
+        "times": {
+          "morning": "08:00",
+          "lunch": "12:30",
+          "evening": "19:00",
+          "bedtime": "22:00"
+        },
+        "snoozed": {}
+      },
+      "mydata": {
+        "connected": false
       },
       "age": 40,
       "isTargetThisYear": true,
@@ -42,9 +66,11 @@
         "lat": 37.572,
         "lng": 126.9794,
         "phone": "02-000-0002",
-        "distanceKm": 0.62,
+        "tags": [],
         "bookingUrl": "https://www.nhis.or.kr",
-        "isDemoData": true
+        "isDemoData": true,
+        "source": "demo",
+        "distanceKm": 0.62
       },
       {
         "id": 3,
@@ -53,9 +79,11 @@
         "lat": 37.56,
         "lng": 126.975,
         "phone": "02-000-0003",
-        "distanceKm": 0.77,
+        "tags": [],
         "bookingUrl": "https://www.nhis.or.kr",
-        "isDemoData": true
+        "isDemoData": true,
+        "source": "demo",
+        "distanceKm": 0.77
       },
       {
         "id": 1,
@@ -64,9 +92,11 @@
         "lat": 37.5651,
         "lng": 126.9895,
         "phone": "02-000-0001",
-        "distanceKm": 1.03,
+        "tags": [],
         "bookingUrl": "https://www.nhis.or.kr",
-        "isDemoData": true
+        "isDemoData": true,
+        "source": "demo",
+        "distanceKm": 1.03
       },
       {
         "id": 4,
@@ -75,9 +105,11 @@
         "lat": 37.5384,
         "lng": 126.9654,
         "phone": "02-000-0004",
-        "distanceKm": 3.32,
+        "tags": [],
         "bookingUrl": "https://www.nhis.or.kr",
-        "isDemoData": true
+        "isDemoData": true,
+        "source": "demo",
+        "distanceKm": 3.32
       },
       {
         "id": 5,
@@ -86,9 +118,11 @@
         "lat": 37.56,
         "lng": 126.941,
         "phone": "02-000-0005",
-        "distanceKm": 3.34,
+        "tags": [],
         "bookingUrl": "https://www.nhis.or.kr",
-        "isDemoData": true
+        "isDemoData": true,
+        "source": "demo",
+        "distanceKm": 3.34
       }
     ]
   },
@@ -96,34 +130,440 @@
     "status": 200,
     "body": [
       {
-        "name": "아토르바스타틴",
+        "name": "혈압약",
+        "drugClass": "antihypertensive"
+      },
+      {
+        "name": "스타틴",
         "drugClass": "statin"
       },
       {
-        "name": "로수바스타틴",
-        "drugClass": "statin"
-      },
-      {
-        "name": "와파린",
-        "drugClass": "anticoagulant"
-      },
-      {
-        "name": "아스피린(저용량)",
-        "drugClass": "anticoagulant"
+        "name": "기타 고지혈증약",
+        "drugClass": "lipid_other"
       },
       {
         "name": "메트포르민",
         "drugClass": "antidiabetic"
       },
       {
+        "name": "인슐린",
+        "drugClass": "antidiabetic"
+      },
+      {
+        "name": "기타 당뇨약",
+        "drugClass": "antidiabetic"
+      },
+      {
+        "name": "아스피린",
+        "drugClass": "antiplatelet"
+      },
+      {
+        "name": "와파린",
+        "drugClass": "anticoagulant"
+      },
+      {
+        "name": "클로피도그렐",
+        "drugClass": "antiplatelet"
+      },
+      {
+        "name": "기타 항응고제",
+        "drugClass": "anticoagulant"
+      },
+      {
         "name": "레보티록신",
         "drugClass": "thyroid"
       },
       {
-        "name": "암로디핀",
-        "drugClass": "antihypertensive"
+        "name": "위산억제제",
+        "drugClass": "acid_suppressant"
+      },
+      {
+        "name": "골다공증약",
+        "drugClass": "osteoporosis"
+      },
+      {
+        "name": "항생제",
+        "drugClass": "antibiotic"
+      },
+      {
+        "name": "항우울제",
+        "drugClass": "antidepressant"
+      },
+      {
+        "name": "호르몬제·피임약",
+        "drugClass": "hormone"
+      },
+      {
+        "name": "항경련제",
+        "drugClass": "anticonvulsant"
       }
     ]
+  },
+  "GET /api/options": {
+    "status": 200,
+    "body": {
+      "medicationGroups": [
+        {
+          "id": "antihypertensive",
+          "label": "혈압",
+          "items": [
+            {
+              "name": "혈압약",
+              "drugClass": "antihypertensive",
+              "rules": true
+            }
+          ]
+        },
+        {
+          "id": "lipid",
+          "label": "콜레스테롤",
+          "items": [
+            {
+              "name": "스타틴",
+              "drugClass": "statin",
+              "rules": true
+            },
+            {
+              "name": "기타 고지혈증약",
+              "drugClass": "lipid_other",
+              "rules": true
+            }
+          ]
+        },
+        {
+          "id": "antidiabetic",
+          "label": "당뇨",
+          "items": [
+            {
+              "name": "메트포르민",
+              "drugClass": "antidiabetic",
+              "rules": true
+            },
+            {
+              "name": "인슐린",
+              "drugClass": "antidiabetic",
+              "rules": true
+            },
+            {
+              "name": "기타 당뇨약",
+              "drugClass": "antidiabetic",
+              "rules": true
+            }
+          ]
+        },
+        {
+          "id": "anticoagulant",
+          "label": "피를 묽게 하는 약",
+          "items": [
+            {
+              "name": "아스피린",
+              "drugClass": "antiplatelet",
+              "rules": true
+            },
+            {
+              "name": "와파린",
+              "drugClass": "anticoagulant",
+              "rules": true
+            },
+            {
+              "name": "클로피도그렐",
+              "drugClass": "antiplatelet",
+              "rules": true
+            },
+            {
+              "name": "기타 항응고제",
+              "drugClass": "anticoagulant",
+              "rules": true
+            }
+          ]
+        },
+        {
+          "id": "thyroid",
+          "label": "갑상선",
+          "items": [
+            {
+              "name": "레보티록신",
+              "drugClass": "thyroid",
+              "rules": true
+            }
+          ]
+        },
+        {
+          "id": "acid_suppressant",
+          "label": "위장",
+          "items": [
+            {
+              "name": "위산억제제",
+              "drugClass": "acid_suppressant",
+              "rules": true
+            }
+          ]
+        },
+        {
+          "id": "osteoporosis",
+          "label": "뼈",
+          "items": [
+            {
+              "name": "골다공증약",
+              "drugClass": "osteoporosis",
+              "rules": true
+            }
+          ]
+        },
+        {
+          "id": "other",
+          "label": "그 밖의 약",
+          "items": [
+            {
+              "name": "항생제",
+              "drugClass": "antibiotic",
+              "rules": true
+            },
+            {
+              "name": "항우울제",
+              "drugClass": "antidepressant",
+              "rules": true
+            },
+            {
+              "name": "호르몬제·피임약",
+              "drugClass": "hormone",
+              "rules": true
+            },
+            {
+              "name": "항경련제",
+              "drugClass": "anticonvulsant",
+              "rules": true
+            }
+          ]
+        }
+      ],
+      "supplements": [
+        {
+          "id": "multivitamin",
+          "name": "종합비타민",
+          "rules": true
+        },
+        {
+          "id": "vitamin_b",
+          "name": "비타민B군",
+          "rules": false
+        },
+        {
+          "id": "vitamin_c",
+          "name": "비타민C",
+          "rules": false
+        },
+        {
+          "id": "vitamin_d",
+          "name": "비타민D",
+          "rules": true
+        },
+        {
+          "id": "vitamin_k",
+          "name": "비타민K",
+          "rules": true
+        },
+        {
+          "id": "calcium",
+          "name": "칼슘",
+          "rules": true
+        },
+        {
+          "id": "magnesium",
+          "name": "마그네슘",
+          "rules": true
+        },
+        {
+          "id": "zinc",
+          "name": "아연",
+          "rules": true
+        },
+        {
+          "id": "iron",
+          "name": "철분",
+          "rules": true
+        },
+        {
+          "id": "folic_acid",
+          "name": "엽산",
+          "rules": true
+        },
+        {
+          "id": "omega3",
+          "name": "오메가-3",
+          "rules": true
+        },
+        {
+          "id": "probiotics",
+          "name": "유산균",
+          "rules": false
+        },
+        {
+          "id": "lutein",
+          "name": "루테인",
+          "rules": false
+        },
+        {
+          "id": "milk_thistle",
+          "name": "밀크씨슬",
+          "rules": true
+        },
+        {
+          "id": "red_yeast_rice",
+          "name": "홍국",
+          "rules": true
+        },
+        {
+          "id": "coq10",
+          "name": "코엔자임Q10",
+          "rules": true
+        }
+      ],
+      "lifestyle": [
+        {
+          "key": "smoking",
+          "label": "흡연",
+          "type": "choice",
+          "options": [
+            {
+              "value": "never",
+              "label": "안 함"
+            },
+            {
+              "value": "past",
+              "label": "과거에 피움"
+            },
+            {
+              "value": "current",
+              "label": "현재 피움"
+            }
+          ]
+        },
+        {
+          "key": "drinkingPerWeek",
+          "label": "음주 횟수(주)",
+          "type": "number",
+          "min": 0,
+          "max": 7
+        },
+        {
+          "key": "drinksPerSession",
+          "label": "1회 음주량(잔)",
+          "type": "number",
+          "min": 0,
+          "max": 30
+        },
+        {
+          "key": "exercisePerWeek",
+          "label": "운동 횟수(주)",
+          "type": "number",
+          "min": 0,
+          "max": 7
+        },
+        {
+          "key": "lowSunlight",
+          "label": "낮 시간 대부분 실내",
+          "type": "boolean"
+        },
+        {
+          "key": "sleepHours",
+          "label": "하루 수면 시간",
+          "type": "number",
+          "min": 0,
+          "max": 16
+        },
+        {
+          "key": "diet",
+          "label": "식습관",
+          "type": "multi",
+          "options": [
+            {
+              "value": "skipBreakfast",
+              "label": "아침 거름"
+            },
+            {
+              "value": "salty",
+              "label": "짠 음식"
+            },
+            {
+              "value": "vegetarian",
+              "label": "채식"
+            },
+            {
+              "value": "noDairy",
+              "label": "유제품 안 먹음"
+            },
+            {
+              "value": "eatOut",
+              "label": "외식 잦음"
+            }
+          ]
+        },
+        {
+          "key": "pregnant",
+          "label": "임신 중",
+          "type": "boolean",
+          "sex": "F"
+        },
+        {
+          "key": "breastfeeding",
+          "label": "수유 중",
+          "type": "boolean",
+          "sex": "F"
+        }
+      ],
+      "conditions": [
+        {
+          "value": "hypertension",
+          "label": "고혈압",
+          "rules": false
+        },
+        {
+          "value": "diabetes",
+          "label": "당뇨",
+          "rules": true
+        },
+        {
+          "value": "dyslipidemia",
+          "label": "이상지질혈증",
+          "rules": true
+        },
+        {
+          "value": "liver",
+          "label": "간질환",
+          "rules": true
+        },
+        {
+          "value": "kidney",
+          "label": "신장질환",
+          "rules": true
+        },
+        {
+          "value": "thyroid",
+          "label": "갑상선질환",
+          "rules": false
+        }
+      ],
+      "allergies": [
+        {
+          "value": "shellfish",
+          "label": "갑각류"
+        },
+        {
+          "value": "soy",
+          "label": "대두"
+        },
+        {
+          "value": "milk",
+          "label": "우유"
+        }
+      ],
+      "conditionNote": "진단받은 질환은 의사에게 진단받은 것만 고릅니다. 건강잇다는 질환을 판단하지 않고, 영양제 주의 문구를 고르는 데만 씁니다.",
+      "customAllowed": [
+        "medications",
+        "allergies"
+      ]
+    }
   },
   "GET /api/recommendations (2024 검진)": {
     "status": 200,
@@ -421,6 +861,14 @@
           "alreadyTaking": true,
           "warnings": [
             {
+              "type": "interaction",
+              "level": "info",
+              "drugs": [
+                "아토르바스타틴"
+              ],
+              "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요."
+            },
+            {
               "type": "duplicate",
               "level": "info",
               "ingredient": "비타민D",
@@ -509,6 +957,15 @@
           ],
           "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하세요.",
           "supplementId": "plant_sterol"
+        },
+        {
+          "type": "interaction",
+          "level": "info",
+          "drugs": [
+            "아토르바스타틴"
+          ],
+          "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요.",
+          "supplementId": "vitamin_d"
         },
         {
           "type": "duplicate",
@@ -634,14 +1091,24 @@
           "message": "비타민D 성분이 종합비타민, 비타민D에 함께 들어 있습니다. 하루 합계 20μg(상한 100μg)입니다."
         }
       ],
-      "interactions": [],
+      "interactions": [
+        {
+          "type": "interaction",
+          "level": "info",
+          "drugs": [
+            "아토르바스타틴"
+          ],
+          "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요.",
+          "supplementId": "vitamin_d"
+        }
+      ],
       "ok": false
     }
   },
   "GET /api/intake-logs/today": {
     "status": 200,
     "body": {
-      "date": "2026-10-28",
+      "date": "2026-10-30",
       "items": [
         {
           "supplementId": 1,
@@ -822,6 +1289,30 @@
           "timeSlot": "morning",
           "supplementId": 4,
           "taken": false
+        },
+        {
+          "date": "2026-10-28",
+          "timeSlot": "morning",
+          "supplementId": 1,
+          "taken": true
+        },
+        {
+          "date": "2026-10-28",
+          "timeSlot": "morning",
+          "supplementId": 2,
+          "taken": false
+        },
+        {
+          "date": "2026-10-28",
+          "timeSlot": "morning",
+          "supplementId": 3,
+          "taken": true
+        },
+        {
+          "date": "2026-10-28",
+          "timeSlot": "morning",
+          "supplementId": 4,
+          "taken": true
         }
       ],
       "daily": [
@@ -864,19 +1355,785 @@
         {
           "date": "2026-10-28",
           "scheduled": 4,
-          "taken": 0,
-          "rate": 0.0
+          "taken": 3,
+          "rate": 0.75
         }
       ],
       "recordedFrom": "2026-10-22",
-      "rate": 0.71
+      "rate": 0.82
+    }
+  },
+  "GET /api/reminders/settings": {
+    "status": 200,
+    "body": {
+      "enabled": true,
+      "times": {
+        "morning": "08:00",
+        "lunch": "12:30",
+        "evening": "19:00",
+        "bedtime": "22:00"
+      }
+    }
+  },
+  "GET /api/reminders/due?at=2026-10-28T08:30": {
+    "status": 200,
+    "body": {
+      "now": "2026-10-28T08:30",
+      "enabled": true,
+      "due": [
+        {
+          "timeSlot": "morning",
+          "label": "아침",
+          "time": "08:00",
+          "items": [
+            {
+              "supplementId": 2,
+              "name": "밀크씨슬"
+            }
+          ],
+          "overdueMinutes": 30,
+          "message": "아침 복용 시간입니다: 밀크씨슬"
+        }
+      ],
+      "next": null
+    }
+  },
+  "POST /api/reminders/snooze": {
+    "status": 200,
+    "body": {
+      "timeSlot": "morning",
+      "snoozedUntil": "2026-10-28T09:00"
+    }
+  },
+  "GET /api/measurements/types": {
+    "status": 200,
+    "body": [
+      {
+        "type": "bp",
+        "label": "혈압",
+        "fields": {
+          "sbp": {
+            "min": 60,
+            "max": 250
+          },
+          "dbp": {
+            "min": 30,
+            "max": 150
+          }
+        }
+      },
+      {
+        "type": "glucose",
+        "label": "혈당",
+        "fields": {
+          "fbs": {
+            "min": 30,
+            "max": 600
+          }
+        }
+      },
+      {
+        "type": "weight",
+        "label": "체중",
+        "fields": {
+          "weightKg": {
+            "min": 20,
+            "max": 300
+          }
+        }
+      },
+      {
+        "type": "waist",
+        "label": "허리둘레",
+        "fields": {
+          "waist": {
+            "min": 40,
+            "max": 200
+          }
+        }
+      }
+    ]
+  },
+  "GET /api/measurements?from=2026-10-01": {
+    "status": 200,
+    "body": [
+      {
+        "id": 61,
+        "type": "bp",
+        "measuredAt": "2026-10-02T07:30",
+        "values": {
+          "sbp": 124,
+          "dbp": 81
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "sbp": 124,
+          "dbp": 81
+        }
+      },
+      {
+        "id": 62,
+        "type": "weight",
+        "measuredAt": "2026-10-02T07:30",
+        "values": {
+          "weightKg": 73.9
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "bmi": 24.4
+        }
+      },
+      {
+        "id": 63,
+        "type": "glucose",
+        "measuredAt": "2026-10-02T07:30",
+        "values": {
+          "fbs": 99
+        },
+        "fasting": true,
+        "note": null,
+        "codes": {
+          "fbs": 99
+        }
+      },
+      {
+        "id": 64,
+        "type": "bp",
+        "measuredAt": "2026-10-09T07:30",
+        "values": {
+          "sbp": 129,
+          "dbp": 84
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "sbp": 129,
+          "dbp": 84
+        }
+      },
+      {
+        "id": 65,
+        "type": "weight",
+        "measuredAt": "2026-10-09T07:30",
+        "values": {
+          "weightKg": 74.5
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "bmi": 24.6
+        }
+      },
+      {
+        "id": 66,
+        "type": "bp",
+        "measuredAt": "2026-10-16T07:30",
+        "values": {
+          "sbp": 127,
+          "dbp": 83
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "sbp": 127,
+          "dbp": 83
+        }
+      },
+      {
+        "id": 67,
+        "type": "weight",
+        "measuredAt": "2026-10-16T07:30",
+        "values": {
+          "weightKg": 74.2
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "bmi": 24.5
+        }
+      },
+      {
+        "id": 68,
+        "type": "glucose",
+        "measuredAt": "2026-10-16T07:30",
+        "values": {
+          "fbs": 102
+        },
+        "fasting": true,
+        "note": null,
+        "codes": {
+          "fbs": 102
+        }
+      },
+      {
+        "id": 69,
+        "type": "bp",
+        "measuredAt": "2026-10-23T07:30",
+        "values": {
+          "sbp": 125,
+          "dbp": 81
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "sbp": 125,
+          "dbp": 81
+        }
+      },
+      {
+        "id": 70,
+        "type": "weight",
+        "measuredAt": "2026-10-23T07:30",
+        "values": {
+          "weightKg": 73.9
+        },
+        "fasting": null,
+        "note": null,
+        "codes": {
+          "bmi": 24.4
+        }
+      }
+    ]
+  },
+  "POST /api/measurements (혈압)": {
+    "status": 201,
+    "body": {
+      "id": 71,
+      "type": "bp",
+      "measuredAt": "2026-10-28T07:30",
+      "values": {
+        "sbp": 124.0,
+        "dbp": 80.0
+      },
+      "fasting": null,
+      "note": null,
+      "codes": {
+        "sbp": 124.0,
+        "dbp": 80.0
+      },
+      "judged": [
+        {
+          "code": "sbp",
+          "name": "수축기 혈압",
+          "group": "혈압",
+          "value": 124.0,
+          "unit": "mmHg",
+          "normalRange": "120 미만",
+          "status": "caution",
+          "direction": "high",
+          "explanation": "심장이 피를 내보낼 때 혈관에 걸리는 압력입니다. 기준치보다 조금 높습니다. 생활습관 점검을 권합니다.",
+          "consultDoctor": false
+        },
+        {
+          "code": "dbp",
+          "name": "이완기 혈압",
+          "group": "혈압",
+          "value": 80.0,
+          "unit": "mmHg",
+          "normalRange": "80 미만",
+          "status": "caution",
+          "direction": "high",
+          "explanation": "심장이 쉬는 동안 혈관에 남아 있는 압력입니다. 기준치보다 조금 높습니다. 생활습관 점검을 권합니다.",
+          "consultDoctor": false
+        }
+      ]
+    }
+  },
+  "GET /api/reports/interim": {
+    "status": 200,
+    "body": {
+      "baseline": {
+        "id": 1,
+        "date": "2024-10-15"
+      },
+      "windowDays": 30,
+      "items": [
+        {
+          "code": "sbp",
+          "name": "수축기 혈압",
+          "unit": "mmHg",
+          "checkupValue": 134,
+          "count": 29,
+          "points": [
+            {
+              "date": "2025-01-15",
+              "value": 131
+            },
+            {
+              "date": "2025-02-15",
+              "value": 136
+            },
+            {
+              "date": "2025-03-15",
+              "value": 133
+            },
+            {
+              "date": "2025-04-15",
+              "value": 131
+            },
+            {
+              "date": "2025-05-15",
+              "value": 136
+            },
+            {
+              "date": "2025-06-15",
+              "value": 133
+            },
+            {
+              "date": "2025-07-15",
+              "value": 131
+            },
+            {
+              "date": "2025-08-15",
+              "value": 128
+            },
+            {
+              "date": "2025-09-15",
+              "value": 133
+            },
+            {
+              "date": "2025-10-15",
+              "value": 131
+            },
+            {
+              "date": "2025-11-15",
+              "value": 128
+            },
+            {
+              "date": "2025-12-15",
+              "value": 133
+            },
+            {
+              "date": "2026-01-15",
+              "value": 130
+            },
+            {
+              "date": "2026-02-15",
+              "value": 128
+            },
+            {
+              "date": "2026-03-15",
+              "value": 126
+            },
+            {
+              "date": "2026-04-15",
+              "value": 130
+            },
+            {
+              "date": "2026-05-15",
+              "value": 128
+            },
+            {
+              "date": "2026-06-15",
+              "value": 126
+            },
+            {
+              "date": "2026-07-15",
+              "value": 130
+            },
+            {
+              "date": "2026-08-15",
+              "value": 128
+            },
+            {
+              "date": "2026-09-04",
+              "value": 126
+            },
+            {
+              "date": "2026-09-11",
+              "value": 124
+            },
+            {
+              "date": "2026-09-18",
+              "value": 128
+            },
+            {
+              "date": "2026-09-25",
+              "value": 126
+            },
+            {
+              "date": "2026-10-02",
+              "value": 124
+            },
+            {
+              "date": "2026-10-09",
+              "value": 129
+            },
+            {
+              "date": "2026-10-16",
+              "value": 127
+            },
+            {
+              "date": "2026-10-23",
+              "value": 125
+            },
+            {
+              "date": "2026-10-28",
+              "value": 124.0
+            }
+          ],
+          "recentAverage": 125.8,
+          "recentStatus": "caution",
+          "trend": "improved",
+          "change": -8.2
+        },
+        {
+          "code": "dbp",
+          "name": "이완기 혈압",
+          "unit": "mmHg",
+          "checkupValue": 86,
+          "count": 29,
+          "points": [
+            {
+              "date": "2025-01-15",
+              "value": 84
+            },
+            {
+              "date": "2025-02-15",
+              "value": 87
+            },
+            {
+              "date": "2025-03-15",
+              "value": 86
+            },
+            {
+              "date": "2025-04-15",
+              "value": 84
+            },
+            {
+              "date": "2025-05-15",
+              "value": 87
+            },
+            {
+              "date": "2025-06-15",
+              "value": 86
+            },
+            {
+              "date": "2025-07-15",
+              "value": 84
+            },
+            {
+              "date": "2025-08-15",
+              "value": 83
+            },
+            {
+              "date": "2025-09-15",
+              "value": 86
+            },
+            {
+              "date": "2025-10-15",
+              "value": 84
+            },
+            {
+              "date": "2025-11-15",
+              "value": 83
+            },
+            {
+              "date": "2025-12-15",
+              "value": 86
+            },
+            {
+              "date": "2026-01-15",
+              "value": 84
+            },
+            {
+              "date": "2026-02-15",
+              "value": 83
+            },
+            {
+              "date": "2026-03-15",
+              "value": 81
+            },
+            {
+              "date": "2026-04-15",
+              "value": 84
+            },
+            {
+              "date": "2026-05-15",
+              "value": 83
+            },
+            {
+              "date": "2026-06-15",
+              "value": 82
+            },
+            {
+              "date": "2026-07-15",
+              "value": 85
+            },
+            {
+              "date": "2026-08-15",
+              "value": 83
+            },
+            {
+              "date": "2026-09-04",
+              "value": 82
+            },
+            {
+              "date": "2026-09-11",
+              "value": 80
+            },
+            {
+              "date": "2026-09-18",
+              "value": 84
+            },
+            {
+              "date": "2026-09-25",
+              "value": 82
+            },
+            {
+              "date": "2026-10-02",
+              "value": 81
+            },
+            {
+              "date": "2026-10-09",
+              "value": 84
+            },
+            {
+              "date": "2026-10-16",
+              "value": 83
+            },
+            {
+              "date": "2026-10-23",
+              "value": 81
+            },
+            {
+              "date": "2026-10-28",
+              "value": 80.0
+            }
+          ],
+          "recentAverage": 81.8,
+          "recentStatus": "caution",
+          "trend": "improved",
+          "change": -4.2
+        },
+        {
+          "code": "fbs",
+          "name": "공복혈당",
+          "unit": "mg/dL",
+          "checkupValue": 108,
+          "count": 14,
+          "points": [
+            {
+              "date": "2025-01-15",
+              "value": 105
+            },
+            {
+              "date": "2025-03-15",
+              "value": 107
+            },
+            {
+              "date": "2025-05-15",
+              "value": 110
+            },
+            {
+              "date": "2025-07-15",
+              "value": 105
+            },
+            {
+              "date": "2025-09-15",
+              "value": 107
+            },
+            {
+              "date": "2025-11-15",
+              "value": 103
+            },
+            {
+              "date": "2026-01-15",
+              "value": 105
+            },
+            {
+              "date": "2026-03-15",
+              "value": 100
+            },
+            {
+              "date": "2026-05-15",
+              "value": 103
+            },
+            {
+              "date": "2026-07-15",
+              "value": 105
+            },
+            {
+              "date": "2026-09-04",
+              "value": 101
+            },
+            {
+              "date": "2026-09-18",
+              "value": 104
+            },
+            {
+              "date": "2026-10-02",
+              "value": 99
+            },
+            {
+              "date": "2026-10-16",
+              "value": 102
+            }
+          ],
+          "recentAverage": 100.5,
+          "recentStatus": "caution",
+          "trend": "improved",
+          "change": -7.5
+        },
+        {
+          "code": "bmi",
+          "name": "체질량지수(BMI)",
+          "unit": "kg/m²",
+          "checkupValue": 25.6,
+          "count": 28,
+          "points": [
+            {
+              "date": "2025-01-15",
+              "value": 25.5
+            },
+            {
+              "date": "2025-02-15",
+              "value": 25.6
+            },
+            {
+              "date": "2025-03-15",
+              "value": 25.5
+            },
+            {
+              "date": "2025-04-15",
+              "value": 25.3
+            },
+            {
+              "date": "2025-05-15",
+              "value": 25.5
+            },
+            {
+              "date": "2025-06-15",
+              "value": 25.4
+            },
+            {
+              "date": "2025-07-15",
+              "value": 25.2
+            },
+            {
+              "date": "2025-08-15",
+              "value": 25.1
+            },
+            {
+              "date": "2025-09-15",
+              "value": 25.3
+            },
+            {
+              "date": "2025-10-15",
+              "value": 25.1
+            },
+            {
+              "date": "2025-11-15",
+              "value": 24.9
+            },
+            {
+              "date": "2025-12-15",
+              "value": 25.1
+            },
+            {
+              "date": "2026-01-15",
+              "value": 25.0
+            },
+            {
+              "date": "2026-02-15",
+              "value": 24.8
+            },
+            {
+              "date": "2026-03-15",
+              "value": 24.7
+            },
+            {
+              "date": "2026-04-15",
+              "value": 24.9
+            },
+            {
+              "date": "2026-05-15",
+              "value": 24.7
+            },
+            {
+              "date": "2026-06-15",
+              "value": 24.6
+            },
+            {
+              "date": "2026-07-15",
+              "value": 24.7
+            },
+            {
+              "date": "2026-08-15",
+              "value": 24.6
+            },
+            {
+              "date": "2026-09-04",
+              "value": 24.5
+            },
+            {
+              "date": "2026-09-11",
+              "value": 24.3
+            },
+            {
+              "date": "2026-09-18",
+              "value": 24.6
+            },
+            {
+              "date": "2026-09-25",
+              "value": 24.5
+            },
+            {
+              "date": "2026-10-02",
+              "value": 24.4
+            },
+            {
+              "date": "2026-10-09",
+              "value": 24.6
+            },
+            {
+              "date": "2026-10-16",
+              "value": 24.5
+            },
+            {
+              "date": "2026-10-23",
+              "value": 24.4
+            }
+          ],
+          "recentAverage": 24.5,
+          "recentStatus": "normal",
+          "trend": "improved",
+          "change": -1.1
+        },
+        {
+          "code": "waist",
+          "name": "허리둘레",
+          "unit": "cm",
+          "checkupValue": null,
+          "count": 0,
+          "points": [],
+          "recentAverage": null,
+          "recentStatus": null,
+          "trend": null,
+          "change": null
+        }
+      ],
+      "summary": {
+        "improved": 4,
+        "same": 0,
+        "worsened": 0,
+        "measurementCount": 71,
+        "headline": "검진 이후 가정 측정 71건. 기준치에 가까워진 항목 4개, 멀어진 항목 0개입니다."
+      },
+      "adherence": {
+        "rate": 0.84,
+        "recordedFrom": "2026-08-31"
+      },
+      "note": "가정 측정값은 측정 기기·시간·자세가 검진과 달라 참고용입니다. 영양제의 효과를 뜻하지 않습니다."
     }
   },
   "POST /api/checkups/upload (사진)": {
     "status": 200,
     "body": {
       "id": 2,
-      "date": "2026-10-28",
+      "date": "2026-10-30",
       "source": "photo",
       "status": "pending_review",
       "fileName": "2026_건강검진결과.jpg",
@@ -942,8 +2199,8 @@
             "name": "HDL 콜레스테롤",
             "value": 47,
             "unit": "mg/dL",
-            "confidence": 0.72,
-            "needsReview": true
+            "confidence": 0.98,
+            "needsReview": false
           },
           {
             "code": "tg",
@@ -974,8 +2231,8 @@
             "name": "감마지티피(γ-GTP)",
             "value": 58,
             "unit": "U/L",
-            "confidence": 0.72,
-            "needsReview": true
+            "confidence": 0.98,
+            "needsReview": false
           },
           {
             "code": "hb",
@@ -994,7 +2251,24 @@
             "needsReview": false
           }
         ],
-        "message": "인식한 수치를 확인해 주세요. 틀린 값은 고친 뒤 확정하세요."
+        "missing": [
+          {
+            "code": "waist",
+            "name": "허리둘레",
+            "unit": "cm"
+          },
+          {
+            "code": "creatinine",
+            "name": "혈청 크레아티닌",
+            "unit": "mg/dL"
+          },
+          {
+            "code": "egfr",
+            "name": "신사구체여과율(e-GFR)",
+            "unit": "mL/min/1.73m²"
+          }
+        ],
+        "message": "사진 인식 모델이 없는 서버라 견본 값을 보여 줍니다. 실제 결과지 값과 다릅니다."
       }
     }
   },
@@ -1002,7 +2276,7 @@
     "status": 200,
     "body": {
       "id": 2,
-      "date": "2026-10-28",
+      "date": "2026-10-30",
       "source": "photo",
       "status": "confirmed",
       "fileName": "2026_건강검진결과.jpg",
@@ -1030,7 +2304,7 @@
               "value": 134
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-30",
               "value": 126
             }
           ]
@@ -1052,7 +2326,7 @@
               "value": 86
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-30",
               "value": 82
             }
           ]
@@ -1074,7 +2348,7 @@
               "value": 108
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-30",
               "value": 101
             }
           ]
@@ -1096,7 +2370,7 @@
               "value": 228
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-30",
               "value": 205
             }
           ]
@@ -1118,7 +2392,7 @@
               "value": 152
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-30",
               "value": 128
             }
           ]
@@ -1140,7 +2414,7 @@
               "value": 44
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-30",
               "value": 47
             }
           ]
@@ -1162,7 +2436,7 @@
               "value": 210
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-30",
               "value": 162
             }
           ]
@@ -1184,7 +2458,7 @@
               "value": 38
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-30",
               "value": 31
             }
           ]
@@ -1206,7 +2480,7 @@
               "value": 48
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-30",
               "value": 37
             }
           ]
@@ -1228,7 +2502,7 @@
               "value": 72
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-30",
               "value": 58
             }
           ]
@@ -1250,7 +2524,7 @@
               "value": 14.8
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-30",
               "value": 14.9
             }
           ]
@@ -1272,7 +2546,7 @@
               "value": 25.6
             },
             {
-              "date": "2026-10-28",
+              "date": "2026-10-30",
               "value": 24.4
             }
           ]
@@ -1309,7 +2583,7 @@
     "body": [
       {
         "id": 2,
-        "date": "2026-10-28",
+        "date": "2026-10-30",
         "source": "photo",
         "status": "confirmed",
         "fileName": "2026_건강검진결과.jpg",
@@ -1339,7 +2613,7 @@
     "status": 200,
     "body": {
       "checkupId": 2,
-      "checkupDate": "2026-10-28",
+      "checkupDate": "2026-10-30",
       "medications": [
         "아토르바스타틴"
       ],
@@ -1617,6 +2891,14 @@
           "alreadyTaking": true,
           "warnings": [
             {
+              "type": "interaction",
+              "level": "info",
+              "drugs": [
+                "아토르바스타틴"
+              ],
+              "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요."
+            },
+            {
               "type": "duplicate",
               "level": "info",
               "ingredient": "비타민D",
@@ -1672,6 +2954,15 @@
           "supplementId": "plant_sterol"
         },
         {
+          "type": "interaction",
+          "level": "info",
+          "drugs": [
+            "아토르바스타틴"
+          ],
+          "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요.",
+          "supplementId": "vitamin_d"
+        },
+        {
           "type": "duplicate",
           "level": "info",
           "ingredient": "비타민D",
@@ -1705,7 +2996,7 @@
       },
       "to": {
         "id": 2,
-        "date": "2026-10-28"
+        "date": "2026-10-30"
       },
       "items": [
         {
@@ -1904,20 +3195,8 @@
       ],
       "adherence": {
         "rate": 0.84,
-        "recordedFrom": "2026-08-29",
+        "recordedFrom": "2026-08-31",
         "daily": [
-          {
-            "date": "2026-08-29",
-            "scheduled": 4,
-            "taken": 3,
-            "rate": 0.75
-          },
-          {
-            "date": "2026-08-30",
-            "scheduled": 4,
-            "taken": 4,
-            "rate": 1.0
-          },
           {
             "date": "2026-08-31",
             "scheduled": 4,
@@ -2269,10 +3548,662 @@
           {
             "date": "2026-10-28",
             "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-29",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-10-30",
+            "scheduled": 4,
             "taken": 0,
             "rate": 0.0
           }
         ]
+      },
+      "measurements": {
+        "series": {
+          "sbp": [
+            {
+              "date": "2025-01-15",
+              "value": 131
+            },
+            {
+              "date": "2025-02-15",
+              "value": 136
+            },
+            {
+              "date": "2025-03-15",
+              "value": 133
+            },
+            {
+              "date": "2025-04-15",
+              "value": 131
+            },
+            {
+              "date": "2025-05-15",
+              "value": 136
+            },
+            {
+              "date": "2025-06-15",
+              "value": 133
+            },
+            {
+              "date": "2025-07-15",
+              "value": 131
+            },
+            {
+              "date": "2025-08-15",
+              "value": 128
+            },
+            {
+              "date": "2025-09-15",
+              "value": 133
+            },
+            {
+              "date": "2025-10-15",
+              "value": 131
+            },
+            {
+              "date": "2025-11-15",
+              "value": 128
+            },
+            {
+              "date": "2025-12-15",
+              "value": 133
+            },
+            {
+              "date": "2026-01-15",
+              "value": 130
+            },
+            {
+              "date": "2026-02-15",
+              "value": 128
+            },
+            {
+              "date": "2026-03-15",
+              "value": 126
+            },
+            {
+              "date": "2026-04-15",
+              "value": 130
+            },
+            {
+              "date": "2026-05-15",
+              "value": 128
+            },
+            {
+              "date": "2026-06-15",
+              "value": 126
+            },
+            {
+              "date": "2026-07-15",
+              "value": 130
+            },
+            {
+              "date": "2026-08-15",
+              "value": 128
+            },
+            {
+              "date": "2026-09-04",
+              "value": 126
+            },
+            {
+              "date": "2026-09-11",
+              "value": 124
+            },
+            {
+              "date": "2026-09-18",
+              "value": 128
+            },
+            {
+              "date": "2026-09-25",
+              "value": 126
+            },
+            {
+              "date": "2026-10-02",
+              "value": 124
+            },
+            {
+              "date": "2026-10-09",
+              "value": 129
+            },
+            {
+              "date": "2026-10-16",
+              "value": 127
+            },
+            {
+              "date": "2026-10-23",
+              "value": 125
+            },
+            {
+              "date": "2026-10-28",
+              "value": 124.0
+            }
+          ],
+          "dbp": [
+            {
+              "date": "2025-01-15",
+              "value": 84
+            },
+            {
+              "date": "2025-02-15",
+              "value": 87
+            },
+            {
+              "date": "2025-03-15",
+              "value": 86
+            },
+            {
+              "date": "2025-04-15",
+              "value": 84
+            },
+            {
+              "date": "2025-05-15",
+              "value": 87
+            },
+            {
+              "date": "2025-06-15",
+              "value": 86
+            },
+            {
+              "date": "2025-07-15",
+              "value": 84
+            },
+            {
+              "date": "2025-08-15",
+              "value": 83
+            },
+            {
+              "date": "2025-09-15",
+              "value": 86
+            },
+            {
+              "date": "2025-10-15",
+              "value": 84
+            },
+            {
+              "date": "2025-11-15",
+              "value": 83
+            },
+            {
+              "date": "2025-12-15",
+              "value": 86
+            },
+            {
+              "date": "2026-01-15",
+              "value": 84
+            },
+            {
+              "date": "2026-02-15",
+              "value": 83
+            },
+            {
+              "date": "2026-03-15",
+              "value": 81
+            },
+            {
+              "date": "2026-04-15",
+              "value": 84
+            },
+            {
+              "date": "2026-05-15",
+              "value": 83
+            },
+            {
+              "date": "2026-06-15",
+              "value": 82
+            },
+            {
+              "date": "2026-07-15",
+              "value": 85
+            },
+            {
+              "date": "2026-08-15",
+              "value": 83
+            },
+            {
+              "date": "2026-09-04",
+              "value": 82
+            },
+            {
+              "date": "2026-09-11",
+              "value": 80
+            },
+            {
+              "date": "2026-09-18",
+              "value": 84
+            },
+            {
+              "date": "2026-09-25",
+              "value": 82
+            },
+            {
+              "date": "2026-10-02",
+              "value": 81
+            },
+            {
+              "date": "2026-10-09",
+              "value": 84
+            },
+            {
+              "date": "2026-10-16",
+              "value": 83
+            },
+            {
+              "date": "2026-10-23",
+              "value": 81
+            },
+            {
+              "date": "2026-10-28",
+              "value": 80.0
+            }
+          ],
+          "fbs": [
+            {
+              "date": "2025-01-15",
+              "value": 105
+            },
+            {
+              "date": "2025-03-15",
+              "value": 107
+            },
+            {
+              "date": "2025-05-15",
+              "value": 110
+            },
+            {
+              "date": "2025-07-15",
+              "value": 105
+            },
+            {
+              "date": "2025-09-15",
+              "value": 107
+            },
+            {
+              "date": "2025-11-15",
+              "value": 103
+            },
+            {
+              "date": "2026-01-15",
+              "value": 105
+            },
+            {
+              "date": "2026-03-15",
+              "value": 100
+            },
+            {
+              "date": "2026-05-15",
+              "value": 103
+            },
+            {
+              "date": "2026-07-15",
+              "value": 105
+            },
+            {
+              "date": "2026-09-04",
+              "value": 101
+            },
+            {
+              "date": "2026-09-18",
+              "value": 104
+            },
+            {
+              "date": "2026-10-02",
+              "value": 99
+            },
+            {
+              "date": "2026-10-16",
+              "value": 102
+            }
+          ],
+          "bmi": [
+            {
+              "date": "2025-01-15",
+              "value": 25.5
+            },
+            {
+              "date": "2025-02-15",
+              "value": 25.6
+            },
+            {
+              "date": "2025-03-15",
+              "value": 25.5
+            },
+            {
+              "date": "2025-04-15",
+              "value": 25.3
+            },
+            {
+              "date": "2025-05-15",
+              "value": 25.5
+            },
+            {
+              "date": "2025-06-15",
+              "value": 25.4
+            },
+            {
+              "date": "2025-07-15",
+              "value": 25.2
+            },
+            {
+              "date": "2025-08-15",
+              "value": 25.1
+            },
+            {
+              "date": "2025-09-15",
+              "value": 25.3
+            },
+            {
+              "date": "2025-10-15",
+              "value": 25.1
+            },
+            {
+              "date": "2025-11-15",
+              "value": 24.9
+            },
+            {
+              "date": "2025-12-15",
+              "value": 25.1
+            },
+            {
+              "date": "2026-01-15",
+              "value": 25.0
+            },
+            {
+              "date": "2026-02-15",
+              "value": 24.8
+            },
+            {
+              "date": "2026-03-15",
+              "value": 24.7
+            },
+            {
+              "date": "2026-04-15",
+              "value": 24.9
+            },
+            {
+              "date": "2026-05-15",
+              "value": 24.7
+            },
+            {
+              "date": "2026-06-15",
+              "value": 24.6
+            },
+            {
+              "date": "2026-07-15",
+              "value": 24.7
+            },
+            {
+              "date": "2026-08-15",
+              "value": 24.6
+            },
+            {
+              "date": "2026-09-04",
+              "value": 24.5
+            },
+            {
+              "date": "2026-09-11",
+              "value": 24.3
+            },
+            {
+              "date": "2026-09-18",
+              "value": 24.6
+            },
+            {
+              "date": "2026-09-25",
+              "value": 24.5
+            },
+            {
+              "date": "2026-10-02",
+              "value": 24.4
+            },
+            {
+              "date": "2026-10-09",
+              "value": 24.6
+            },
+            {
+              "date": "2026-10-16",
+              "value": 24.5
+            },
+            {
+              "date": "2026-10-23",
+              "value": 24.4
+            }
+          ],
+          "waist": []
+        },
+        "count": 71,
+        "note": "가정 측정값은 측정 기기·시간·자세가 검진과 달라 참고용입니다. 영양제의 효과를 뜻하지 않습니다."
+      }
+    }
+  },
+  "GET /api/mydata": {
+    "status": 200,
+    "body": {
+      "connected": false,
+      "provider": "건강정보 고속도로(가상)",
+      "isDemoData": true
+    }
+  },
+  "POST /api/mydata/connect": {
+    "status": 200,
+    "body": {
+      "connected": true,
+      "scopes": [
+        "checkups",
+        "prescriptions"
+      ],
+      "connectedAt": "2026-10-30",
+      "lastSyncAt": null,
+      "provider": "건강정보 고속도로(가상)",
+      "isDemoData": true
+    }
+  },
+  "POST /api/mydata/sync": {
+    "status": 200,
+    "body": {
+      "connected": true,
+      "scopes": [
+        "checkups",
+        "prescriptions"
+      ],
+      "connectedAt": "2026-10-30",
+      "lastSyncAt": "2026-10-30",
+      "provider": "건강정보 고속도로(가상)",
+      "isDemoData": true,
+      "importedCheckups": [
+        {
+          "id": 3,
+          "date": "2022-10-18",
+          "institution": "가상내과의원"
+        }
+      ],
+      "skippedCheckups": [
+        {
+          "date": "2024-10-15",
+          "reason": "이미 등록된 검진입니다."
+        }
+      ],
+      "prescriptions": [
+        {
+          "name": "아토르바스타틴",
+          "dispensedAt": "2026-09-30",
+          "days": 90,
+          "institution": "가상내과의원",
+          "drugClass": "statin",
+          "alreadyRegistered": true
+        },
+        {
+          "name": "암로디핀",
+          "dispensedAt": "2026-09-30",
+          "days": 90,
+          "institution": "가상내과의원",
+          "drugClass": "antihypertensive",
+          "alreadyRegistered": false
+        }
+      ],
+      "medications": [
+        "아토르바스타틴"
+      ],
+      "message": "검진 1건을 가져왔습니다. 처방 기록에 복용 약 목록에 없는 약이 있습니다(암로디핀). 추가하면 추천 경고에 반영됩니다."
+    }
+  },
+  "POST /api/checkups/upload (글자 있는 PDF)": {
+    "status": 200,
+    "body": {
+      "id": 4,
+      "date": "2026-10-30",
+      "source": "pdf",
+      "status": "pending_review",
+      "fileName": "결과통보서.pdf",
+      "values": {
+        "sbp": 126,
+        "dbp": 82,
+        "fbs": 101,
+        "tc": 205,
+        "ldl": 128,
+        "hdl": 47,
+        "tg": 162,
+        "ast": 31,
+        "alt": 37,
+        "ggt": 58,
+        "hb": 14.9,
+        "bmi": 24.4,
+        "waist": 86,
+        "creatinine": 0.9,
+        "egfr": 92
+      },
+      "ocr": {
+        "engine": "pdf-text",
+        "fields": [
+          {
+            "code": "sbp",
+            "name": "수축기 혈압",
+            "value": 126,
+            "unit": "mmHg",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "dbp",
+            "name": "이완기 혈압",
+            "value": 82,
+            "unit": "mmHg",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "fbs",
+            "name": "공복혈당",
+            "value": 101,
+            "unit": "mg/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "tc",
+            "name": "총콜레스테롤",
+            "value": 205,
+            "unit": "mg/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "ldl",
+            "name": "LDL 콜레스테롤",
+            "value": 128,
+            "unit": "mg/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "hdl",
+            "name": "HDL 콜레스테롤",
+            "value": 47,
+            "unit": "mg/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "tg",
+            "name": "중성지방",
+            "value": 162,
+            "unit": "mg/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "ast",
+            "name": "AST",
+            "value": 31,
+            "unit": "U/L",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "alt",
+            "name": "ALT",
+            "value": 37,
+            "unit": "U/L",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "ggt",
+            "name": "감마지티피(γ-GTP)",
+            "value": 58,
+            "unit": "U/L",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "hb",
+            "name": "혈색소",
+            "value": 14.9,
+            "unit": "g/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "bmi",
+            "name": "체질량지수(BMI)",
+            "value": 24.4,
+            "unit": "kg/m²",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "waist",
+            "name": "허리둘레",
+            "value": 86,
+            "unit": "cm",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "creatinine",
+            "name": "혈청 크레아티닌",
+            "value": 0.9,
+            "unit": "mg/dL",
+            "confidence": 1.0,
+            "needsReview": false
+          },
+          {
+            "code": "egfr",
+            "name": "신사구체여과율(e-GFR)",
+            "value": 92,
+            "unit": "mL/min/1.73m²",
+            "confidence": 1.0,
+            "needsReview": false
+          }
+        ],
+        "missing": [],
+        "message": "인식한 수치를 확인해 주세요. 틀린 값은 고친 뒤 확정하세요."
       }
     }
   }
