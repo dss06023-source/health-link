@@ -116,6 +116,20 @@ export interface CheckupCenter {
   kind?: string // 의원·치과의원·병원 등 기관 종류
   exams: string[] // 하는 검진: 일반·위암·대장암·구강 등
   bookingUrl?: string
+  phone?: string // 공단 등록 전화. 상세 화면에서 카카오 장소 전화로 보완한다.
+  lat?: number
+  lng?: number
+}
+
+// 검진기관 상세: 카카오 장소 검색 결과. 못 찾으면 found=false와 지도 링크만 온다.
+export interface CenterPlace {
+  found: boolean
+  phone?: string | null
+  placeUrl?: string | null
+  roadAddress?: string | null
+  category?: string | null
+  mapLink: string
+  routeLink: string
 }
 
 export interface CheckupTarget {

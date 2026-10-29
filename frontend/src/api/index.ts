@@ -1,4 +1,4 @@
-import type { AddressHit, CheckupCenter, CheckupItem } from '../types'
+import type { AddressHit, CenterPlace, CheckupCenter, CheckupItem } from '../types'
 import { CENTERS, OCR_RESULT } from '../data/mock'
 import { remote } from './remote'
 
@@ -23,6 +23,22 @@ export async function searchAddress(q: string): Promise<AddressHit[]> {
   await wait(200)
   const words = q.split(/\s+/).filter(Boolean)
   return DEMO_ADDRESSES.filter((a) => words.every((w) => `${a.roadAddress} ${a.jibunAddress}`.includes(w)))
+}
+
+// 상세 화면: 서버가 카카오 장소 검색으로 전화·장소 링크를 찾는다. 모의 모드와 실패 시에는 지도 링크만.
+export async function getCenterPlace(c: CheckupCenter): Promise<CenterPlace> {
+  const at = `${encodeURIComponent(c.name)},${c.lat},${c.lng}`
+  const links = { found: false, mapLink: `https://map.kakao.com/link/map/${at}`, routeLink: `https://map.kakao.com/link/to/${at}` }
+  if (!USE_API || c.lat == null) return links
+  return remote.getCenterPlace(c).catch(() => links)
+}
+
+// 지도 화면용 카카오 JavaScript 키(공개용). 없으면 키 없는 지도(OpenStreetMap)로 보여 준다.
+let mapKey: Promise<string | null> | null = null
+export function getMapKey(): Promise<string | null> {
+  if (!USE_API) return Promise.resolve(import.meta.env.VITE_KAKAO_JS_KEY || null)
+  mapKey ??= remote.getConfig().then((c) => c.kakaoJsKey).catch(() => null)
+  return mapKey
 }
 
 // 백엔드는 업로드한 결과를 '확인 대기'로 저장하고 id를 돌려준다. 확정은 store.addCheckup에서 한다.

@@ -8,6 +8,7 @@ from pathlib import Path
 from contextlib import asynccontextmanager
 from datetime import date, timedelta
 from typing import Optional
+from urllib.parse import quote
 
 from starlette.concurrency import run_in_threadpool
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
@@ -329,6 +330,20 @@ def checkup_centers(lat: Optional[float] = None, lng: Optional[float] = None, li
     for c in centers:
         c["distanceKm"] = round(distance_km(lat, lng, c["lat"], c["lng"]), 2)
     return sorted(centers, key=lambda c: c["distanceKm"])[:limit]
+
+
+@app.get("/api/checkup-centers/place")
+def checkup_center_place(name: str, lat: float, lng: float):
+    """검진기관 상세 화면용. 카카오 장소 검색으로 전화·카카오맵 링크를 더한다. 못 찾으면 found=False."""
+    found = public_api.place(name, lat, lng)
+    return dict(found or {}, found=bool(found), mapLink=f"https://map.kakao.com/link/map/{quote(name)},{lat},{lng}",
+                routeLink=f"https://map.kakao.com/link/to/{quote(name)},{lat},{lng}")
+
+
+@app.get("/api/config")
+def client_config():
+    """화면이 쓰는 공개 설정. 비밀 키는 넣지 않는다."""
+    return {"kakaoJsKey": public_api.kakao_js_key()}
 
 
 # 식약처 분류 번호 → 이 앱의 약 계열. 성분 이름이 보기와 겹치면 그쪽을 먼저 쓴다.

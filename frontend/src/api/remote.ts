@@ -1,5 +1,5 @@
 import type { JobType,
-  Address, AddressHit, Checkup, CheckupCenter, CheckupItem, IntakeLog, Measurement, MydataResult, MydataState, Recommendation, ReminderTimes,
+  Address, AddressHit, CenterPlace, Checkup, CheckupCenter, CheckupItem, IntakeLog, Measurement, MydataResult, MydataState, Recommendation, ReminderTimes,
   Supplement, Timing, UserProfile, Warning,
 } from '../types'
 import type { UploadResult } from './index'
@@ -172,8 +172,12 @@ export async function loadAll() {
 
 export const remote = {
   getCenters: async (): Promise<CheckupCenter[]> =>
-    (await call<{ id: number | string; name: string; address: string; distanceKm: number; bookingUrl: string; kind?: string | null; exams?: string[] }[]>('/api/checkup-centers'))
-      .map((c) => ({ id: String(c.id), name: c.name, address: c.address, distanceKm: c.distanceKm, slots: [], kind: c.kind ?? undefined, exams: c.exams ?? [], bookingUrl: c.bookingUrl })),
+    (await call<{ id: number | string; name: string; address: string; distanceKm: number; bookingUrl: string; kind?: string | null; exams?: string[]; phone?: string | null; lat: number; lng: number }[]>('/api/checkup-centers'))
+      .map((c) => ({ id: String(c.id), name: c.name, address: c.address, distanceKm: c.distanceKm, slots: [], kind: c.kind ?? undefined, exams: c.exams ?? [],
+        bookingUrl: c.bookingUrl, phone: c.phone ?? undefined, lat: c.lat, lng: c.lng })),
+  getCenterPlace: (c: CheckupCenter) =>
+    call<CenterPlace>(`/api/checkup-centers/place?${new URLSearchParams({ name: c.name, lat: String(c.lat), lng: String(c.lng) })}`),
+  getConfig: () => call<{ kakaoJsKey: string | null }>('/api/config'),
   // 못 찾은 항목은 missing, 다시 볼 값은 needsReview로 온다. 수치를 하나도 못 찾으면 422(detail에 안내 문구).
   upload: async (files: File[]): Promise<UploadResult> => {
     const body = new FormData(); files.forEach((f) => body.append('files', f))
