@@ -26,6 +26,7 @@ TIME_SLOTS = ["morning", "lunch", "evening", "bedtime"]
 async def lifespan(_app):
     db.init()
     yield
+    db.close_pools()
 
 
 app = FastAPI(title="건강잇다 시연용 API", version="0.1.0", lifespan=lifespan)
