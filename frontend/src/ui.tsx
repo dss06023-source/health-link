@@ -123,5 +123,5 @@ export function Snackbar({ text, action, onAction, onClose, closeLabel = '닫기
 }
 
 export function Disclaimer() {
-  return <p className="disclaimer">건강잇다의 해석과 추천은 국가건강검진 판정 기준과 건강기능식품 기능성 고시를 바탕으로 한 참고 정보이며, 의사의 진단이나 처방을 대신하지 않습니다.<br />화면의 인물과 수치는 시연용 가상 데이터입니다.</p>
+  return <p className="disclaimer">건강잇다의 해석과 추천은 국가건강검진 판정 기준과 건강기능식품 기능성 고시를 바탕으로 한 참고 정보이며, 의사의 진단이나 처방을 대신하지 않습니다.</p>
 }
