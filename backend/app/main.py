@@ -287,27 +287,50 @@ def geocode(address: str = Query(..., min_length=2)):
 
 # ---------- 2. 결과 연동(OCR) ----------
 
+MAX_UPLOAD_FILES = 4  # 공단 결과통보서가 보통 4장이다.
+
+
 @app.post("/api/checkups/upload")
-async def upload_checkup(file: UploadFile = File(...)):
+async def upload_checkup(file: Optional[UploadFile] = File(None), files: Optional[list[UploadFile]] = File(None)):
     """결과지 PDF·사진에서 검진 수치를 읽는다. 파일 내용은 저장하지 않는다.
 
+    한 번에 최대 4개(file 또는 files로). 여러 장이면 장마다 읽고 합친다. 같은 항목이 두 장에서 나오면
+    더 확실하게 읽은 값을 쓴다.
     글자가 든 PDF는 글자를 바로 읽고, 사진·스캔 PDF는 무료 공개 OCR로 읽는다(app/ocr.py).
     OCR 모델이 설치되지 않은 서버에서는 예전처럼 견본 값을 돌려준다(engine: mock).
     """
-    content_type = file.content_type or ""
-    name = file.filename or "upload"
-    is_pdf = name.lower().endswith(".pdf") or content_type == "application/pdf"
-    if not (content_type.startswith("image/") or is_pdf):
-        raise HTTPException(415, "PDF 또는 이미지 파일만 올릴 수 있습니다.")
-    data = await file.read()
-    source = "pdf" if is_pdf else "photo"
+    uploads = ([file] if file else []) + (files or [])
+    if not uploads:
+        raise HTTPException(422, "결과지 파일을 골라 주세요.")
+    if len(uploads) > MAX_UPLOAD_FILES:
+        raise HTTPException(422, f"결과지는 한 번에 {MAX_UPLOAD_FILES}장까지 올릴 수 있습니다.")
+    pages = []
+    for up in uploads:
+        content_type = up.content_type or ""
+        name = up.filename or "upload"
+        is_pdf = name.lower().endswith(".pdf") or content_type == "application/pdf"
+        if not (content_type.startswith("image/") or is_pdf):
+            raise HTTPException(415, f"{name}: PDF 또는 이미지 파일만 올릴 수 있습니다.")
+        pages.append((name, is_pdf, await up.read()))
+    source = "pdf" if all(is_pdf for _, is_pdf, _ in pages) else "photo"
     names_units = {code: (item["name"], item["unit"]) for code, item in ref.CHECKUP_ITEMS.items()}
+    found, engines = {}, []
     try:
-        found, engine = ocr.read(data, is_pdf)
+        for name, is_pdf, data in pages:
+            try:
+                page_found, engine = ocr.read(data, is_pdf)
+            except ocr.OCRUnavailable:
+                raise
+            except Exception:
+                raise HTTPException(422, f"{name}: 파일을 열지 못했습니다. 다른 사진이나 PDF로 다시 올려 주세요.")
+            engines.append(engine)
+            for code, (value, score) in page_found.items():
+                if code not in found or score > found[code][1]:
+                    found[code] = (value, score)
+        engine = "+".join(dict.fromkeys(engines))
     except ocr.OCRUnavailable:
-        found, engine = None, "mock"
-    except Exception:
-        raise HTTPException(422, "파일을 열지 못했습니다. 다른 사진이나 PDF로 다시 올려 주세요.")
+        engine = "mock"
+    name = ", ".join(n for n, _, _ in pages)
     if engine == "mock":
         found = {code: (v, 0.98) for code, v in db.CHECKUP_2026_SAMPLE.items()}
         message = "사진 인식 모델이 없는 서버라 견본 값을 보여 줍니다. 실제 결과지 값과 다릅니다."
@@ -328,6 +351,7 @@ async def upload_checkup(file: UploadFile = File(...)):
         "fields": fields,
         "missing": [{"code": c, "name": n, "unit": u} for c, (n, u) in names_units.items() if c not in values],
         "message": message,
+        "files": len(pages),
     }
     return checkup
 
