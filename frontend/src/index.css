@@ -88,7 +88,7 @@ a { color: inherit; }
   max-width: var(--max); margin: 0 auto; height: 60px; padding: 0 var(--gut-r) 0 var(--gut-l);
   display: flex; align-items: center; gap: 12px;
 }
-.bar-brand { flex: none; }
+.bar-brand { flex: none; display: inline-flex; color: inherit; text-decoration: none; border-radius: 8px; }
 .bar-title { font-weight: 800; font-size: 18px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wordmark { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 700; font-size: 19px; }
 .app-icon { flex: none; filter: drop-shadow(0 1px 2px rgba(20, 60, 40, .18)); }

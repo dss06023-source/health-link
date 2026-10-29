@@ -111,7 +111,8 @@ function Shell() {
     <>
       <header className={`appbar${scrolled ? ' scrolled' : ''}`}>
         <div className="bar-in">
-          <span className="bar-brand"><Wordmark /></span>
+          {/* 아이콘·앱 이름을 누르면 홈으로. 주소는 지금 열린 사이트 기준(#home)이라 배포 주소·시연 링크 어디서나 같다. */}
+          <a className="bar-brand" href="#home" aria-label="건강잇다 홈" onClick={(e) => { e.preventDefault(); go('home') }}><Wordmark /></a>
           <span className="bar-title" aria-hidden={!scrolled}>{hero.title}</span>
           <nav className="tabs" aria-label="메뉴">
             {TABS.map((t) => (
