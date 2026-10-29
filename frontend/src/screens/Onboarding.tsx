@@ -93,7 +93,8 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
             <div className="field"><label htmlFor="ob-region">사는 곳</label>
               <input id="ob-region" value={p.region} placeholder="예: 서울 마포구" onChange={(e) => upd({ region: e.target.value })} /></div>
             <div className="field"><label htmlFor="ob-last">마지막 검진 연도</label>
-              <input id="ob-last" type="number" value={p.lastCheckupYear ?? ''} onChange={(e) => upd({ lastCheckupYear: e.target.value ? Number(e.target.value) : null })} /></div>
+              <input id="ob-last" type="number" value={p.lastCheckupYear ?? ''} placeholder="예: 2024" aria-describedby="ob-last-hint" onChange={(e) => upd({ lastCheckupYear: e.target.value ? Number(e.target.value) : null })} />
+              <small id="ob-last-hint" className="muted">받은 적 없으면 비워 두세요.</small></div>
             <Seg label="직장 유형" options={[['office', '사무직'], ['nonOffice', '비사무직'], ['other', '직장 없음·기타']]}
               value={p.jobType ?? 'office'} onChange={(v) => upd({ jobType: v })} />
             <Seg label={`공단 조회 결과 ${thisYear}년 검진`} options={[[0, '모름·대상 아님'], [1, '대상자']]}
