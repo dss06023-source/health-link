@@ -19,11 +19,13 @@ def test_options_list_and_rule_flags(client):
     assert len(o["supplements"]) == 16
     items = {i["name"]: i for g in groups.values() for i in g["items"]}
     assert items["와파린"]["rules"] is True
-    assert items["항우울제"]["rules"] is False
-    assert items["기타 고지혈증약"]["rules"] is False
+    assert items["항우울제"]["rules"] is True
+    assert items["기타 고지혈증약"]["rules"] is True
     sups = {s["id"]: s["rules"] for s in o["supplements"]}
-    assert sups["omega3"] is True and sups["vitamin_c"] is False
-    assert {c["rules"] for c in o["conditions"]} == {False}
+    assert sups["omega3"] is True and sups["vitamin_k"] is True and sups["vitamin_c"] is False
+    conds = {c["value"]: c["rules"] for c in o["conditions"]}
+    assert conds == {"hypertension": False, "diabetes": True, "dyslipidemia": True,
+                     "liver": True, "kidney": True, "thyroid": False}
     assert {f["key"] for f in o["lifestyle"]} >= {"smoking", "sleepHours", "diet", "pregnant"}
 
 
@@ -106,3 +108,18 @@ def test_same_message_from_two_classes_is_merged(client):
     omega = [w for w in _interactions(client, ["와파린", "아스피린"]) if w["supplementId"] == "omega3"
              and "출혈" in w["message"]]
     assert len(omega) == 1 and set(omega[0]["drugs"]) == {"와파린", "아스피린"}
+
+
+def test_taken_supplement_gets_drug_warning(client):
+    client.put("/api/users/me", json={"medications": ["와파린", "레보티록신"], "currentSupplements": ["vitamin_k", "calcium"]})
+    warnings = client.get("/api/supplements/check").json()["interactions"]
+    by_id = {w["supplementId"]: w for w in warnings}
+    assert "비타민K" in by_id["vitamin_k"]["message"]
+    assert by_id["calcium"]["hours"] == 4
+
+
+def test_diagnosed_liver_disease_excludes_red_yeast_rice(client):
+    client.put("/api/users/me", json={"medications": [], "conditions": ["liver"]})
+    r = client.get("/api/recommendations").json()
+    excluded = {e["supplementId"]: e["message"] for e in r["excluded"]}
+    assert "간 질환" in excluded["red_yeast_rice"]

@@ -80,8 +80,8 @@
   "disclaimer": "…"
 }
 ```
-- `warnings[].type`: `duplicate`(성분 중복) / `interaction`(약물 상호작용, `drugs[]` 포함) / `condition`(검진 수치 때문에 주의) / `spacing`(함께 먹는 영양제와 시간 간격, `hours` 포함)
-- `excluded` 이유: 약물 상호작용, 검진 수치, 생애주기(`lifestyle.pregnant`·`breastfeeding`·`child` 가 true), 함께 먹지 않도록 묶인 원료(가르시니아·녹차추출물은 하나만).
+- `warnings[].type`: `duplicate`(성분 중복) / `interaction`(약물 상호작용, `drugs[]` 포함, 시간 간격이 필요하면 `hours`) / `condition`(검진 수치 때문에 주의) / `diagnosis`(사용자가 고른 진단받은 질환 때문에 주의) / `spacing`(함께 먹는 영양제와 시간 간격, `hours` 포함)
+- `excluded` 이유: 약물 상호작용, 검진 수치, 진단받은 질환(`conditions`), 생애주기(`lifestyle.pregnant`·`breastfeeding`·`child` 가 true), 함께 먹지 않도록 묶인 원료(가르시니아·녹차추출물은 하나만).
 - `notes`: 기준치 밖이지만 권할 영양제가 없는 항목(HDL, 저체중, 콩팥 수치)의 안내.
 - `dailyIntake`: 식약처 고시 1일 섭취량 범위. `cautions`: 제품 표시 섭취 주의사항 요약. 둘 다 `/api/supplements/catalog` 에도 들어 있습니다.
 - `warnings[].level`: `info` / `caution`. `avoid` 등급은 `excluded` 로 빠짐.
@@ -96,7 +96,7 @@
 | POST | `/api/supplements` | 추가 `{supplementId, timeSlots?, source?}` → 201. 이미 복용 중이면 409 |
 | PATCH | `/api/supplements/{id}` | 시간대 변경·일시정지 `{timeSlots?, paused?}` |
 | DELETE | `/api/supplements/{id}` | 복용 중단(기록은 남김) |
-| GET | `/api/supplements/check` | 중복 성분 점검 `{duplicates[], interactions[], ok}` |
+| GET | `/api/supplements/check` | 중복 성분 점검 `{duplicates[], interactions[], ok}`. `interactions`는 복용 목록과 입력 화면의 `currentSupplements`(칼슘·비타민K 등 포함)를 모두 약과 대조 |
 | GET | `/api/intake-logs/today?date=` | 오늘 체크 목록 `{date, items[{supplementId, name, timeSlot, taken}], takenCount, scheduledCount, rate}` |
 | POST | `/api/intake-logs` | 복용 체크 `{supplementId, timeSlot, taken=true, date?}` → 오늘 체크 목록 반환 |
 | GET | `/api/intake-logs?from&to` | 달력용 기록(기본 최근 30일) `{logs[], daily[{date, scheduled, taken, rate}], rate, recordedFrom}` |

@@ -65,7 +65,7 @@ def test_recommendation_excludes_statin_conflict_and_liver_caution(client):
     ids = [x["supplementId"] for x in r["recommendations"]]
     assert "banaba" in ids and "omega3" in ids
     vit_d = next(x for x in r["recommendations"] if x["supplementId"] == "vitamin_d")
-    assert vit_d["alreadyTaking"] and vit_d["warnings"][0]["type"] == "duplicate"
+    assert vit_d["alreadyTaking"] and "duplicate" in {w["type"] for w in vit_d["warnings"]}
 
 
 def test_recommendation_is_deterministic(client):

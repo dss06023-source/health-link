@@ -216,7 +216,7 @@
             {
               "name": "기타 고지혈증약",
               "drugClass": "lipid_other",
-              "rules": false
+              "rules": true
             }
           ]
         },
@@ -285,7 +285,7 @@
             {
               "name": "위산억제제",
               "drugClass": "acid_suppressant",
-              "rules": false
+              "rules": true
             }
           ]
         },
@@ -296,7 +296,7 @@
             {
               "name": "골다공증약",
               "drugClass": "osteoporosis",
-              "rules": false
+              "rules": true
             }
           ]
         },
@@ -307,22 +307,22 @@
             {
               "name": "항생제",
               "drugClass": "antibiotic",
-              "rules": false
+              "rules": true
             },
             {
               "name": "항우울제",
               "drugClass": "antidepressant",
-              "rules": false
+              "rules": true
             },
             {
               "name": "호르몬제·피임약",
               "drugClass": "hormone",
-              "rules": false
+              "rules": true
             },
             {
               "name": "항경련제",
               "drugClass": "anticonvulsant",
-              "rules": false
+              "rules": true
             }
           ]
         }
@@ -351,22 +351,22 @@
         {
           "id": "vitamin_k",
           "name": "비타민K",
-          "rules": false
+          "rules": true
         },
         {
           "id": "calcium",
           "name": "칼슘",
-          "rules": false
+          "rules": true
         },
         {
           "id": "magnesium",
           "name": "마그네슘",
-          "rules": false
+          "rules": true
         },
         {
           "id": "zinc",
           "name": "아연",
-          "rules": false
+          "rules": true
         },
         {
           "id": "iron",
@@ -376,7 +376,7 @@
         {
           "id": "folic_acid",
           "name": "엽산",
-          "rules": false
+          "rules": true
         },
         {
           "id": "omega3",
@@ -511,22 +511,22 @@
         {
           "value": "diabetes",
           "label": "당뇨",
-          "rules": false
+          "rules": true
         },
         {
           "value": "dyslipidemia",
           "label": "이상지질혈증",
-          "rules": false
+          "rules": true
         },
         {
           "value": "liver",
           "label": "간질환",
-          "rules": false
+          "rules": true
         },
         {
           "value": "kidney",
           "label": "신장질환",
-          "rules": false
+          "rules": true
         },
         {
           "value": "thyroid",
@@ -845,6 +845,14 @@
           "alreadyTaking": true,
           "warnings": [
             {
+              "type": "interaction",
+              "level": "info",
+              "drugs": [
+                "아토르바스타틴"
+              ],
+              "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요."
+            },
+            {
               "type": "duplicate",
               "level": "info",
               "ingredient": "비타민D",
@@ -933,6 +941,15 @@
           ],
           "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하세요.",
           "supplementId": "plant_sterol"
+        },
+        {
+          "type": "interaction",
+          "level": "info",
+          "drugs": [
+            "아토르바스타틴"
+          ],
+          "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요.",
+          "supplementId": "vitamin_d"
         },
         {
           "type": "duplicate",
@@ -1058,7 +1075,17 @@
           "message": "비타민D 성분이 종합비타민, 비타민D에 함께 들어 있습니다. 하루 합계 35μg(상한 100μg)입니다."
         }
       ],
-      "interactions": [],
+      "interactions": [
+        {
+          "type": "interaction",
+          "level": "info",
+          "drugs": [
+            "아토르바스타틴"
+          ],
+          "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요.",
+          "supplementId": "vitamin_d"
+        }
+      ],
       "ok": false
     }
   },
@@ -2842,6 +2869,14 @@
           "alreadyTaking": true,
           "warnings": [
             {
+              "type": "interaction",
+              "level": "info",
+              "drugs": [
+                "아토르바스타틴"
+              ],
+              "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요."
+            },
+            {
               "type": "duplicate",
               "level": "info",
               "ingredient": "비타민D",
@@ -2895,6 +2930,15 @@
           ],
           "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하세요.",
           "supplementId": "plant_sterol"
+        },
+        {
+          "type": "interaction",
+          "level": "info",
+          "drugs": [
+            "아토르바스타틴"
+          ],
+          "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하세요.",
+          "supplementId": "vitamin_d"
         },
         {
           "type": "duplicate",
