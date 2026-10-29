@@ -3,6 +3,7 @@
 import json
 import math
 import os
+import re
 from pathlib import Path
 from contextlib import asynccontextmanager
 from datetime import date, timedelta
@@ -12,7 +13,7 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from . import db, logic, measure, ocr, options
+from . import db, logic, measure, ocr, options, public_api
 from . import reference as ref
 
 TIME_SLOTS = ["morning", "lunch", "evening", "bedtime"]
@@ -185,18 +186,103 @@ def distance_km(lat1, lng1, lat2, lng2):
     return 2 * r * math.asin(math.sqrt(a))
 
 
+DEFAULT_LOCATION = {"lat": 37.5665, "lng": 126.9780}  # 서울시청
+BOOKING_URL = "https://www.nhis.or.kr"
+
+
+def user_location():
+    with db.connect() as conn:
+        return load_user(conn).get("location") or DEFAULT_LOCATION
+
+
 @app.get("/api/checkup-centers")
 def checkup_centers(lat: Optional[float] = None, lng: Optional[float] = None, limit: int = 5):
+    """건보공단 검진기관 API로 같은 시군구 기관을 찾는다. 키가 없거나 실패하면 가상 목록."""
     if lat is None or lng is None:
-        with db.connect() as conn:
-            loc = load_user(conn).get("location") or {"lat": 37.5665, "lng": 126.9780}
+        loc = user_location()
         lat, lng = loc["lat"], loc["lng"]
-    centers = [
-        dict(c, distanceKm=round(distance_km(lat, lng, c["lat"], c["lng"]), 2),
-             bookingUrl="https://www.nhis.or.kr", isDemoData=True)
-        for c in CENTERS
-    ]
+    found = public_api.checkup_centers(lat, lng)
+    if found:
+        centers = [dict(c, tags=[t for t in [c["kind"], *c["exams"]] if t and t != "일반"], bookingUrl=BOOKING_URL,
+                        isDemoData=False, source="nhis") for c in found]
+    else:
+        centers = [dict(c, tags=[], bookingUrl=BOOKING_URL, isDemoData=True, source="demo") for c in CENTERS]
+    for c in centers:
+        c["distanceKm"] = round(distance_km(lat, lng, c["lat"], c["lng"]), 2)
     return sorted(centers, key=lambda c: c["distanceKm"])[:limit]
+
+
+# 식약처 분류 번호 → 이 앱의 약 계열. 성분 이름이 보기와 겹치면 그쪽을 먼저 쓴다.
+DRUG_CLASS_BY_CODE = {
+    "214": "antihypertensive", "396": "antidiabetic", "333": "anticoagulant",
+    "243": "thyroid", "232": "acid_suppressant", "113": "anticonvulsant",
+}
+
+
+def match_option(drug):
+    """검색한 약이 입력 화면의 어느 보기에 해당하는지 추정한다(성분 이름 → 분류 번호 순)."""
+    text = " ".join([drug.get("name") or "", *drug.get("ingredients", [])])
+    for name, drug_class in ref.MEDICATIONS.items():
+        if len(name) >= 3 and not name.startswith("기타") and name in text:
+            return {"name": name, "drugClass": drug_class, "by": "ingredient"}
+    if "스타틴" in text:
+        return {"name": "스타틴", "drugClass": "statin", "by": "ingredient"}
+    code = (re.match(r"\[(\d{3})\]", drug.get("className") or "") or [None, None])[1]
+    drug_class = DRUG_CLASS_BY_CODE.get(code)
+    if drug_class:
+        # 같은 계열 보기가 여럿이면 '기타 …' 보기를 고른다(아마릴을 메트포르민으로 적지 않도록).
+        names = [i["name"] for g in ref.PROFILE_OPTIONS["medicationGroups"] for i in g["items"]
+                 if i["drugClass"] == drug_class]
+        option = next((n for n in names if n.startswith("기타")), names[0] if names else None)
+        return {"name": option, "drugClass": drug_class, "by": "class"}
+    return None
+
+
+@app.get("/api/drugs/search")
+def search_drugs(q: str = Query(..., min_length=1), limit: int = Query(10, ge=1, le=30)):
+    """약 이름 검색. 식약처 e약은요(쉬운 설명)와 DUR 품목(전문의약품·금기 종류)을 합친다.
+    키가 없거나 실패하면 입력 화면의 약 보기에서 찾는다."""
+    found = public_api.search_drugs(q.strip(), limit)
+    if found is None:
+        items = [{"itemSeq": None, "name": i["name"], "company": None, "kind": None, "className": None,
+                  "ingredients": [], "durTypes": [], "guide": None,
+                  "matchedOption": {"name": i["name"], "drugClass": i["drugClass"], "by": "option"}}
+                 for g in ref.PROFILE_OPTIONS["medicationGroups"] for i in g["items"] if q.strip() in i["name"]]
+        return {"source": "demo", "isDemoData": True, "items": items[:limit]}
+    return {"source": "mfds", "isDemoData": False,
+            "items": [dict(d, matchedOption=match_option(d)) for d in found]}
+
+
+DEMO_ADDRESSES = [
+    {"roadAddress": "서울특별시 중구 세종대로 110 (태평로1가)", "jibunAddress": "서울특별시 중구 태평로1가 31",
+     "zipCode": "04524", "buildingName": "서울특별시청", "regionCode": "1114010300",
+     "lat": 37.5665, "lng": 126.9780},
+    {"roadAddress": "서울특별시 마포구 월드컵북로 400", "jibunAddress": "서울특별시 마포구 상암동 1601",
+     "zipCode": "03925", "buildingName": None, "regionCode": "1144012700", "lat": 37.5794, "lng": 126.8895},
+]
+
+
+@app.get("/api/address/search")
+def search_address(q: str = Query(..., min_length=2), limit: int = Query(10, ge=1, le=30)):
+    """도로명주소 검색(행정안전부). 키가 없거나 실패하면 시연용 주소 두 개 중에서 찾는다."""
+    found = public_api.search_address(q.strip(), limit)
+    if found is None:
+        words = q.split()
+        items = [a for a in DEMO_ADDRESSES if all(w in a["roadAddress"] + a["jibunAddress"] for w in words)]
+        return {"source": "demo", "isDemoData": True, "items": items or DEMO_ADDRESSES}
+    return {"source": "juso", "isDemoData": False, "items": found}
+
+
+@app.get("/api/geocode")
+def geocode(address: str = Query(..., min_length=2)):
+    """주소를 좌표로(카카오 로컬). 키가 없거나 실패하면 시연용 주소면 그 좌표, 아니면 서울시청 좌표."""
+    found = public_api.geocode(address.strip())
+    if found:
+        return {**found, "source": "kakao", "isDemoData": False}
+    demo = next((a for a in DEMO_ADDRESSES if address.strip() in (a["roadAddress"], a["jibunAddress"])), None)
+    point = demo or {"roadAddress": None, **DEFAULT_LOCATION}
+    return {"address": point["roadAddress"], "lat": point["lat"], "lng": point["lng"],
+            "source": "demo", "isDemoData": True}
 
 
 # ---------- 2. 결과 연동(OCR) ----------
@@ -585,7 +671,8 @@ def demo_reset():
 
 @app.get("/api/health")
 def health():
-    return {"ok": True}
+    # 어떤 외부 키가 서버에 들어 있는지만 보인다(값은 내보내지 않는다).
+    return {"ok": True, "publicApis": public_api.configured()}
 
 
 # 마이데이터·복용 알림·중간 검사. 위의 도우미 함수를 쓰므로 맨 끝에서 붙인다.

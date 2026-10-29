@@ -164,8 +164,8 @@ export async function loadAll() {
 
 export const remote = {
   getCenters: async (): Promise<CheckupCenter[]> =>
-    (await call<{ id: number; name: string; address: string; distanceKm: number; bookingUrl: string }[]>('/api/checkup-centers'))
-      .map((c) => ({ id: String(c.id), name: c.name, address: c.address, distanceKm: c.distanceKm, slots: [], tags: [], bookingUrl: c.bookingUrl })),
+    (await call<{ id: number | string; name: string; address: string; distanceKm: number; bookingUrl: string; tags?: string[] }[]>('/api/checkup-centers'))
+      .map((c) => ({ id: String(c.id), name: c.name, address: c.address, distanceKm: c.distanceKm, slots: [], tags: c.tags ?? [], bookingUrl: c.bookingUrl })),
   // 못 찾은 항목은 missing, 다시 볼 값은 needsReview로 온다. 수치를 하나도 못 찾으면 422(detail에 안내 문구).
   upload: async (file: File): Promise<UploadResult> => {
     const body = new FormData(); body.append('file', file)
