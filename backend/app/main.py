@@ -4,6 +4,7 @@ import json
 import math
 import os
 import re
+import threading
 from pathlib import Path
 from contextlib import asynccontextmanager
 from datetime import date, timedelta
@@ -25,6 +26,8 @@ TIME_SLOTS = ["morning", "lunch", "evening", "bedtime"]
 @asynccontextmanager
 async def lifespan(_app):
     db.init()
+    # 사진 인식 모델은 읽는 데 무료 서버에서 1분 가까이 걸려, 켜지자마자 뒤에서 미리 올린다.
+    threading.Thread(target=ocr.warm_up, daemon=True).start()
     yield
 
 
