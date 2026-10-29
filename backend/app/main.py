@@ -10,7 +10,7 @@ from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from . import db, logic, measure, options
+from . import db, logic, measure, ocr, options
 from . import reference as ref
 
 TIME_SLOTS = ["morning", "lunch", "evening", "bedtime"]
@@ -197,34 +197,49 @@ def checkup_centers(lat: Optional[float] = None, lng: Optional[float] = None, li
     return sorted(centers, key=lambda c: c["distanceKm"])[:limit]
 
 
-# ---------- 2. 결과 연동(모의 OCR) ----------
+# ---------- 2. 결과 연동(OCR) ----------
 
 @app.post("/api/checkups/upload")
 async def upload_checkup(file: UploadFile = File(...)):
-    """결과지 PDF·사진을 받아 모의 OCR 결과를 돌려준다. 파일 내용은 저장하지 않는다."""
+    """결과지 PDF·사진에서 검진 수치를 읽는다. 파일 내용은 저장하지 않는다.
+
+    글자가 든 PDF는 글자를 바로 읽고, 사진·스캔 PDF는 무료 공개 OCR로 읽는다(app/ocr.py).
+    OCR 모델이 설치되지 않은 서버에서는 예전처럼 견본 값을 돌려준다(engine: mock).
+    """
     content_type = file.content_type or ""
     name = file.filename or "upload"
-    if not (content_type.startswith("image/") or content_type == "application/pdf" or name.lower().endswith(".pdf")):
+    is_pdf = name.lower().endswith(".pdf") or content_type == "application/pdf"
+    if not (content_type.startswith("image/") or is_pdf):
         raise HTTPException(415, "PDF 또는 이미지 파일만 올릴 수 있습니다.")
-    await file.read()
-    source = "pdf" if name.lower().endswith(".pdf") or content_type == "application/pdf" else "photo"
-    values = dict(db.CHECKUP_2026_SAMPLE)
+    data = await file.read()
+    source = "pdf" if is_pdf else "photo"
+    names_units = {code: (item["name"], item["unit"]) for code, item in ref.CHECKUP_ITEMS.items()}
+    try:
+        found, engine = ocr.read(data, is_pdf)
+    except ocr.OCRUnavailable:
+        found, engine = None, "mock"
+    except Exception:
+        raise HTTPException(422, "파일을 열지 못했습니다. 다른 사진이나 PDF로 다시 올려 주세요.")
+    if engine == "mock":
+        found = {code: (v, 0.98) for code, v in db.CHECKUP_2026_SAMPLE.items()}
+        message = "사진 인식 모델이 없는 서버라 견본 값을 보여 줍니다. 실제 결과지 값과 다릅니다."
+    elif not found:
+        raise HTTPException(422, "결과지에서 검진 수치를 찾지 못했습니다. 밝은 곳에서 표 전체가 반듯하게 나오도록 다시 찍거나 PDF를 올려 주세요.")
+    else:
+        message = "인식한 수치를 확인해 주세요. 틀린 값은 고친 뒤 확정하세요."
+    fields = ocr.fields(found, names_units)
+    values = {f["code"]: f["value"] for f in fields}
     with db.connect() as conn:
         cur = conn.execute(
             "INSERT INTO checkups (date, source, status, file_name, item_values) VALUES (?, ?, 'pending_review', ?, ?)",
             (db.today().isoformat(), source, name, json.dumps(values)),
         )
         checkup = get_checkup(conn, cur.lastrowid)
-    # 사진은 인식 신뢰도가 낮은 항목을 표시해 사용자가 확인하게 한다.
-    low_confidence = {"ggt", "hdl"} if source == "photo" else set()
     checkup["ocr"] = {
-        "engine": "mock",
-        "fields": [
-            {"code": code, "name": ref.CHECKUP_ITEMS[code]["name"], "value": v, "unit": ref.CHECKUP_ITEMS[code]["unit"],
-             "confidence": 0.72 if code in low_confidence else 0.98, "needsReview": code in low_confidence}
-            for code, v in values.items()
-        ],
-        "message": "인식한 수치를 확인해 주세요. 틀린 값은 고친 뒤 확정하세요.",
+        "engine": engine,
+        "fields": fields,
+        "missing": [{"code": c, "name": n, "unit": u} for c, (n, u) in names_units.items() if c not in values],
+        "message": message,
     }
     return checkup
 
