@@ -18,6 +18,7 @@ export interface UserProfile {
   medications: string[]
   currentSupplements: string[]
   lifestyle: Lifestyle
+  heightCm?: number
 }
 
 export interface CheckupItem {
@@ -90,4 +91,27 @@ export interface CheckupTarget {
   deadline: string
   daysLeft: number
   extras: string[]
+}
+
+// 중간 점검: 가정용 기기로 잰 값
+export type MeasureType = 'bp' | 'glucose' | 'weight' | 'waist'
+export interface Measurement {
+  id: string
+  type: MeasureType
+  measuredAt: string // YYYY-MM-DDTHH:MM
+  values: Record<string, number> // bp: sbp·dbp, glucose: fbs, weight: weightKg, waist: waist
+  fasting: boolean | null
+}
+
+export type ReminderTimes = Record<Timing, string>
+
+export interface MydataState {
+  connected: boolean
+  lastSyncAt: string | null
+}
+
+export interface MydataResult {
+  imported: { date: string; institution: string }[]
+  skipped: string[]
+  prescriptions: { name: string; dispensedAt: string; institution: string; registered: boolean }[]
 }

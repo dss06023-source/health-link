@@ -9,8 +9,10 @@ import Recommend from './screens/Recommend'
 import Intake from './screens/Intake'
 import Report from './screens/Report'
 import Onboarding from './screens/Onboarding'
+import Measure from './screens/Measure'
+import { ReminderWatcher } from './reminders'
 
-export type Route = 'home' | 'upload' | 'results' | 'recommend' | 'intake' | 'report'
+export type Route = 'home' | 'upload' | 'results' | 'recommend' | 'intake' | 'measure' | 'report'
 
 const NAV: { id: Route; label: string; short: string; title: string; sub: string }[] = [
   { id: 'home', label: '홈', short: '홈', title: '검진 알림', sub: '올해 검진 대상인지, 어디서 받을 수 있는지 확인합니다.' },
@@ -18,6 +20,7 @@ const NAV: { id: Route; label: string; short: string; title: string; sub: string
   { id: 'results', label: '검진 해석', short: '해석', title: '검진 해석', sub: '수치를 쉬운 말로 풀고, 신경 써야 할 항목을 먼저 보여 줍니다.' },
   { id: 'recommend', label: '맞춤 추천', short: '추천', title: '맞춤 영양 구성', sub: '검진 수치·생활습관·복용 약을 함께 보고 고릅니다.' },
   { id: 'intake', label: '복용 관리', short: '복용', title: '복용 관리', sub: '시간대별로 챙기고, 꾸준히 먹었는지 기록합니다.' },
+  { id: 'measure', label: '중간 점검', short: '점검', title: '중간 점검', sub: '다음 검진 전까지 집에서 잰 혈압·혈당·체중으로 변화를 확인합니다.' },
   { id: 'report', label: '변화 리포트', short: '리포트', title: '변화 리포트', sub: '복용 전후 검진 수치를 비교합니다.' },
 ]
 
@@ -82,6 +85,7 @@ function Shell() {
           {route === 'results' && <Results go={go} />}
           {route === 'recommend' && <Recommend go={go} />}
           {route === 'intake' && <Intake />}
+          {route === 'measure' && <Measure go={go} />}
           {route === 'report' && <Report go={go} />}
         </div>
         <footer className="demo-foot">
@@ -93,6 +97,7 @@ function Shell() {
           </span>}
         </footer>
       </main>
+      <ReminderWatcher />
     </>
   )
 }

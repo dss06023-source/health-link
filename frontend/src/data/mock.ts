@@ -10,6 +10,7 @@ export const SAMPLE_PROFILE: UserProfile = {
   medications: ['아스피린'],
   currentSupplements: ['종합비타민'],
   lifestyle: { smoking: false, drinkingPerWeek: 2, exercisePerWeek: 1, lowOutdoor: true },
+  heightCm: 175,
 }
 
 const units: Record<string, [string, string]> = {
@@ -43,3 +44,14 @@ export const CENTERS: CheckupCenter[] = [
 
 export const MEDICATION_OPTIONS = ['아스피린', '와파린', '스타틴', '메트포르민', '레보티록신', '혈압약']
 export const SUPPLEMENT_OPTIONS = ['종합비타민', '오메가-3', '비타민D', '칼슘', '철분', '홍국']
+
+// 마이데이터(가상)로 가져오는 기록. 시연 모드에서만 쓴다(서버 연결 모드는 backend가 돌려준다).
+export const MYDATA_CHECKUP: Checkup = {
+  id: 'c2022', date: '2022-05-17', source: 'pdf', label: '2022 일반건강검진 (마이데이터)',
+  items: toItems({ SBP: 124, DBP: 79, FBS: 96, TC: 206, LDL: 129, HDL: 47, TG: 158, AST: 30, ALT: 36, GGT: 55, HB: 15.2, BMI: 25.0, WAIST: 88, EGFR: 95 }),
+}
+export const MYDATA_INSTITUTION = '하늘내과의원(가상)'
+export const MYDATA_PRESCRIPTIONS = [
+  { name: '아스피린', dispensedAt: '2026-09-02', institution: '하늘내과의원(가상)' },
+  { name: '스타틴', dispensedAt: '2026-09-02', institution: '하늘내과의원(가상)' },
+]

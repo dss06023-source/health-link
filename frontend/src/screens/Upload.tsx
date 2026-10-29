@@ -5,6 +5,7 @@ import { interpret } from '../data/rules'
 import { useStore } from '../store'
 import type { CheckupItem } from '../types'
 import { Icon, Judge } from '../ui'
+import Mydata from './Mydata'
 
 const STEPS = ['결과지 이미지 보정', '글자 인식(OCR)', '검사 항목·수치 추출', '정상 범위 대조']
 
@@ -35,6 +36,7 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
   const preview = items ? interpret(items, s.profile!.sex) : []
 
   return (
+    <>
     <div className="cols">
       <section className="sec">
         <div className="sec-head"><h2>검진 결과지를 올려 주세요</h2></div>
@@ -99,5 +101,7 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
         )}
       </section>
     </div>
+    <Mydata go={go} />
+    </>
   )
 }

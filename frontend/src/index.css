@@ -330,6 +330,9 @@ td input {
   background: var(--fg); color: var(--bg); padding: 14px 18px; border-radius: var(--r); max-width: min(360px, calc(100vw - 40px));
   display: flex; gap: 12px; align-items: flex-start; box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
 }
+.toast .btn.ghost { background: transparent; color: inherit; border-color: color-mix(in srgb, var(--bg) 40%, transparent); }
+.toast .btn.ghost:hover { border-color: var(--bg); }
+.toast .btn.icon { border-color: transparent; padding: 4px; min-height: 0; }
 .modal-back { position: fixed; inset: 0; background: rgba(10, 20, 14, .45); display: grid; place-items: center; z-index: 40; padding: 16px; }
 .modal { background: var(--surface); border-radius: var(--r); padding: 26px; max-width: 440px; width: 100%; display: flex; flex-direction: column; gap: 16px; }
 .modal .picked { display: grid; gap: 2px; padding: 12px 0; border-block: 1px solid var(--line); }
@@ -376,5 +379,6 @@ td input {
   .manage .seg { grid-column: 1 / -1; grid-row: 2; justify-self: start; }
   .chg { grid-template-columns: minmax(0, 1fr) auto; }
   .chg .chart-cell, .chg .verdict { grid-column: 1 / -1; }
+  .toast { left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); max-width: none; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
