@@ -18,11 +18,11 @@
 
 대상 연도 규칙: 20세 이상, 출생연도 짝·홀과 올해 짝·홀이 같으면 대상(2년 주기).
 
-## 2. 결과 연동 (모의 OCR)
+## 2. 결과 연동 (OCR)
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
-| POST | `/api/checkups/upload` | multipart `file`(PDF 또는 이미지). 항상 같은 2026년 샘플 수치로 `status: "pending_review"` 검진을 만들고 `ocr.fields[{code, name, value, unit, confidence, needsReview}]` 를 돌려줌. 사진이면 HDL·감마지티피에 `needsReview: true` |
+| POST | `/api/checkups/upload` | multipart `file`(PDF 또는 이미지). 결과지에서 수치를 읽어 `status: "pending_review"` 검진을 만들고 `ocr{engine, fields[{code, name, value, unit, confidence, needsReview}], missing[{code, name, unit}], message}` 를 돌려줌. `engine`: `pdf-text`(글자 있는 PDF를 바로 읽음), `ocr`(사진·스캔 PDF를 무료 OCR로 읽음), `mock`(서버에 OCR 모델이 없어 견본 값). 인식 점수가 낮거나 값이 사람 범위를 벗어나거나 항목 이름을 추정한 경우 `needsReview: true`. 수치를 하나도 못 찾으면 422 |
 | PATCH | `/api/checkups/{id}` | 사용자가 확인·수정. `{values?: {code: number}, date?: "YYYY-MM-DD", confirm: true}` → 해석 상세(아래 3번 형식) 반환 |
 | DELETE | `/api/checkups/{id}` | 잘못 올린 결과 삭제 |
 | GET | `/api/checkups` | 검진 목록(최신순) `[{id, date, source(pdf/photo), status, fileName, summary}]` |

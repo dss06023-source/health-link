@@ -1,5 +1,6 @@
 """docs/api-examples.json 생성: 실제 API 응답을 그대로 저장한다(프론트 모의 데이터용)."""
-import json, sys
+import json, os, sys
+from pathlib import Path
 from fastapi.testclient import TestClient
 from app.main import app
 
@@ -25,7 +26,10 @@ with TestClient(app) as c:
     put("GET /api/measurements?from=2026-10-01", c.get("/api/measurements", params={"from": "2026-10-01"}))
     put("POST /api/measurements (혈압)", c.post("/api/measurements", json={"type": "bp", "values": {"sbp": 124, "dbp": 80}, "measuredAt": "2026-10-28T07:30"}))
     put("GET /api/reports/interim", c.get("/api/reports/interim"))
+    # 예시 흐름은 견본 값(engine: mock)으로 만든다. 실제 인식 예시는 맨 끝에 따로 넣는다.
+    os.environ["HEALTH_ITDA_OCR"] = "mock"
     r = c.post("/api/checkups/upload", files={"file": ("2026_건강검진결과.jpg", b"x", "image/jpeg")})
+    os.environ.pop("HEALTH_ITDA_OCR")
     put("POST /api/checkups/upload (사진)", r)
     cid = r.json()["id"]
     put(f"PATCH /api/checkups/{cid} {{confirm:true}}", c.patch(f"/api/checkups/{cid}", json={"confirm": True}))
@@ -35,5 +39,8 @@ with TestClient(app) as c:
     put("GET /api/mydata", c.get("/api/mydata"))
     put("POST /api/mydata/connect", c.post("/api/mydata/connect", json={"agree": True}))
     put("POST /api/mydata/sync", c.post("/api/mydata/sync", json={}))
+    sheet = Path(__file__).parent.parent / "tests/fixtures/sample_sheet.pdf"
+    put("POST /api/checkups/upload (글자 있는 PDF)",
+        c.post("/api/checkups/upload", files={"file": ("결과통보서.pdf", sheet.read_bytes(), "application/pdf")}))
     c.post("/api/demo/reset")
 json.dump(out, open(sys.argv[1], "w"), ensure_ascii=False, indent=2)
