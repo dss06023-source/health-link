@@ -1,3 +1,4 @@
+import { ageItems } from './rules'
 import type { CheckupTarget, ConfirmTest, UserProfile } from '../types'
 
 // 국민건강보험공단 「2026년 건강검진 안내」 책자의 주의사항을 사용자에게 해당하는 것만 골라 묶는다.
@@ -12,13 +13,29 @@ export interface GuideSection {
 const NHIS_APP = '공단 홈페이지·모바일앱(건강보험25시)'
 
 export function checkupGuide(p: UserProfile, t: CheckupTarget, confirm: ConfirmTest | null): GuideSection[] {
+  const age = t.year - p.birthYear
+  // 작년 대상인데 받지 않았으면 올해 추가신청으로 받을 수 있으니, 대상자와 같은 준비 안내를 함께 보여 준다.
+  const missed = !t.isTarget && !t.done && age >= 20 && p.lastCheckupYear !== t.year - 1
   const due = t.isTarget && !t.done
+  const general = due || missed
   // 올해 검진을 이미 받았으면 암검진도 함께 받은 것으로 보고 준비 안내는 뺀다(항목별 수검 기록은 없음).
   const cancer = (id: string) => (t.done ? undefined : t.cancers.find((c) => c.id === id && (c.status === 'target' || c.status === 'maybe')))
   const next = t.year + 1
   const out: GuideSection[] = []
 
-  if (due || (!t.done && t.cancers.some((c) => c.status === 'target'))) {
+  if (missed) out.push({
+    id: 'missed', title: '작년에 못 받았다면 추가신청', why: `${t.year - 1}년 검진 기록 없음`,
+    items: [
+      '전년도에 받지 못한 국가건강검진을 올해 추가로 신청할 수 있습니다. 신청한 뒤에는 아래 안내대로 준비해서 받으세요.',
+      '보이는 ARS: 1577-1000 전화 → 9번 → 문자로 받은 주소 접속 → 건강검진 → 본인인증 후 추가신청.',
+      `${NHIS_APP}: 건강모아 → 나의건강 → 검진신청 → 전년도 미수검자 추가신청.`,
+      ...(p.jobType === 'office' || p.jobType === 'nonOffice'
+        ? ['직장가입자의 일반검진 추가등록은 회사(사업장)를 통해서만 신청할 수 있습니다. 암검진은 본인이 직접 신청할 수 있습니다.'] : []),
+    ],
+  })
+
+
+  if (general || (!t.done && t.cancers.some((c) => c.status === 'target'))) {
     out.push({
       id: 'before', title: '예약과 준비물',
       items: [
@@ -29,11 +46,11 @@ export function checkupGuide(p: UserProfile, t: CheckupTarget, confirm: ConfirmT
         '검진 때 귀중품은 도난·분실 위험이 있으니 챙겨 두십시오.',
       ],
     })
-    const fasting = due || cancer('stomach') || cancer('liver') || cancer('lung')
+    const fasting = general || cancer('stomach') || cancer('liver') || cancer('lung')
     out.push(fasting
       ? {
           id: 'fasting', title: '금식',
-          why: due ? '일반건강검진 혈액검사' : [cancer('stomach'), cancer('liver'), cancer('lung')].filter(Boolean).map((c) => c!.name).join('·') + ' 검진',
+          why: general ? '일반건강검진 혈액검사' : [cancer('stomach'), cancer('liver'), cancer('lung')].filter(Boolean).map((c) => c!.name).join('·') + ' 검진',
           items: [
             '검진 전날 저녁 9시 이후에는 먹지 마십시오.',
             '검진 당일 아침에는 식사는 물론 물, 커피, 우유, 담배, 주스, 껌도 삼가십시오.',
@@ -43,7 +60,8 @@ export function checkupGuide(p: UserProfile, t: CheckupTarget, confirm: ConfirmT
       : { id: 'fasting', title: '금식', why: '대장암·유방암·자궁경부암 검진만 받음', items: ['이 검진만 받는다면 금식하지 않아도 됩니다.'] })
   }
 
-  if (due) {
+  if (general) {
+    const extra = due ? t.items : ageItems(age, p.sex)
     out.push({
       id: 'form', title: '문진표',
       items: [
@@ -53,12 +71,12 @@ export function checkupGuide(p: UserProfile, t: CheckupTarget, confirm: ConfirmT
     })
     out.push({
       id: 'general', title: '일반건강검진 검사',
-      why: `${t.year}년 대상`,
+      why: due ? `${t.year}년 대상` : '추가신청 후 받을 때',
       items: [
         '비용은 국민건강보험공단이 전액 부담합니다.',
         '시력·청력 결과는 운전면허 신체검사에도 쓰이므로 안경·렌즈를 쓰는 분은 교정시력으로 검사받으십시오.',
         '구강검진은 구강검진기관으로 지정된 가까운 치과에서 받습니다.',
-        ...t.items.map((i) => `${t.year - p.birthYear}세 추가 검사: ${i.name}${i.note ? ` (${i.note})` : ''}`),
+        ...extra.map((i) => `${age}세 추가 검사: ${i.name}${i.note ? ` (${i.note})` : ''}`),
       ],
     })
   }
@@ -144,17 +162,6 @@ export function checkupGuide(p: UserProfile, t: CheckupTarget, confirm: ConfirmT
     items: [
       '검진 항목마다 정해진 횟수를 넘겨 받으면 검진비용을 환수합니다. 올해 일반건강검진을 다시 받지 마십시오.',
       ...(t.cancers.some((c) => c.status === 'target') ? [`올해 대상인 암검진(${t.cancers.filter((c) => c.status === 'target').map((c) => c.name).join('·')})을 아직 받지 않았다면 12월 31일까지 받을 수 있습니다.`] : []),
-    ],
-  })
-
-  if (!t.isTarget && p.lastCheckupYear !== t.year - 1 && t.year - p.birthYear >= 20) out.push({
-    id: 'missed', title: '작년에 못 받았다면 추가신청', why: `${t.year - 1}년 검진 기록 없음`,
-    items: [
-      '전년도에 받지 못한 국가건강검진을 올해 추가로 신청할 수 있습니다.',
-      '보이는 ARS: 1577-1000 전화 → 9번 → 문자로 받은 주소 접속 → 건강검진 → 본인인증 후 추가신청.',
-      `${NHIS_APP}: 건강모아 → 나의건강 → 검진신청 → 전년도 미수검자 추가신청.`,
-      ...(p.jobType === 'office' || p.jobType === 'nonOffice'
-        ? ['직장가입자의 일반검진 추가등록은 회사(사업장)를 통해서만 신청할 수 있습니다. 암검진은 본인이 직접 신청할 수 있습니다.'] : []),
     ],
   })
 
