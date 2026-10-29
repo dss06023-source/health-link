@@ -39,17 +39,17 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
     <>
     <div className="cols">
       <section className="sec">
-        <div className="sec-head"><h2>검진 결과지를 올려 주세요</h2></div>
-        <p className="muted">종이 결과지 사진, 또는 건강보험공단 홈페이지에서 받은 결과 PDF를 올리면 됩니다.</p>
+        <h2>결과지를 올려 주세요</h2>
+        <p className="small muted">종이 결과지 사진, 또는 건강보험공단 홈페이지에서 받은 결과 PDF를 올리면 됩니다.</p>
         <div className={`drop${over ? ' over' : ''}`}
           onDragOver={(e) => { e.preventDefault(); setOver(true) }}
           onDragLeave={() => setOver(false)}
           onDrop={(e) => { e.preventDefault(); setOver(false); const f = e.dataTransfer.files[0]; if (f) start(f, f.name) }}>
-          <Icon name="camera" size={30} />
-          <div><b>결과지를 이 틀 안에 놓거나 파일을 고르세요</b><p className="small muted">JPG · PNG · PDF, 20MB 이하</p></div>
+          <span className="drop-ico"><Icon name="camera" size={28} /></span>
+          <div><b>결과지를 여기에 놓거나 파일을 고르세요</b><p className="small muted">JPG · PNG · PDF, 20MB 이하</p></div>
           <div className="row" style={{ justifyContent: 'center' }}>
+            {!USE_API && <button className="btn flat" onClick={() => start(null, '2026_건강검진결과_샘플.pdf')}>샘플로 시연</button>}
             <button className="btn" onClick={() => input.current?.click()}>파일 선택</button>
-            {!USE_API && <button className="btn ghost" onClick={() => start(null, '2026_건강검진결과_샘플.pdf')}>샘플 결과지로 시연</button>}
           </div>
           <input ref={input} id="up-file" type="file" accept="image/*,application/pdf" hidden
             onChange={(e) => { const f = e.target.files?.[0]; if (f) start(f, f.name); e.target.value = '' }} />
@@ -58,8 +58,8 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
 
         {step >= 0 && (
           <div className="stack">
-            <div className="row" style={{ justifyContent: 'space-between' }}>
-              <span className="row"><Icon name="file" /><b className="small">{fileName}</b></span>
+            <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
+              <span className="row" style={{ flexWrap: 'nowrap', minWidth: 0 }}><Icon name="file" /><b className="small ellipsis">{fileName}</b></span>
               <span className="small muted num">{Math.min(step, 4) * 25}%</span>
             </div>
             <div className="bar"><i style={{ width: `${Math.min(step, 4) * 25}%` }} /></div>
@@ -74,32 +74,28 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
         )}
       </section>
 
-      <section className="sec">
-        <div className="sec-head"><h2>읽어 낸 수치</h2>{items && <p>{items.length}개 항목</p>}</div>
-        {!items && <p className="muted">결과지를 올리면 여기에서 인식된 수치를 확인하고, 잘못 읽힌 값은 바로 고칠 수 있습니다.</p>}
+      <div>
+        <h2 className="subhead">읽어 낸 수치 {items && <span>{items.length}개 항목 · 다른 값은 눌러서 고쳐 주세요</span>}</h2>
+        {!items && <section className="sec"><p className="small muted">결과지를 올리면 여기에서 인식된 수치를 확인하고, 잘못 읽힌 값은 바로 고칠 수 있습니다.</p></section>}
         {items && (
           <>
-            <p className="small muted">결과지와 다른 값이 있으면 숫자를 눌러 고쳐 주세요.</p>
-            <div className="sheet table-wrap">
-              <table>
-                <thead><tr><th>항목</th><th>수치</th><th>판정</th></tr></thead>
-                <tbody>
-                  {preview.map((it, idx) => (
-                    <tr key={it.code}>
-                      <td className="name">{it.name}</td>
-                      <td style={{ whiteSpace: 'nowrap' }}><input id={`ocr-${it.code}`} aria-label={`${it.name} 수치`} type="number" step="0.1" value={it.value}
-                        onChange={(e) => setItems(items.map((x, j) => (j === idx ? { ...x, value: Number(e.target.value) } : x)))} />
-                        <span className="unit">{it.unit}</span></td>
-                      <td><Judge status={it.status} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div><button className="btn" onClick={() => { s.addCheckup(items, 'ocr', remoteId); go('results') }}>확인하고 해석 보기</button></div>
+            <ul className="list">
+              {preview.map((it, idx) => (
+                <li key={it.code} className="li">
+                  <label className="li-main" htmlFor={`ocr-${it.code}`}><b>{it.name}</b><small>참고치 {it.rangeText}</small></label>
+                  <span className="li-val">
+                    <span className="num-line"><input id={`ocr-${it.code}`} className="num-input" aria-label={`${it.name} 수치`} type="number" step="0.1" value={it.value}
+                      onChange={(e) => setItems(items.map((x, j) => (j === idx ? { ...x, value: Number(e.target.value) } : x)))} />
+                      <span className="unit">{it.unit}</span></span>
+                    <Judge status={it.status} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="actions" style={{ marginTop: 14 }}><button className="btn" onClick={() => { s.addCheckup(items, 'ocr', remoteId); go('results') }}>확인하고 해석 보기</button></div>
           </>
         )}
-      </section>
+      </div>
     </div>
     <Mydata go={go} />
     </>

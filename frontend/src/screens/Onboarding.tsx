@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useStore } from '../store'
-import { Wordmark } from '../ui'
+import { Icon, Sheet, Wordmark } from '../ui'
 import { ALLERGY_OPTIONS, CONDITION_OPTIONS, DIET_OPTIONS, MEDICATION_GROUPS, SAMPLE_PROFILE, SUPPLEMENT_OPTIONS } from '../data/mock'
 import type { Lifestyle, UserProfile } from '../types'
+import { loadTheme, saveTheme, type Theme } from '../theme'
 
 const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
 
@@ -26,7 +27,7 @@ function Pick({ options, value, onChange, none = true, custom, placeholder }: {
             <input style={{ width: '100%' }} aria-label={placeholder} placeholder={placeholder} value={text} onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add() } }} />
           </div>
-          <button type="button" className="btn ghost sm" onClick={add} disabled={!text.trim()}>추가</button>
+          <button type="button" className="btn flat sm strong" onClick={add} disabled={!text.trim()}>추가</button>
         </div>
       )}
     </div>
@@ -43,10 +44,13 @@ function Seg<T extends string | number>({ label, options, value, onChange }: { l
   )
 }
 
-export default function Onboarding({ onDone }: { onDone: () => void }) {
+export default function Onboarding({ onDone, onCancel, initial }: { onDone: () => void; onCancel?: () => void; initial?: UserProfile }) {
   const { setProfile } = useStore()
-  // 시연을 빠르게 하도록 가상 인물 값으로 미리 채워 둔다.
-  const [p, setP] = useState<UserProfile>(SAMPLE_PROFILE)
+  // 처음 쓸 때는 시연을 빠르게 하도록 가상 인물 값으로 미리 채워 둔다. 내 정보 수정은 지금 값에서 시작.
+  const [p, setP] = useState<UserProfile>(initial ?? SAMPLE_PROFILE)
+  const [group, setGroup] = useState<string | null>(null)
+  const [draft, setDraft] = useState<string[]>([])
+  const [theme, setTheme] = useState<Theme>(loadTheme)
   const upd = (patch: Partial<UserProfile>) => setP((x) => ({ ...x, ...patch }))
   const life = (patch: Partial<Lifestyle>) => setP((x) => ({ ...x, lifestyle: { ...x.lifestyle, ...patch } }))
   const L = p.lifestyle
@@ -54,14 +58,24 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
   const customMeds = p.medications.filter((m) => !allMeds.includes(m))
 
   return (
-    <div className="main">
-      <form className="page" style={{ maxWidth: 760, gap: 40 }}
-        onSubmit={(e) => { e.preventDefault(); setProfile({ ...p, pregnant: p.sex === 'F' ? p.pregnant : false }); onDone() }}>
-        <div className="stack" style={{ gap: 14 }}>
-          <Wordmark />
-          <h1>검진 알림과 맞춤 추천에 필요한 정보를 알려 주세요</h1>
-          <p className="muted">출생연도로 올해 국가건강검진 대상인지 계산하고, 복용 약·질환·알레르기는 영양제와 부딪히는 성분을 거르는 데 씁니다. 모르는 항목은 비워 두셔도 됩니다.</p>
+    <>
+    {initial && (
+      <header className="appbar scrolled">
+        <div className="bar-in">
+          <button type="button" className="icon-btn" aria-label="돌아가기" onClick={onCancel}><span className="flip"><Icon name="chevron" size={22} /></span></button>
+          <span className="bar-title">내 정보</span>
         </div>
+      </header>
+    )}
+    <div className="main narrow">
+      <form className="page"
+        onSubmit={(e) => { e.preventDefault(); setProfile({ ...p, pregnant: p.sex === 'F' ? p.pregnant : false }); onDone() }}>
+        <div className="hero">
+          {!initial && <Wordmark />}
+          <h1>{initial ? '내 정보' : '필요한 정보를 알려 주세요'}</h1>
+          <p>{initial ? '바꾼 내용은 검진 알림과 추천에 바로 반영돼요' : '검진 대상 확인과 영양제 추천에 써요'}</p>
+        </div>
+        <p className="small muted" style={{ padding: '0 4px' }}>출생연도로 올해 국가건강검진 대상인지 계산하고, 복용 약·질환·알레르기는 영양제와 부딪히는 성분을 거르는 데 씁니다. 모르는 항목은 비워 두셔도 됩니다.</p>
 
         <section className="sec">
           <div className="sec-head"><h2>기본 정보</h2></div>
@@ -81,32 +95,39 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
           </div>
         </section>
 
-        <section className="sec">
-          <div className="sec-head"><h2>복용 중인 약</h2><p>여러 개 고를 수 있습니다</p></div>
-          <div className="chips"><button type="button" className="chip" aria-pressed={!p.medications.length} onClick={() => upd({ medications: [] })}>먹는 약 없음</button></div>
-          <ul className="rows">
-            {MEDICATION_GROUPS.map((g) => (
-              <li key={g.group} className="opt-row">
-                <span className="label">{g.group}</span>
-                <div className="chips">{g.items.map((m) => (
-                  <button type="button" key={m} className="chip" aria-pressed={p.medications.includes(m)} onClick={() => upd({ medications: toggle(p.medications, m) })}>{m}</button>
-                ))}</div>
-              </li>
-            ))}
-            <li className="opt-row">
-              <span className="label">직접 입력</span>
-              <Pick options={[]} custom={allMeds} value={customMeds} none={false} placeholder="약 이름 (예: 알렌드로네이트)"
-                onChange={(v) => upd({ medications: [...p.medications.filter((m) => allMeds.includes(m)), ...v] })} />
+        <div>
+          <h2 className="subhead">복용 중인 약 <span>계열을 눌러 고르세요 · {p.medications.length ? `${p.medications.length}개 선택` : '없음'}</span></h2>
+          <ul className="list">
+            <li className="li">
+              <span className="li-main"><b>먹는 약 없음</b></span>
+              <button type="button" className="switch" role="switch" aria-checked={!p.medications.length} aria-label="먹는 약 없음"
+                onClick={() => upd({ medications: [] })} />
+            </li>
+            {MEDICATION_GROUPS.map((g) => {
+              const on = g.items.filter((m) => p.medications.includes(m))
+              return (
+                <li key={g.group}>
+                  <button type="button" className="li" onClick={() => { setGroup(g.group); setDraft(on) }}>
+                    <span className="li-main"><b>{g.group}</b>{on.length > 0 && <small className="picked-line">{on.join(', ')}</small>}</span>
+                    <span className="li-end">{on.length ? `${on.length}개` : '선택'}<Icon name="chevron" size={16} /></span>
+                  </button>
+                </li>
+              )
+            })}
+            <li className="li">
+              <div className="li-main"><b>직접 입력</b>
+                <Pick options={[]} custom={allMeds} value={customMeds} none={false} placeholder="약 이름 (예: 알렌드로네이트)"
+                  onChange={(v) => upd({ medications: [...p.medications.filter((m) => allMeds.includes(m)), ...v] })} /></div>
             </li>
           </ul>
-        </section>
+        </div>
 
         <section className="sec">
           <div className="sec-head"><h2>이미 먹고 있는 영양제</h2></div>
           <Pick options={SUPPLEMENT_OPTIONS} value={p.currentSupplements} onChange={(v) => upd({ currentSupplements: v })} placeholder="영양제 이름" />
         </section>
 
-        <div className="cols" style={{ gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 40 }}>
+        <div className="cols even">
           <section className="sec">
             <div className="sec-head"><h2>진단받은 질환</h2></div>
             <p className="small muted">병원에서 진단받은 적이 있는 것만 고르세요. 영양제 주의 문구를 고르는 데만 씁니다.</p>
@@ -148,11 +169,43 @@ export default function Onboarding({ onDone }: { onDone: () => void }) {
             <Pick options={DIET_OPTIONS} value={L.diet ?? []} none={false} onChange={(v) => life({ diet: v })} /></div>
         </section>
 
+        {initial && (
+          <section className="sec">
+            <div className="sec-head"><h2>화면 모드</h2></div>
+            <Seg label="화면 밝기" options={[['light', '밝게'], ['dark', '어둡게'], ['system', '기기 설정 따르기']]} value={theme}
+              onChange={(v) => { setTheme(v); saveTheme(v) }} />
+            <p className="small muted">바로 적용되고, 이 기기에 저장됩니다.</p>
+          </section>
+        )}
+
         <div className="stack" style={{ gap: 12 }}>
-          <p className="small muted">복용 약과 질환은 건강에 관한 민감정보입니다. 시연 모드에서는 이 브라우저에만 저장되고 서버로 보내지 않습니다.</p>
-          <div><button className="btn" type="submit">검진 대상 확인하기</button></div>
+          <p className="small muted" style={{ padding: '0 4px' }}>복용 약과 질환은 건강에 관한 민감정보입니다. 시연 모드에서는 이 브라우저에만 저장되고 서버로 보내지 않습니다.</p>
+          <div className="actions">
+            {initial && <button type="button" className="btn flat" onClick={onCancel}>취소</button>}
+            <button className="btn" type="submit">{initial ? '저장' : '검진 대상 확인하기'}</button>
+          </div>
         </div>
       </form>
     </div>
+    {group && (() => {
+      const g = MEDICATION_GROUPS.find((x) => x.group === group)!
+      return (
+        <Sheet title={g.group} onClose={() => setGroup(null)}
+          actions={<><button type="button" className="btn flat" onClick={() => setGroup(null)}>취소</button>
+            <button type="button" className="btn flat strong" onClick={() => {
+              upd({ medications: [...p.medications.filter((m) => !g.items.includes(m)), ...draft] }); setGroup(null)
+            }}>완료</button></>}>
+          <ul className="check-list">
+            {g.items.map((m) => (
+              <li key={m}><label className="check-row">
+                <input type="checkbox" checked={draft.includes(m)} onChange={() => setDraft(toggle(draft, m))} />
+                <span>{m}</span>
+              </label></li>
+            ))}
+          </ul>
+        </Sheet>
+      )
+    })()}
+    </>
   )
 }

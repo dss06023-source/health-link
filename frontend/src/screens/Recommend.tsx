@@ -22,9 +22,10 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
 
   return (
     <div className="cols">
-      <div className="page" style={{ gap: 36 }}>
+      <div className="page">
         <section className="sec">
-          <div className="sec-head"><h2>추천 구성 {chosen.length}가지</h2><p>근거가 된 수치와 영양제를 짝지어 보여 줍니다. 스위치로 빼거나 넣습니다.</p></div>
+          <div className="sec-head"><h2>추천 구성 {chosen.length}가지</h2></div>
+          <p className="small muted">왼쪽은 근거가 된 수치, 오른쪽은 영양제입니다. 스위치로 빼거나 넣습니다.</p>
           <div className="links">
             {recs.map((r) => {
               const isOff = off.includes(r.id)
@@ -34,7 +35,7 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
                 <div key={r.id} className={`link-row${r.skipped || isOff ? ' off' : ''}`}>
                   <div className="evid">
                     {evid.length > 0 && <div className="vals">{evid.map((it) => (
-                      <span key={it.code} className="item">{it.name}<Value status={it.status} seed={it.code}>{it.value}</Value></span>
+                      <span key={it.code} className="item">{it.name}<Value status={it.status}>{it.value}</Value></span>
                     ))}</div>}
                     {other.length > 0 && <span className="life">{other.join(' · ')}</span>}
                     <span className="why">{r.reason}</span>
@@ -53,7 +54,7 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
             })}
             {!recs.length && <p className="muted" style={{ padding: '14px 0' }}>지금 수치와 생활습관으로는 추가할 영양제가 없습니다.</p>}
           </div>
-          <div className="row">
+          <div className="actions">
             <button className="btn" disabled={!chosen.length}
               onClick={() => { s.addSupplements(chosen); go('intake') }}>
               {already === chosen.length && chosen.length ? '복용 관리로 이동' : '이 구성으로 복용 시작'}
@@ -62,16 +63,16 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
         </section>
 
         {weight && (
-          <div className="callout caution">
-            <b>영양제보다 먼저</b>
-            <p className="muted">체질량지수나 허리둘레가 기준을 넘었습니다. 체중을 5%(약 4kg)만 줄여도 중성지방·혈당·간 수치가 함께 내려가는 경우가 많습니다. 하루 30분 걷기와 저녁 탄수화물 줄이기부터 시작해 보세요.</p>
-          </div>
+          <section className="sec tint-caution">
+            <h2>영양제보다 먼저</h2>
+            <p className="small">체질량지수나 허리둘레가 기준을 넘었습니다. 체중을 5%(약 4kg)만 줄여도 중성지방·혈당·간 수치가 함께 내려가는 경우가 많습니다. 하루 30분 걷기와 저녁 탄수화물 줄이기부터 시작해 보세요.</p>
+          </section>
         )}
       </div>
 
-      <div className="page" style={{ gap: 36 }}>
+      <div className="page">
         <section className="sec">
-          <div className="sec-head"><h2>함께 먹을 때 주의할 점</h2><p>{warnings.length ? `${warnings.length}건` : '없음'}</p></div>
+          <div className="sec-head"><h2>함께 먹을 때 주의할 점</h2><span className="count">{warnings.length ? `${warnings.length}건` : '없음'}</span></div>
           {warnings.length ? <CautionList items={warnings} /> : <p className="muted small">복용 약, 이미 먹는 영양제와 겹치거나 부딪히는 성분이 없습니다.</p>}
         </section>
 
