@@ -10,8 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@fontsource/jua": "5.3.0",
-    "@noonnu/tmoney-round-wind-extra-bold": "0.1.0",
+    "@fontsource/do-hyeon": "5.3.0",
+    "@noonnu/cafe24-ssurround": "0.1.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

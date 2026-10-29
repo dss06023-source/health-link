@@ -1,6 +1,6 @@
-// 글꼴: 주요 글자는 티머니 둥근바람(파일 수정·로고 사용 금지), 나머지는 주아(OFL).
-import '@noonnu/tmoney-round-wind-extra-bold/index.css'
-import '@fontsource/jua/400.css'
+// 글꼴: 주요 글자와 앱 이름은 카페24 써라운드, 나머지는 도현(둘 다 OFL).
+import '@noonnu/cafe24-ssurround/index.css'
+import '@fontsource/do-hyeon/400.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'

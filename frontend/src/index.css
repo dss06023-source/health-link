@@ -28,8 +28,8 @@
   --snack-fg: #ffffff;
   --snack-act: #8fe0b1;
 
-  --font: 'Jua', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
-  --display: 'TmoneyRoundWindExtraBold', 'Jua', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --font: 'Do Hyeon', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --display: 'Cafe24Ssurround', 'Do Hyeon', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
   --num: var(--font);
   --wm-red: #d8483e;
   --rb: 24px;
@@ -90,7 +90,7 @@ a { color: inherit; }
 }
 .bar-brand { flex: none; }
 .bar-title { font-weight: 800; font-size: 18px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.wordmark { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; }
+.wordmark { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: normal; font-size: 19px; }
 .app-icon { flex: none; filter: drop-shadow(0 1px 2px rgba(20, 60, 40, .18)); }
 .wm-text { display: inline-flex; align-items: center; gap: .04em; letter-spacing: -.01em; }
 .wm-it { width: 1.36em; height: 1.14em; flex: none; margin: -.1em .02em 0; }
