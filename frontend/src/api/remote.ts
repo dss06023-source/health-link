@@ -25,7 +25,32 @@ const firstEntry = (o: Record<string, string>) => Object.entries(o)[0] ?? ['', '
 
 interface RUser {
   name: string; birthYear: number; gender: 'M' | 'F'; heightCm?: number; medications: string[]; lastCheckupDate: string | null
-  lifestyle: { smoking: boolean; drinkingPerWeek: number; exercisePerWeek: number; lowSunlight: boolean }
+  currentSupplements?: string[]; conditions?: string[]; allergies?: string[]; customAllergies?: string[]
+  lifestyle: {
+    smoking: boolean | 'never' | 'past' | 'current'; drinkingPerWeek: number; exercisePerWeek: number; lowSunlight: boolean
+    drinksPerSession?: number; sleepHours?: number; diet?: string[]; pregnant?: boolean; breastfeeding?: boolean
+  }
+}
+interface ROptions {
+  supplements: { id: string; name: string }[]
+  lifestyle: { key: string; options?: { value: string; label: string }[] }[]
+  conditions: { value: string; label: string }[]
+  allergies: { value: string; label: string }[]
+}
+
+// 입력 화면은 보기 이름(한글)을 쓰고 서버는 코드를 쓴다. GET /api/options로 둘을 잇는다.
+// 약 이름은 서버와 화면이 같아서 바꾸지 않는다.
+const codes = { supplement: new Map<string, string>(), condition: new Map<string, string>(), allergy: new Map<string, string>(), diet: new Map<string, string>() }
+const loadOptions = (o: ROptions) => {
+  codes.supplement = new Map(o.supplements.map((x) => [x.name, x.id]))
+  codes.condition = new Map(o.conditions.map((x) => [x.label, x.value]))
+  codes.allergy = new Map(o.allergies.map((x) => [x.label, x.value]))
+  codes.diet = new Map((o.lifestyle.find((f) => f.key === 'diet')?.options ?? []).map((x) => [x.label, x.value]))
+}
+const toCode = (m: Map<string, string>, labels: string[] = []) => labels.flatMap((l) => (m.has(l) ? [m.get(l)!] : []))
+const toLabel = (m: Map<string, string>, values: string[] = []) => {
+  const back = new Map([...m].map(([l, v]) => [v, l]))
+  return values.flatMap((v) => (back.has(v) ? [back.get(v)!] : []))
 }
 interface RCheckupRow { id: number; date: string; source: string; status: string }
 interface RCheckup { id: number; date: string; source: string; items: { code: string; name: string; value: number; unit: string }[] }
@@ -47,6 +72,8 @@ export interface RemoteExtras {
   compareNote: string | null
 }
 
+const smokingStatus = (v: RUser['lifestyle']['smoking']) => (v === true ? 'current' : v === false ? 'never' : v)
+
 const mapCheckup = (c: RCheckup): Checkup => ({
   id: String(c.id), date: c.date, source: c.source === 'photo' ? 'ocr' : 'pdf',
   label: `${c.date.slice(0, 4)} 일반건강검진`,
@@ -65,7 +92,7 @@ export async function loadAll() {
   const today = new Date()
   const from = new Date(today); from.setDate(from.getDate() - 40)
   const iso = (d: Date) => d.toISOString().slice(0, 10)
-  const [user, rows, supps, logs, recs, meds, ms, reminder, mydata] = await Promise.all([
+  const [user, rows, supps, logs, recs, meds, ms, reminder, mydata, options] = await Promise.all([
     call<RUser>('/api/users/me'),
     call<RCheckupRow[]>('/api/checkups'),
     call<RSupp[]>('/api/supplements'),
@@ -75,17 +102,27 @@ export async function loadAll() {
     call<Measurement[]>('/api/measurements'),
     call<{ times: Record<string, string> }>('/api/reminders/settings'),
     call<MydataState>('/api/mydata'),
+    call<ROptions>('/api/options'),
   ])
+  loadOptions(options)
   const confirmed = rows.filter((r) => r.status === 'confirmed').sort((a, b) => a.date.localeCompare(b.date))
   const checkups = (await Promise.all(confirmed.map((r) => call<RCheckup>(`/api/checkups/${r.id}`)))).map(mapCheckup)
   const compare = checkups.length >= 2
     ? await call<{ note: string }>('/api/reports/compare').catch(() => null) : null
 
+  const L = user.lifestyle
   const profile: UserProfile = {
     name: user.name, birthYear: user.birthYear, sex: user.gender, region: '서울',
     lastCheckupYear: user.lastCheckupDate ? Number(user.lastCheckupDate.slice(0, 4)) : null,
-    medications: user.medications, currentSupplements: [],
-    lifestyle: { smoking: user.lifestyle.smoking, drinkingPerWeek: user.lifestyle.drinkingPerWeek, exercisePerWeek: user.lifestyle.exercisePerWeek, lowOutdoor: user.lifestyle.lowSunlight },
+    medications: user.medications, currentSupplements: toLabel(codes.supplement, user.currentSupplements),
+    lifestyle: {
+      smoking: L.smoking === true || L.smoking === 'current', smokingStatus: smokingStatus(L.smoking),
+      drinkingPerWeek: L.drinkingPerWeek, drinksPerSession: L.drinksPerSession, exercisePerWeek: L.exercisePerWeek,
+      lowOutdoor: L.lowSunlight, sleepHours: L.sleepHours, diet: toLabel(codes.diet, L.diet),
+    },
+    conditions: toLabel(codes.condition, user.conditions),
+    allergies: [...toLabel(codes.allergy, user.allergies), ...(user.customAllergies ?? [])],
+    pregnant: !!(L.pregnant || L.breastfeeding),
     heightCm: user.heightCm,
   }
   const supplements: Supplement[] = supps.map((x) => {
@@ -112,7 +149,8 @@ export async function loadAll() {
       ...(recs?.warnings ?? []).map(mapWarning),
     ],
     notes: (recs?.notes ?? []).map((n) => n.message),
-    medOptions: meds.map((m) => m.name),
+    // 마이데이터로 들어온 처방명(아토르바스타틴 등)은 보기에 없으므로 뒤에 붙인다.
+    medOptions: [...meds.map((m) => m.name), ...user.medications.filter((m) => !meds.some((x) => x.name === m))],
     compareNote: compare?.note ?? null,
   }
   const measurements: Measurement[] = ms.map((m) => ({ id: String(m.id), type: m.type, measuredAt: m.measuredAt, values: m.values, fasting: m.fasting }))
@@ -134,10 +172,26 @@ export const remote = {
   },
   confirm: (id: number, items: CheckupItem[]) =>
     call(`/api/checkups/${id}`, json('PATCH', { values: Object.fromEntries(items.map((i) => [i.code.toLowerCase(), i.value])), confirm: true })),
-  saveProfile: (p: UserProfile) => call('/api/users/me', json('PUT', {
-    name: p.name, birthYear: p.birthYear, gender: p.sex, medications: p.medications,
-    lifestyle: { smoking: p.lifestyle.smoking, drinkingPerWeek: p.lifestyle.drinkingPerWeek, exercisePerWeek: p.lifestyle.exercisePerWeek, lowSunlight: p.lifestyle.lowOutdoor },
-  })),
+  // 보기에 없는 영양제·질환은 서버가 받지 않아 빼고 보낸다. 직접 입력한 알레르기는 customAllergies로 보낸다.
+  // 화면은 임신·수유를 한 값으로 묻기 때문에, 둘 다 같은 값으로 보내 피해야 할 영양제를 넓게 뺀다.
+  saveProfile: (p: UserProfile) => {
+    const L = p.lifestyle
+    const pregnant = p.sex === 'F' && !!p.pregnant
+    return call('/api/users/me', json('PUT', {
+      name: p.name, birthYear: p.birthYear, gender: p.sex, medications: p.medications,
+      currentSupplements: toCode(codes.supplement, p.currentSupplements),
+      conditions: toCode(codes.condition, p.conditions),
+      allergies: toCode(codes.allergy, p.allergies),
+      customAllergies: (p.allergies ?? []).filter((a) => !codes.allergy.has(a)),
+      lifestyle: {
+        smoking: L.smokingStatus ?? L.smoking, drinkingPerWeek: L.drinkingPerWeek, exercisePerWeek: L.exercisePerWeek, lowSunlight: L.lowOutdoor,
+        ...(L.drinksPerSession !== undefined && { drinksPerSession: L.drinksPerSession }),
+        ...(L.sleepHours !== undefined && { sleepHours: L.sleepHours }),
+        diet: toCode(codes.diet, L.diet),
+        pregnant, breastfeeding: pregnant,
+      },
+    }))
+  },
   addSupplement: (supplementId: string) =>
     call('/api/supplements', json('POST', { supplementId, source: 'recommendation' })).catch(() => null), // 이미 복용 중이면 409
   patchSupplement: (id: string, patch: { timing?: Timing; paused?: boolean }) =>
