@@ -16,16 +16,21 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
   const [fileName, setFileName] = useState<string | null>(null)
   const [step, setStep] = useState(-1) // -1 대기, 0~3 진행, 4 완료
   const [items, setItems] = useState<CheckupItem[] | null>(null)
+  const [missing, setMissing] = useState<CheckupItem[]>([])
+  const [review, setReview] = useState<string[]>([])
+  const [note, setNote] = useState<string | null>(null)
   const [remoteId, setRemoteId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function start(file: File | null, name: string) {
-    setFileName(name); setItems(null); setError(null); setStep(0)
+    setFileName(name); setItems(null); setMissing([]); setReview([]); setNote(null); setError(null); setStep(0)
     try {
+      // 사진 인식은 3초쯤 걸린다. 마지막 단계는 결과가 온 뒤에 끝낸다.
       const result = uploadCheckup(file)
-      for (let i = 1; i <= 4; i++) { await new Promise((r) => setTimeout(r, 650)); setStep(i) }
+      result.catch(() => {})
+      for (let i = 1; i <= 3; i++) { await new Promise((r) => setTimeout(r, 650)); setStep(i) }
       const r = await result
-      setRemoteId(r.id); setItems(r.items)
+      setStep(4); setRemoteId(r.id); setItems(r.items); setMissing(r.missing); setReview(r.review); setNote(r.message)
     } catch (e) {
       setError(e instanceof Error ? e.message : '결과지를 읽지 못했습니다. 다시 시도해 주세요.')
       setStep(-1)
@@ -34,6 +39,7 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
   useEffect(() => () => setStep(-1), [])
 
   const preview = items ? interpret(items, s.profile!.sex) : []
+  const filled = missing.filter((m) => Number.isFinite(m.value))
 
   return (
     <>
@@ -60,7 +66,7 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
           <div className="stack">
             <div className="row" style={{ justifyContent: 'space-between', flexWrap: 'nowrap' }}>
               <span className="row" style={{ flexWrap: 'nowrap', minWidth: 0 }}><Icon name="file" /><b className="small ellipsis">{fileName}</b></span>
-              <span className="small muted num">{Math.min(step, 4) * 25}%</span>
+              <span className="small muted num">{step === 3 ? '읽는 중…' : `${Math.min(step, 4) * 25}%`}</span>
             </div>
             <div className="bar"><i style={{ width: `${Math.min(step, 4) * 25}%` }} /></div>
             <ol className="steps">
@@ -75,14 +81,15 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
       </section>
 
       <div>
-        <h2 className="subhead">읽어 낸 수치 {items && <span>{items.length}개 항목 · 다른 값은 눌러서 고쳐 주세요</span>}</h2>
+        <h2 className="subhead">읽어 낸 수치 {items && <span>{items.length}개 항목{missing.length > 0 && ` · 못 찾은 ${missing.length}개는 직접 입력`} · 다른 값은 눌러서 고쳐 주세요</span>}</h2>
         {!items && <section className="sec"><p className="small muted">결과지를 올리면 여기에서 인식된 수치를 확인하고, 잘못 읽힌 값은 바로 고칠 수 있습니다.</p></section>}
         {items && (
           <>
+            {note && <p className="small muted" style={{ margin: '0 4px 10px' }}>{note}</p>}
             <ul className="list">
               {preview.map((it, idx) => (
                 <li key={it.code} className="li">
-                  <label className="li-main" htmlFor={`ocr-${it.code}`}><b>{it.name}</b><small>참고치 {it.rangeText}</small></label>
+                  <label className="li-main" htmlFor={`ocr-${it.code}`}><b>{it.name}</b><small>참고치 {it.rangeText}{review.includes(it.code) && <> · <em className="st caution">다시 확인해 주세요</em></>}</small></label>
                   <span className="li-val">
                     <span className="num-line"><input id={`ocr-${it.code}`} className="num-input" aria-label={`${it.name} 수치`} type="number" step="0.1" value={it.value}
                       onChange={(e) => setItems(items.map((x, j) => (j === idx ? { ...x, value: Number(e.target.value) } : x)))} />
@@ -91,8 +98,19 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
                   </span>
                 </li>
               ))}
+              {missing.map((m, idx) => (
+                <li key={m.code} className="li">
+                  <label className="li-main" htmlFor={`ocr-${m.code}`}><b>{m.name}</b><small>결과지에서 찾지 못했어요. 있으면 적어 주세요</small></label>
+                  <span className="li-val">
+                    <span className="num-line"><input id={`ocr-${m.code}`} className="num-input" aria-label={`${m.name} 수치`} type="number" step="0.1" placeholder="—"
+                      value={Number.isFinite(m.value) ? m.value : ''}
+                      onChange={(e) => setMissing(missing.map((x, j) => (j === idx ? { ...x, value: e.target.value === '' ? NaN : Number(e.target.value) } : x)))} />
+                      <span className="unit">{m.unit}</span></span>
+                  </span>
+                </li>
+              ))}
             </ul>
-            <div className="actions" style={{ marginTop: 14 }}><button className="btn" onClick={() => { s.addCheckup(items, 'ocr', remoteId); go('results') }}>확인하고 해석 보기</button></div>
+            <div className="actions" style={{ marginTop: 14 }}><button className="btn" onClick={() => { s.addCheckup([...items, ...filled], 'ocr', remoteId); go('results') }}>확인하고 해석 보기</button></div>
           </>
         )}
       </div>
