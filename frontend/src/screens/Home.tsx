@@ -5,6 +5,7 @@ import { checkupTarget, confirmTest, interpret } from '../data/rules'
 import { latestCheckup, useStore, ymd } from '../store'
 import type { CancerScreening, CheckupCenter } from '../types'
 import { Disclaimer, Icon, Sheet } from '../ui'
+import CenterSheet from './CenterSheet'
 
 const CANCER_STATUS: Record<CancerScreening['status'], string> = {
   target: '올해 대상', highRiskOnly: '해당 없음', maybe: '확인 필요', excluded: '대상 제외', notThisYear: '내년 대상',
@@ -22,6 +23,7 @@ export default function Home({ go }: { go: (r: Route) => void }) {
   const t = checkupTarget(p)
   const [centers, setCenters] = useState<CheckupCenter[]>([])
   const [pick, setPick] = useState<{ c: CheckupCenter; slot: string } | null>(null)
+  const [info, setInfo] = useState<CheckupCenter | null>(null)
   useEffect(() => { getCenters().then(setCenters) }, [])
 
   const last = latestCheckup(s)
@@ -124,7 +126,7 @@ export default function Home({ go }: { go: (r: Route) => void }) {
                 <small>{c.address}{centerLabel(c)}</small>
                 <div className="slots">
                   {c.slots.map((sl) => <button key={sl} className="chip" onClick={() => setPick({ c, slot: sl })}>{sl}</button>)}
-                  {c.bookingUrl && <a className="chip" href={c.bookingUrl} target="_blank" rel="noreferrer">예약 안내 열기</a>}
+                  <button className="chip" onClick={() => setInfo(c)}>지도·전화 보기</button>
                 </div>
               </div>
             </li>
@@ -134,6 +136,8 @@ export default function Home({ go }: { go: (r: Route) => void }) {
       </div>
 
       <Disclaimer />
+
+      {info && <CenterSheet c={info} onClose={() => setInfo(null)} />}
 
       {pick && (
         <Sheet title="예약을 요청할까요?" onClose={() => setPick(null)}
