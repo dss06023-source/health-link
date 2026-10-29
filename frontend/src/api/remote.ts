@@ -118,7 +118,8 @@ export async function loadAll() {
     call<ROptions>('/api/options'),
   ])
   loadOptions(options)
-  const confirmed = rows.filter((r) => r.status === 'confirmed').sort((a, b) => a.date.localeCompare(b.date))
+  // 서버 목록은 최신순(날짜·번호 내림차순)이다. 같은 날 올린 검진도 나중에 올린 것이 마지막이 되게 번호로 한 번 더 정렬한다.
+  const confirmed = rows.filter((r) => r.status === 'confirmed').sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id)
   const checkups = (await Promise.all(confirmed.map((r) => call<RCheckup>(`/api/checkups/${r.id}`)))).map(mapCheckup)
   const compare = checkups.length >= 2
     ? await call<{ note: string }>('/api/reports/compare').catch(() => null) : null
