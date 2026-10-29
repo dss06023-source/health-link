@@ -28,8 +28,8 @@
   --snack-fg: #ffffff;
   --snack-act: #8fe0b1;
 
-  --font: 'PretendardLatin', 'Jua', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
-  --display: 'PretendardLatin', 'Jua', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --font: 'Paperlogy', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --display: 'Paperlogy', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
   --num: var(--font);
   --wm-red: #d8483e;
   --rb: 24px;

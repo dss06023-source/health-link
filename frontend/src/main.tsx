@@ -1,5 +1,4 @@
-// 글꼴: 한글은 주아, 영문·숫자는 Pretendard(둘 다 OFL).
-import '@fontsource/jua/400.css'
+// 글꼴: 페이퍼로지 400(OFL) 한 가지.
 import './fonts.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
