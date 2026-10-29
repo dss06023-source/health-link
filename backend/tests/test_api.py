@@ -152,7 +152,7 @@ def test_age_items_follow_nhis_table(client):
     # 1960년생 여성은 66세: 골밀도·인지기능·노인신체기능
     me = client.put("/api/users/me", json={"birthYear": 1960, "gender": "F"}).json()
     ids = {i["id"] for i in me["checkupItems"]}
-    assert {"bone", "cognitive", "elderly"} <= ids and "lipid" not in ids  # 여성은 40세부터 4년마다라 66세는 아님
+    assert {"bone", "cognitive", "elderly", "lungFunction"} <= ids and "lipid" not in ids  # 여성은 40세부터 4년마다라 66세는 아님
 
 
 def test_cancer_screening_rules(client):
@@ -175,7 +175,7 @@ def test_cancer_screening_rules(client):
 
 
 def test_confirm_test_after_suspected_hypertension(client):
-    upload_and_confirm(client, values={"sbp": 150, "dbp": 95, "fbs": 90})
+    upload_and_confirm(client, values={"sbp": 150, "dbp": 95, "fbs": 90, "tc": 180, "ldl": 100, "hdl": 55, "tg": 120})
     me = client.get("/api/users/me").json()
     assert me["confirmTest"]["diseases"] == ["고혈압"] and me["confirmTest"]["deadline"] == "2027-03-31"
     assert any("환수" in n for n in me["notes"])

@@ -52,6 +52,7 @@ export default function Home({ go }: { go: (r: Route) => void }) {
             : <>{odd}년에 태어난 분은 {odd}년에 무료로 받습니다. 공단 조회 결과가 다르면 내 정보에서 바꿀 수 있어요.</>} 비용은 건강보험이 부담합니다.</p>
         {t.notes.map((n) => <p key={n} className="small muted">{n}</p>)}
         <div className="actions">
+          <button className="btn flat" onClick={() => go('guide')}>건강검진 주의사항</button>
           <button className="btn flat" onClick={() => go('upload')}>결과지 등록</button>
           {due ? <button className="btn" onClick={toCenters}>근처 검진기관 보기</button>
             : <button className="btn" onClick={() => go('results')}>검진 해석 보기</button>}
