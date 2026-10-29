@@ -101,6 +101,13 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
             {p.sex === 'F'
               ? <Seg label="임신·수유 중" options={[[0, '아니요'], [1, '예']]} value={p.pregnant ? 1 : 0} onChange={(v) => upd({ pregnant: v === 1 })} />
               : <span />}
+            <div className="field"><label htmlFor="ob-height">키 (cm)</label>
+              <input id="ob-height" type="number" inputMode="decimal" min={100} max={230} step="0.1" placeholder="예: 170"
+                value={p.heightCm ?? ''} onChange={(e) => upd({ heightCm: e.target.value ? Number(e.target.value) : undefined })} /></div>
+            <div className="field"><label htmlFor="ob-weight">몸무게 (kg)</label>
+              <input id="ob-weight" type="number" inputMode="decimal" min={20} max={300} step="0.1" placeholder="예: 65"
+                aria-describedby="ob-bmi" value={p.weightKg ?? ''} onChange={(e) => upd({ weightKg: e.target.value ? Number(e.target.value) : undefined })} />
+              {p.heightCm && p.weightKg ? <small id="ob-bmi" className="muted">체질량지수 {(p.weightKg / (p.heightCm / 100) ** 2).toFixed(1)}</small> : null}</div>
             <div className="field"><label htmlFor="ob-last">마지막 검진 연도</label>
               <input id="ob-last" type="number" value={p.lastCheckupYear ?? ''} placeholder="예: 2024" aria-describedby="ob-last-hint" onChange={(e) => upd({ lastCheckupYear: e.target.value ? Number(e.target.value) : null })} />
               <small id="ob-last-hint" className="muted">받은 적 없으면 비워 두십시오.</small></div>

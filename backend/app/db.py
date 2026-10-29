@@ -83,6 +83,7 @@ DEMO_USER = {
     "birthYear": 1986,
     "gender": "M",
     "heightCm": 174,
+    "weightKg": 76.2,
     "lifestyle": {"smoking": "never", "drinkingPerWeek": 2, "drinksPerSession": 3, "exercisePerWeek": 1,
                   "lowSunlight": True, "sleepHours": 6.5, "diet": ["eatOut"]},
     "medications": ["아토르바스타틴"],
@@ -265,7 +266,7 @@ def create_user(conn, username, password_hash, data, is_guest=False):
 def new_user_data(name):
     return {
         **{k: v for k, v in DEMO_USER.items() if k in ("lifestyle", "reminders", "mydata", "location", "address")},
-        "name": name, "birthYear": 1990, "gender": "M", "heightCm": None,
+        "name": name, "birthYear": 1990, "gender": "M", "heightCm": None, "weightKg": None,
         "lifestyle": {"smoking": "never", "drinkingPerWeek": 0, "drinksPerSession": 0, "exercisePerWeek": 0,
                       "lowSunlight": False, "sleepHours": 7, "diet": []},
         "medications": [], "currentSupplements": [], "conditions": [], "allergies": [], "customAllergies": [],

@@ -31,7 +31,7 @@ const toTiming = (slots: Slot[]): Timing => (slots[0] === 'bedtime' ? 'evening' 
 const firstEntry = (o: Record<string, string>) => Object.entries(o)[0] ?? ['', '']
 
 interface RUser {
-  name: string; birthYear: number; gender: 'M' | 'F'; heightCm?: number; medications: string[]; lastCheckupDate: string | null
+  name: string; birthYear: number; gender: 'M' | 'F'; heightCm?: number | null; weightKg?: number | null; medications: string[]; lastCheckupDate: string | null
   jobType?: JobType; confirmedTargetYear?: number | null
   address?: Address
   onboarded?: boolean // 새로 가입한 계정은 false. 시작 화면을 먼저 보여 준다.
@@ -137,7 +137,7 @@ export async function loadAll() {
     conditions: toLabel(codes.condition, user.conditions),
     allergies: [...toLabel(codes.allergy, user.allergies), ...(user.customAllergies ?? [])],
     pregnant: !!(L.pregnant || L.breastfeeding),
-    heightCm: user.heightCm,
+    heightCm: user.heightCm ?? undefined, weightKg: user.weightKg ?? undefined,
     jobType: user.jobType, confirmedTargetYear: user.confirmedTargetYear ?? null,
     liverHighRisk: !!user.liverHighRisk, packYears: user.packYears ?? null,
     cancerSpecialCase: user.cancerSpecialCase ?? [], colonoscopyYear: user.colonoscopyYear ?? null,
@@ -211,6 +211,7 @@ export const remote = {
     const pregnant = p.sex === 'F' && !!p.pregnant
     return call('/api/users/me', json('PUT', {
       name: p.name, birthYear: p.birthYear, gender: p.sex, medications: p.medications,
+      ...(p.heightCm && { heightCm: p.heightCm }), ...(p.weightKg && { weightKg: p.weightKg }),
       ...(p.address?.sido && { address: p.address }),
       ...(p.jobType && { jobType: p.jobType }), confirmedTargetYear: p.confirmedTargetYear ?? 0,
       liverHighRisk: !!p.liverHighRisk, packYears: p.packYears ?? 0, cancerSpecialCase: p.cancerSpecialCase ?? [], colonoscopyYear: p.colonoscopyYear ?? 0,

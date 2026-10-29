@@ -39,6 +39,7 @@ export interface UserProfile {
   currentSupplements: string[]
   lifestyle: Lifestyle
   heightCm?: number
+  weightKg?: number // 바꾸면 체중 측정 기록으로도 남는다(서버 모드)
   conditions?: string[]
   allergies?: string[]
   pregnant?: boolean

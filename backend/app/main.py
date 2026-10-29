@@ -6,7 +6,8 @@ import os
 import re
 from pathlib import Path
 from contextlib import asynccontextmanager
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 from typing import Optional
 from urllib.parse import quote
 
@@ -20,6 +21,7 @@ from . import auth, db, logic, measure, ocr, options, public_api, regions
 from . import reference as ref
 
 TIME_SLOTS = ["morning", "lunch", "evening", "bedtime"]
+KST = ZoneInfo("Asia/Seoul")
 
 
 @asynccontextmanager
@@ -173,7 +175,8 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     birthYear: Optional[int] = None
     gender: Optional[str] = None
-    heightCm: Optional[float] = None
+    heightCm: Optional[float] = None  # 체질량지수 계산에 쓴다
+    weightKg: Optional[float] = None  # 바꾸면 체중 측정 기록으로도 남긴다
     jobType: Optional[str] = None  # office·nonOffice·other
     confirmedTargetYear: Optional[int] = None  # 공단 조회에서 대상자로 나온 해. 0이면 지운다.
     # 암검진 대상 판정에 쓰는 값. 0이면 지운다.
@@ -259,6 +262,10 @@ def update_me(body: UserUpdate):
         errors += bad
     if errors:
         raise HTTPException(422, "보기에 없는 값입니다. " + " / ".join(errors))
+    if body.heightCm is not None and not 100 <= body.heightCm <= 230:
+        raise HTTPException(422, "키는 100~230cm 사이로 입력해 주십시오.")
+    if body.weightKg is not None and not 20 <= body.weightKg <= 300:
+        raise HTTPException(422, "몸무게는 20~300kg 사이로 입력해 주십시오.")
     address = clean_address(body.address) if body.address is not None else None
     # 보기에 없는 약은 '직접 입력'으로 저장하고, 상호작용 규칙이 없다고 알린다.
     unknown = [m for m in body.medications or [] if m not in ref.MEDICATIONS]
@@ -270,6 +277,11 @@ def update_me(body: UserUpdate):
                 changes[key] = None
         if lifestyle is not None:
             changes["lifestyle"] = {**user.get("lifestyle", {}), **lifestyle}
+        if body.weightKg is not None and body.weightKg != user.get("weightKg"):
+            conn.execute(
+                "INSERT INTO measurements (user_id, type, measured_at, item_values, fasting, note) VALUES (?, 'weight', ?, ?, NULL, ?)",
+                (db.uid(), datetime.now(KST).strftime("%Y-%m-%dT%H:%M"), json.dumps({"weightKg": body.weightKg}), "내 정보에서 입력"),
+            )
         if address is not None:
             changes["address"] = address
             changes["location"] = locate(address)
