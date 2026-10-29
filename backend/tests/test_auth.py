@@ -116,3 +116,15 @@ def test_new_account_can_upload_and_get_recommendations(app):
         c.patch(f"/api/checkups/{up.json()['id']}", json={"confirm": True})
         assert c.get("/api/recommendations").status_code == 200
         assert len(c.get("/api/checkups").json()) == 1
+
+
+def test_height_and_weight_make_bmi(app):
+    with TestClient(app) as c:
+        c.post("/api/auth/signup", json={"username": "jane", "password": "password9"})
+        assert c.put("/api/users/me", json={"heightCm": 99}).status_code == 422
+        me = c.put("/api/users/me", json={"heightCm": 165, "weightKg": 60}).json()
+        assert me["heightCm"] == 165 and me["weightKg"] == 60
+        weights = c.get("/api/measurements").json()
+        assert len(weights) == 1 and weights[0]["codes"] == {"bmi": 22.0}
+        c.put("/api/users/me", json={"weightKg": 60})  # 같은 값이면 기록을 더 남기지 않는다
+        assert len(c.get("/api/measurements").json()) == 1

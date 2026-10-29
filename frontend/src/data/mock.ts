@@ -14,6 +14,7 @@ export const SAMPLE_PROFILE: UserProfile = {
   conditions: [],
   allergies: [],
   heightCm: 175,
+  weightKg: 78,
 }
 
 const units: Record<string, [string, string]> = {
