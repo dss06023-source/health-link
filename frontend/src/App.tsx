@@ -42,26 +42,26 @@ function heroOf(route: Route, s: AppStore): { title: string; sub: string } {
   switch (route) {
     case 'home': {
       const t = checkupTarget(p)
-      if (t.isTarget && !t.done) return { title: `검진 마감까지 D-${t.daysLeft}`, sub: `${p.name} 님은 ${t.year}년 일반건강검진 대상이에요` }
-      if (t.done) return { title: `${t.year}년 검진을 받으셨어요`, sub: '결과를 바탕으로 영양 구성을 관리하고 있어요' }
-      return { title: `${t.nextYear}년에 검진 대상이에요`, sub: `${p.name} 님의 다음 국가건강검진` }
+      if (t.isTarget && !t.done) return { title: `검진 마감까지 D-${t.daysLeft}`, sub: `${p.name} 님은 ${t.year}년 일반건강검진 대상입니다` }
+      if (t.done) return { title: `${t.year}년 검진을 받으셨습니다`, sub: '결과를 바탕으로 영양 구성을 관리하고 있습니다' }
+      return { title: `${t.nextYear}년에 검진 대상입니다`, sub: `${p.name} 님의 다음 국가건강검진` }
     }
     case 'results': {
       const last = latestCheckup(s)
       const n = interpret(last.items, p.sex).filter((i) => i.status !== 'normal').length
-      return { title: n ? `${n}개 항목이 기준을 벗어났어요` : '모든 항목이 정상이에요', sub: `${last.label} · ${last.date}` }
+      return { title: n ? `${n}개 항목이 기준을 벗어났습니다` : '모든 항목이 정상입니다', sub: `${last.label} · ${last.date}` }
     }
-    case 'guide': return { title: '건강검진 주의사항', sub: `${p.name} 님에게 해당하는 안내만 모았어요` }
-    case 'upload': return { title: '검진 결과지 등록', sub: '사진이나 PDF를 올리면 수치를 읽어 와요' }
-    case 'recommend': return { title: '맞춤 영양 구성', sub: '검진 수치, 생활습관, 복용 약을 함께 봤어요' }
+    case 'guide': return { title: '건강검진 주의사항', sub: `${p.name} 님에게 해당하는 안내만 모았습니다` }
+    case 'upload': return { title: '검진 결과지 등록', sub: '사진이나 PDF를 올리면 수치를 읽어 옵니다' }
+    case 'recommend': return { title: '맞춤 영양 구성', sub: '검진 수치, 생활습관, 복용 약을 함께 보았습니다' }
     case 'intake': {
       const active = s.supplements.filter((x) => !x.paused)
       const left = active.filter((x) => !s.intake[today]?.[x.id]).length
-      if (!active.length) return { title: '복용 관리', sub: '추천 구성을 고르면 여기서 챙겨요' }
-      return { title: left ? `오늘 ${left}개 남았어요` : '오늘 다 챙기셨어요', sub: `영양제 ${active.length}가지 · 시간대별 알림` }
+      if (!active.length) return { title: '복용 관리', sub: '추천 구성을 고르면 여기서 챙깁니다' }
+      return { title: left ? `오늘 ${left}개 남았습니다` : '오늘 다 챙기셨습니다', sub: `영양제 ${active.length}가지 · 시간대별 알림` }
     }
-    case 'measure': return { title: '중간 점검', sub: '집에서 잰 혈압·혈당·체중으로 변화를 봐요' }
-    case 'report': return { title: '변화 리포트', sub: '복용 전후 검진 수치를 비교해요' }
+    case 'measure': return { title: '중간 점검', sub: '집에서 잰 혈압·혈당·체중으로 변화를 봅니다' }
+    case 'report': return { title: '변화 리포트', sub: '복용 전후 검진 수치를 비교합니다' }
   }
 }
 
@@ -89,8 +89,8 @@ function Shell() {
       <div className="main narrow">
         <section className="sec">
           <h2>{store.remoteError ? '서버에 연결하지 못했습니다' : '서버에서 불러오는 중입니다'}</h2>
-          <p className="muted">{store.remoteError ?? '잠시만 기다려 주세요.'}</p>
-          {store.remoteError && <p className="small muted">backend 폴더에서 <code>uvicorn app.main:app --port 8000</code>을 먼저 실행했는지 확인해 주세요.</p>}
+          <p className="muted">{store.remoteError ?? '잠시만 기다려 주십시오.'}</p>
+          {store.remoteError && <p className="small muted">backend 폴더에서 <code>uvicorn app.main:app --port 8000</code>을 먼저 실행했는지 확인해 주십시오.</p>}
         </section>
       </div>
     )

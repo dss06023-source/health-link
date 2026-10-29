@@ -70,7 +70,7 @@ export default function CenterSheet({ c, onClose }: { c: CheckupCenter; onClose:
         {place && <a className="chip" href={place.routeLink} target="_blank" rel="noreferrer">길찾기</a>}
         {c.bookingUrl && <a className="chip" href={c.bookingUrl} target="_blank" rel="noreferrer">공단 검진 안내</a>}
       </div>
-      <p className="small muted">예약은 기관에 전화로 합니다. 운영 시간과 검진 가능 여부는 통화로 확인해 주세요.</p>
+      <p className="small muted">예약은 기관에 전화로 합니다. 운영 시간과 검진 가능 여부는 통화로 확인해 주십시오.</p>
     </Sheet>
   )
 }

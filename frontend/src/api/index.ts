@@ -50,7 +50,7 @@ export const MAX_UPLOAD_FILES = 4
 
 export async function uploadCheckup(files: File[]): Promise<UploadResult> {
   if (USE_API) {
-    if (!files.length) throw new Error('서버 연결 모드에서는 실제 결과지 사진이나 PDF를 골라 주세요.')
+    if (!files.length) throw new Error('서버 연결 모드에서는 실제 결과지 사진이나 PDF를 골라 주십시오.')
     return remote.upload(files)
   }
   await wait(400)

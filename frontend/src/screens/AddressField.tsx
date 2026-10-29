@@ -26,7 +26,7 @@ export default function AddressField({ value, onChange }: { value?: Address; onC
     const text = q.trim()
     if (text.length < 2) return
     setBusy(true); setErr(null)
-    try { setHits(await searchAddress(text)) } catch { setErr('주소 검색에 실패했습니다. 잠시 후 다시 해 주세요.'); setHits(null) }
+    try { setHits(await searchAddress(text)) } catch { setErr('주소 검색에 실패했습니다. 잠시 후 다시 해 주십시오.'); setHits(null) }
     setBusy(false)
   }
   const pick = (h: AddressHit) => {
@@ -73,7 +73,7 @@ export default function AddressField({ value, onChange }: { value?: Address; onC
                 <small>{[h.buildingName, h.roadAddress && h.jibunAddress, h.zipCode].filter(Boolean).join(' · ')}</small></span>
             </button></li>
           ))}
-          {!hits.length && <li className="li muted">찾은 주소가 없습니다. 도로명과 건물 번호를 함께 넣어 보세요.</li>}
+          {!hits.length && <li className="li muted">찾은 주소가 없습니다. 도로명과 건물 번호를 함께 넣어 보십시오.</li>}
         </ul>
       )}
 

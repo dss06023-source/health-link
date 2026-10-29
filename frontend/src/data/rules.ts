@@ -46,7 +46,7 @@ export const ITEM_RULES: ItemRule[] = [
     plain: {
       normal: '심장이 피를 내보낼 때의 압력이 적정합니다.',
       caution: '고혈압 전 단계입니다. 짠 음식을 줄이고 걷기를 늘리면 내려갈 수 있습니다.',
-      danger: '고혈압이 의심됩니다. 재측정 후 진료를 받아 보세요.',
+      danger: '고혈압이 의심됩니다. 재측정 후 진료를 받아 보십시오.',
     },
   },
   {
@@ -69,7 +69,7 @@ export const ITEM_RULES: ItemRule[] = [
     code: 'TC', name: '총콜레스테롤', unit: 'mg/dL', group: '이상지질혈증',
     plain: {
       normal: '혈액 속 콜레스테롤 총량이 적정합니다.',
-      caution: '경계 수준입니다. 기름진 음식과 가공육을 줄여 보세요.',
+      caution: '경계 수준입니다. 기름진 음식과 가공육을 줄여 보십시오.',
       danger: '높습니다. LDL 수치와 함께 진료가 필요합니다.',
     },
   },
@@ -78,7 +78,7 @@ export const ITEM_RULES: ItemRule[] = [
     plain: {
       normal: '혈관 벽에 쌓이는 콜레스테롤이 적정합니다.',
       caution: '경계 수준입니다. 혈관 건강을 위해 관리가 필요합니다.',
-      danger: '높습니다. 약물 치료가 필요한지 상담을 받아 보세요.',
+      danger: '높습니다. 약물 치료가 필요한지 상담을 받아 보십시오.',
     },
   },
   {
@@ -94,14 +94,14 @@ export const ITEM_RULES: ItemRule[] = [
     plain: {
       normal: '혈액 속 지방이 적정합니다.',
       caution: '경계 수준입니다. 술과 탄수화물 간식을 줄이면 빠르게 내려갑니다.',
-      danger: '높습니다. 음주와 단 음식을 줄이고 3~6개월 뒤 다시 확인하세요.',
+      danger: '높습니다. 음주와 단 음식을 줄이고 3~6개월 뒤 다시 확인하십시오.',
     },
   },
   {
     code: 'AST', name: 'AST', unit: 'IU/L', group: '간',
     plain: {
       normal: '간세포 손상 지표가 정상입니다.',
-      caution: '약간 높습니다. 음주나 과로 여부를 확인해 보세요.',
+      caution: '약간 높습니다. 음주나 과로 여부를 확인해 보십시오.',
       danger: '간 손상이 의심됩니다. 진료를 권합니다.',
     },
   },
@@ -117,8 +117,8 @@ export const ITEM_RULES: ItemRule[] = [
     code: 'GGT', name: '감마지티피', unit: 'IU/L', group: '간',
     plain: {
       normal: '술과 관련된 간 지표가 정상입니다.',
-      caution: '음주와 관련이 큰 지표입니다. 주 2회 이상 마신다면 줄여 보세요.',
-      danger: '많이 높습니다. 금주와 함께 진료를 받아 보세요.',
+      caution: '음주와 관련이 큰 지표입니다. 주 2회 이상 마신다면 줄여 보십시오.',
+      danger: '많이 높습니다. 금주와 함께 진료를 받아 보십시오.',
     },
   },
   {
@@ -126,7 +126,7 @@ export const ITEM_RULES: ItemRule[] = [
     plain: {
       normal: '산소를 나르는 혈색소가 적정합니다.',
       caution: '조금 벗어났습니다. 어지러움이 있다면 원인 확인이 필요합니다.',
-      danger: '빈혈이 의심됩니다. 원인 검사를 받아 보세요.',
+      danger: '빈혈이 의심됩니다. 원인 검사를 받아 보십시오.',
     },
   },
   {
@@ -134,7 +134,7 @@ export const ITEM_RULES: ItemRule[] = [
     plain: {
       normal: '키에 비해 체중이 적정합니다.',
       caution: '경계 범위(25~29.9)입니다. 체중의 5%만 줄여도 혈압·혈당이 함께 좋아집니다.',
-      danger: '30 이상이거나 18.5 미만입니다. 체중 관리 상담을 받아 보세요.',
+      danger: '30 이상이거나 18.5 미만입니다. 체중 관리 상담을 받아 보십시오.',
     },
   },
   {
@@ -322,34 +322,34 @@ export function checkWarnings(names: string[], p: UserProfile, items: Interprete
   const med = (m: string) => p.medications.includes(m)
   const w: Warning[] = []
   if (has('오메가-3') && (med('와파린') || med('아스피린') || med('클로피도그렐') || med('기타 항응고제')))
-    w.push({ level: 'danger', title: '오메가-3 + 항응고·항혈소판제', detail: '피가 멈추는 시간이 길어질 수 있습니다. 복용 전 담당 의사나 약사와 상의하세요.' })
+    w.push({ level: 'danger', title: '오메가-3 + 항응고·항혈소판제', detail: '피가 멈추는 시간이 길어질 수 있습니다. 복용 전 담당 의사나 약사와 상의하십시오.' })
   if (p.currentSupplements.includes('홍국') && med('스타틴'))
-    w.push({ level: 'danger', title: '홍국 + 스타틴', detail: '홍국에 스타틴과 같은 성분(모나콜린K)이 있어 작용이 겹칩니다. 둘 중 하나는 중단을 상의하세요.' })
+    w.push({ level: 'danger', title: '홍국 + 스타틴', detail: '홍국에 스타틴과 같은 성분(모나콜린K)이 있어 작용이 겹칩니다. 둘 중 하나는 중단을 상의하십시오.' })
   if (has('철분') && med('레보티록신'))
-    w.push({ level: 'caution', title: '철분 + 갑상선약', detail: '함께 먹으면 갑상선약 흡수가 줄어듭니다. 4시간 이상 간격을 두세요.' })
+    w.push({ level: 'caution', title: '철분 + 갑상선약', detail: '함께 먹으면 갑상선약 흡수가 줄어듭니다. 4시간 이상 간격을 두십시오.' })
   if (has('철분') && p.currentSupplements.includes('칼슘'))
-    w.push({ level: 'caution', title: '철분 + 칼슘', detail: '서로 흡수를 방해합니다. 아침·저녁으로 나눠 드세요.' })
+    w.push({ level: 'caution', title: '철분 + 칼슘', detail: '서로 흡수를 방해합니다. 아침·저녁으로 나눠 드십시오.' })
   if (has('비타민D') && p.currentSupplements.includes('종합비타민'))
-    w.push({ level: 'info', title: '비타민D 중복', detail: '종합비타민에도 비타민D가 들어 있습니다. 합친 양이 하루 4,000IU를 넘지 않는지 라벨을 확인하세요.' })
+    w.push({ level: 'info', title: '비타민D 중복', detail: '종합비타민에도 비타민D가 들어 있습니다. 합친 양이 하루 4,000IU를 넘지 않는지 라벨을 확인하십시오.' })
   if (has('밀크씨슬') && p.lifestyle.drinkingPerWeek >= 2)
     w.push({ level: 'info', title: '간 수치는 절주가 먼저', detail: '주 2회 이상 음주하신다면 영양제보다 절주의 효과가 훨씬 큽니다.' })
   if (has('비타민K') && med('와파린'))
-    w.push({ level: 'danger', title: '비타민K + 와파린', detail: '비타민K는 와파린의 효과를 약하게 만듭니다. 시작하거나 끊기 전에 담당 의사와 상의하세요.' })
+    w.push({ level: 'danger', title: '비타민K + 와파린', detail: '비타민K는 와파린의 효과를 약하게 만듭니다. 시작하거나 끊기 전에 담당 의사와 상의하십시오.' })
   const minerals = ['칼슘', '철분', '마그네슘', '아연'].filter(has)
   if (minerals.length && med('항생제'))
-    w.push({ level: 'caution', title: `${minerals.join('·')} + 항생제`, detail: '일부 항생제(테트라사이클린·퀴놀론 계열)는 미네랄과 함께 먹으면 흡수가 줄어듭니다. 2시간 이상 간격을 두고, 약사에게 확인하세요.' })
+    w.push({ level: 'caution', title: `${minerals.join('·')} + 항생제`, detail: '일부 항생제(테트라사이클린·퀴놀론 계열)는 미네랄과 함께 먹으면 흡수가 줄어듭니다. 2시간 이상 간격을 두고, 약사에게 확인하십시오.' })
   if (minerals.length && med('골다공증약'))
-    w.push({ level: 'caution', title: `${minerals.join('·')} + 골다공증약`, detail: '먹는 골다공증약은 다른 것과 함께 먹으면 흡수가 크게 줄어듭니다. 약을 먼저 먹고 최소 30분 뒤에 드세요.' })
+    w.push({ level: 'caution', title: `${minerals.join('·')} + 골다공증약`, detail: '먹는 골다공증약은 다른 것과 함께 먹으면 흡수가 크게 줄어듭니다. 약을 먼저 먹고 최소 30분 뒤에 드십시오.' })
   if (has('칼슘') && med('레보티록신'))
-    w.push({ level: 'caution', title: '칼슘 + 갑상선약', detail: '함께 먹으면 갑상선약 흡수가 줄어듭니다. 4시간 이상 간격을 두세요.' })
+    w.push({ level: 'caution', title: '칼슘 + 갑상선약', detail: '함께 먹으면 갑상선약 흡수가 줄어듭니다. 4시간 이상 간격을 두십시오.' })
   if (has('마그네슘') && p.conditions?.includes('신장질환'))
-    w.push({ level: 'caution', title: '마그네슘 + 신장질환', detail: '콩팥 기능이 떨어져 있으면 마그네슘이 몸에 쌓일 수 있습니다. 복용 전 담당 의사와 상의하세요.' })
+    w.push({ level: 'caution', title: '마그네슘 + 신장질환', detail: '콩팥 기능이 떨어져 있으면 마그네슘이 몸에 쌓일 수 있습니다. 복용 전 담당 의사와 상의하십시오.' })
   if (has('오메가-3') && p.allergies?.includes('갑각류'))
-    w.push({ level: 'caution', title: '갑각류 알레르기', detail: '크릴오일 등 일부 오메가-3 제품은 갑각류가 원료입니다. 원료를 확인하세요.' })
+    w.push({ level: 'caution', title: '갑각류 알레르기', detail: '크릴오일 등 일부 오메가-3 제품은 갑각류가 원료입니다. 원료를 확인하십시오.' })
   if (p.pregnant)
-    w.push({ level: 'caution', title: '임신·수유 중', detail: '임신·수유 중에는 필요한 영양소와 피해야 할 성분이 다릅니다. 영양제는 산부인과 의사와 상의한 뒤 시작하세요.' })
+    w.push({ level: 'caution', title: '임신·수유 중', detail: '임신·수유 중에는 필요한 영양소와 피해야 할 성분이 다릅니다. 영양제는 산부인과 의사와 상의한 뒤 시작하십시오.' })
   if (items.some((i) => i.status === 'danger' && ['SBP', 'FBS', 'LDL', 'EGFR'].includes(i.code)))
-    w.push({ level: 'caution', title: '진료가 먼저 필요한 항목이 있습니다', detail: '영양제는 치료를 대신하지 않습니다. 질환의심 항목은 병원에서 먼저 확인하세요.' })
+    w.push({ level: 'caution', title: '진료가 먼저 필요한 항목이 있습니다', detail: '영양제는 치료를 대신하지 않습니다. 질환의심 항목은 병원에서 먼저 확인하십시오.' })
   return w
 }
 

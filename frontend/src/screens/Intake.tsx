@@ -173,7 +173,7 @@ export default function Intake() {
 
       {toast && <Snackbar text={toast} onClose={() => setToast(null)} />}
       {moving && (
-        <Sheet title={`${josa(moving.x.name, '을', '를')} ${TIMING_LABEL[moving.to]}으로 바꿀까요?`} onClose={() => setMoving(null)}
+        <Sheet title={`${josa(moving.x.name, '을', '를')} ${TIMING_LABEL[moving.to]}으로 바꾸시겠습니까?`} onClose={() => setMoving(null)}
           actions={<><button className="btn flat" onClick={() => setMoving(null)}>취소</button>
             <button className="btn flat strong" onClick={() => { s.updateSupplement(moving.x.id, { timing: moving.to }); setMoving(null) }}>바꾸기</button></>}>
           <p>{josa(moving.x.name, '은', '는')} {moving.guide.reason}</p>
@@ -181,10 +181,10 @@ export default function Intake() {
         </Sheet>
       )}
       {removing && (
-        <Sheet title={`${removing.name} 복용을 그만둘까요?`} onClose={() => setRemoving(null)}
+        <Sheet title={`${removing.name} 복용을 그만두시겠습니까?`} onClose={() => setRemoving(null)}
           actions={<><button className="btn flat" onClick={() => setRemoving(null)}>취소</button>
             <button className="btn flat danger" onClick={() => { s.removeSupplement(removing.id); setRemoving(null) }}>그만두기</button></>}>
-          <p className="small muted">구성에서 빠지고 알림도 멈춥니다. 잠시 쉬려면 스위치로 일시정지하세요.</p>
+          <p className="small muted">구성에서 빠지고 알림도 멈춥니다. 잠시 쉬려면 스위치로 일시정지하십시오.</p>
         </Sheet>
       )}
     </>

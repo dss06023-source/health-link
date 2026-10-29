@@ -26,7 +26,7 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
   function pick(list: FileList | null | undefined) {
     const files = Array.from(list ?? [])
     if (!files.length) return
-    if (files.length > MAX_UPLOAD_FILES) { setError(`결과지는 한 번에 ${MAX_UPLOAD_FILES}장까지 올릴 수 있습니다. ${files.length}장을 고르셨어요.`); return }
+    if (files.length > MAX_UPLOAD_FILES) { setError(`결과지는 한 번에 ${MAX_UPLOAD_FILES}장까지 올릴 수 있습니다. ${files.length}장을 고르셨습니다.`); return }
     start(files, files.length > 1 ? `${files.length}장 · ${files.map((f) => f.name).join(', ')}` : files[0].name)
   }
 
@@ -40,7 +40,7 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
       const r = await result
       setStep(4); setRemoteId(r.id); setItems(r.items); setMissing(r.missing); setReview(r.review); setNote(r.message)
     } catch (e) {
-      setError(e instanceof Error ? e.message : '결과지를 읽지 못했습니다. 다시 시도해 주세요.')
+      setError(e instanceof Error ? e.message : '결과지를 읽지 못했습니다. 다시 시도해 주십시오.')
       setStep(-1)
     }
   }
@@ -53,14 +53,14 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
     <>
     <div className="cols">
       <section className="sec">
-        <h2>결과지를 올려 주세요</h2>
+        <h2>결과지를 올려 주십시오</h2>
         <p className="small muted">종이 결과지 사진(여러 장이면 장마다 찍어 4장까지 한 번에), 또는 건강보험공단 홈페이지에서 받은 결과 PDF를 올리면 됩니다.</p>
         <div className={`drop${over ? ' over' : ''}`}
           onDragOver={(e) => { e.preventDefault(); setOver(true) }}
           onDragLeave={() => setOver(false)}
           onDrop={(e) => { e.preventDefault(); setOver(false); pick(e.dataTransfer.files) }}>
           <span className="drop-ico"><Icon name="camera" size={28} /></span>
-          <div><b>결과지를 여기에 놓거나 파일을 고르세요</b><p className="small muted">JPG · PNG · PDF, 여러 장이면 {MAX_UPLOAD_FILES}장까지 한 번에 고르세요</p></div>
+          <div><b>결과지를 여기에 놓거나 파일을 고르십시오</b><p className="small muted">JPG · PNG · PDF, 여러 장이면 {MAX_UPLOAD_FILES}장까지 한 번에 고르십시오</p></div>
           <div className="row" style={{ justifyContent: 'center' }}>
             {!USE_API && <button className="btn flat" onClick={() => start([], '2026_건강검진결과_샘플.pdf')}>샘플로 시연</button>}
             <button className="btn" onClick={() => input.current?.click()}>파일 선택</button>
@@ -89,7 +89,7 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
       </section>
 
       <div>
-        <h2 className="subhead">읽어 낸 수치 {items && <span>{items.length}개 항목{missing.length > 0 && ` · 못 찾은 ${missing.length}개는 직접 입력`} · 다른 값은 눌러서 고쳐 주세요</span>}</h2>
+        <h2 className="subhead">읽어 낸 수치 {items && <span>{items.length}개 항목{missing.length > 0 && ` · 못 찾은 ${missing.length}개는 직접 입력`} · 다른 값은 눌러서 고쳐 주십시오</span>}</h2>
         {!items && <section className="sec"><p className="small muted">결과지를 올리면 여기에서 인식된 수치를 확인하고, 잘못 읽힌 값은 바로 고칠 수 있습니다.</p></section>}
         {items && (
           <>
@@ -97,7 +97,7 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
             <ul className="list">
               {preview.map((it, idx) => (
                 <li key={it.code} className="li">
-                  <label className="li-main" htmlFor={`ocr-${it.code}`}><b>{it.name}</b><small>참고치 {it.rangeText}{review.includes(it.code) && <> · <em className="st caution">다시 확인해 주세요</em></>}</small></label>
+                  <label className="li-main" htmlFor={`ocr-${it.code}`}><b>{it.name}</b><small>참고치 {it.rangeText}{review.includes(it.code) && <> · <em className="st caution">다시 확인해 주십시오</em></>}</small></label>
                   <span className="li-val">
                     <span className="num-line"><input id={`ocr-${it.code}`} className="num-input" aria-label={`${it.name} 수치`} type="number" step="0.1" value={it.value}
                       onChange={(e) => setItems(items.map((x, j) => (j === idx ? { ...x, value: Number(e.target.value) } : x)))} />
@@ -108,7 +108,7 @@ export default function Upload({ go }: { go: (r: Route) => void }) {
               ))}
               {missing.map((m, idx) => (
                 <li key={m.code} className="li">
-                  <label className="li-main" htmlFor={`ocr-${m.code}`}><b>{m.name}</b><small>결과지에서 찾지 못했어요. 있으면 적어 주세요</small></label>
+                  <label className="li-main" htmlFor={`ocr-${m.code}`}><b>{m.name}</b><small>결과지에서 찾지 못했습니다. 있으면 적어 주십시오</small></label>
                   <span className="li-val">
                     <span className="num-line"><input id={`ocr-${m.code}`} className="num-input" aria-label={`${m.name} 수치`} type="number" step="0.1" placeholder="—"
                       value={Number.isFinite(m.value) ? m.value : ''}
