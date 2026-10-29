@@ -70,7 +70,7 @@ export default function Mydata({ go }: { go: (r: Route) => void }) {
       </div>
 
       {ask && (
-        <Sheet title="건강정보를 받아 올까요?" onClose={() => setAsk(false)}
+        <Sheet title="건강정보를 받아 오시겠습니까?" onClose={() => setAsk(false)}
           actions={<><button className="btn flat" onClick={() => setAsk(false)}>취소</button>
             <button className="btn flat strong" disabled={!agree} onClick={() => { s.mydataConnect(); setAsk(false) }}>동의하고 연동</button></>}>
           <p className="small muted">건강검진 결과와 처방(투약) 정보를 건강잇다로 받아 옵니다. 건강정보는 민감정보이며, 동의는 언제든 철회할 수 있습니다.</p>

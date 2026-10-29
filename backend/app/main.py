@@ -71,6 +71,8 @@ def supplement_row(row):
         "dose": info["dose"],
         "claim": info["claim"],
         "timeSlots": json.loads(row["time_slots"]),
+        "recommendedSlots": info["timeSlots"],  # 권장 시간대와 그 이유(사용자가 시간대를 바꿀 때 보여 준다)
+        "timingReason": info["timingReason"],
         "paused": bool(row["paused"]),
         "startedAt": row["started_at"],
         "endedAt": row["ended_at"],
@@ -148,7 +150,7 @@ def checkup_notice(user, conn):
             notes.append(sched.S["notes"]["missedWorker"])
     if due:
         why = {"confirmed": " (공단 조회 결과)", "nonOffice": " (비사무직은 매년 대상)"}.get(reason, "")
-        message = f"{year}년 국가건강검진 대상자입니다{why}. 아직 검진 기록이 없습니다. 연말 전에 받으세요."
+        message = f"{year}년 국가건강검진 대상자입니다{why}. 아직 검진 기록이 없습니다. 연말 전에 받으십시오."
     elif is_target:
         message = f"{year}년 검진 결과가 등록되었습니다. 다음 검진은 {next_year}년입니다."
     else:
@@ -438,7 +440,7 @@ async def upload_checkup(file: Optional[UploadFile] = File(None), files: Optiona
     """
     uploads = ([file] if file else []) + (files or [])
     if not uploads:
-        raise HTTPException(422, "결과지 파일을 골라 주세요.")
+        raise HTTPException(422, "결과지 파일을 골라 주십시오.")
     if len(uploads) > MAX_UPLOAD_FILES:
         raise HTTPException(422, f"결과지는 한 번에 {MAX_UPLOAD_FILES}장까지 올릴 수 있습니다.")
     pages = []
@@ -460,7 +462,7 @@ async def upload_checkup(file: Optional[UploadFile] = File(None), files: Optiona
             except ocr.OCRUnavailable:
                 raise
             except Exception:
-                raise HTTPException(422, f"{name}: 파일을 열지 못했습니다. 다른 사진이나 PDF로 다시 올려 주세요.")
+                raise HTTPException(422, f"{name}: 파일을 열지 못했습니다. 다른 사진이나 PDF로 다시 올려 주십시오.")
             engines.append(engine)
             for code, (value, score) in page_found.items():
                 if code not in found or score > found[code][1]:
@@ -473,9 +475,9 @@ async def upload_checkup(file: Optional[UploadFile] = File(None), files: Optiona
         found = {code: (v, 0.98) for code, v in db.CHECKUP_2026_SAMPLE.items()}
         message = "사진 인식 모델이 없는 서버라 견본 값을 보여 줍니다. 실제 결과지 값과 다릅니다."
     elif not found:
-        raise HTTPException(422, "결과지에서 검진 수치를 찾지 못했습니다. 밝은 곳에서 표 전체가 반듯하게 나오도록 다시 찍거나 PDF를 올려 주세요.")
+        raise HTTPException(422, "결과지에서 검진 수치를 찾지 못했습니다. 밝은 곳에서 표 전체가 반듯하게 나오도록 다시 찍거나 PDF를 올려 주십시오.")
     else:
-        message = "인식한 수치를 확인해 주세요. 틀린 값은 고친 뒤 확정하세요."
+        message = "인식한 수치를 확인해 주십시오. 틀린 값은 고친 뒤 확정하십시오."
     fields = ocr.fields(found, names_units)
     values = {f["code"]: f["value"] for f in fields}
     with db.connect() as conn:
@@ -643,7 +645,7 @@ class SupplementUpdate(BaseModel):
 def check_slots(slots):
     bad = [s for s in slots or [] if s not in TIME_SLOTS]
     if bad:
-        raise HTTPException(422, f"timeSlots는 {', '.join(TIME_SLOTS)} 중에서 고르세요.")
+        raise HTTPException(422, f"timeSlots는 {', '.join(TIME_SLOTS)} 중에서 고르십시오.")
 
 
 @app.post("/api/supplements", status_code=201)

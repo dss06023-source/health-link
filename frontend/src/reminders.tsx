@@ -70,7 +70,7 @@ export function ReminderWatcher() {
   const close = () => setClosed((x) => [...x, `${today}:${first.timing}`])
   // One UI 스낵바는 버튼 하나. 닫으면 30분 뒤 다시 알린다(미루기).
   return (
-    <Snackbar text={<><b>{TIMING_LABEL[first.timing]} {first.time}</b> · {first.items.map((i) => i.name).join(', ')} 드실 시간이에요</>}
+    <Snackbar text={<><b>{TIMING_LABEL[first.timing]} {first.time}</b> · {first.items.map((i) => i.name).join(', ')} 드실 시간입니다</>}
       action="먹었어요" onAction={() => { first.items.forEach((i) => s.toggleIntake(today, i.id)); close() }}
       onClose={() => s.snooze(first.timing, 30)} closeLabel="30분 뒤 다시 알림" />
   )

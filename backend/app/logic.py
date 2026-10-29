@@ -72,7 +72,7 @@ def ingredient_overlaps(catalog_ids):
         message = f"{ingredient} 성분이 {names}에 함께 들어 있습니다. 하루 합계 {total:g}{unit}"
         if limit is not None:
             message += f"(상한 {limit:g}{unit})"
-        message += "로 상한을 넘습니다. 한 제품을 줄이세요." if over else "입니다."
+        message += "로 상한을 넘습니다. 한 제품을 줄이십시오." if over else "입니다."
         warnings.append({
             "type": "duplicate",
             "level": "caution" if over else "info",
@@ -181,6 +181,7 @@ def recommend(user, values, active_catalog_ids):
             "dose": info["dose"],
             "timing": info["timing"],
             "timeSlots": info["timeSlots"],
+            "timingReason": info["timingReason"],
             "claim": info["claim"],
             "dailyIntake": info.get("dailyIntake"),
             "cautions": info.get("cautions", []),

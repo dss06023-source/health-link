@@ -114,6 +114,14 @@ def test_supplement_add_pause_and_intake(client):
     assert all(x["id"] != s["id"] for x in client.get("/api/supplements").json())
 
 
+def test_supplement_shows_recommended_slot_and_reason(client):
+    s = client.post("/api/supplements", json={"supplementId": "iron"}).json()
+    client.patch(f"/api/supplements/{s['id']}", json={"timeSlots": ["evening"]})
+    row = next(x for x in client.get("/api/supplements").json() if x["id"] == s["id"])
+    assert row["timeSlots"] == ["evening"] and row["recommendedSlots"] == ["morning"]
+    assert "빈속" in row["timingReason"]
+
+
 def test_duplicate_over_upper_limit(client):
     client.post("/api/supplements", json={"supplementId": "iron"})
     check = client.get("/api/supplements/check").json()

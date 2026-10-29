@@ -76,8 +76,8 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
         onSubmit={(e) => { e.preventDefault(); setProfile({ ...p, pregnant: p.sex === 'F' ? p.pregnant : false, region: p.address?.sido ? regionLabel(p.address.sido, p.address.sigungu) : p.region }); onDone() }}>
         <div className="hero">
           {!initial && <Wordmark />}
-          <h1>{initial ? '내 정보' : '필요한 정보를 알려 주세요'}</h1>
-          <p>{initial ? '바꾼 내용은 검진 알림과 추천에 바로 반영돼요' : '검진 대상 확인과 영양제 추천에 써요'}</p>
+          <h1>{initial ? '내 정보' : '필요한 정보를 알려 주십시오'}</h1>
+          <p>{initial ? '바꾼 내용은 검진 알림과 추천에 바로 반영됩니다' : '검진 대상 확인과 영양제 추천에 씁니다'}</p>
         </div>
         <p className="small muted" style={{ padding: '0 4px' }}>출생연도로 올해 국가건강검진 대상인지 계산하고, 복용 약·질환·알레르기는 영양제와 부딪히는 성분을 거르는 데 씁니다. 모르는 항목은 비워 두셔도 됩니다.</p>
 
@@ -94,13 +94,13 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
               : <span />}
             <div className="field"><label htmlFor="ob-last">마지막 검진 연도</label>
               <input id="ob-last" type="number" value={p.lastCheckupYear ?? ''} placeholder="예: 2024" aria-describedby="ob-last-hint" onChange={(e) => upd({ lastCheckupYear: e.target.value ? Number(e.target.value) : null })} />
-              <small id="ob-last-hint" className="muted">받은 적 없으면 비워 두세요.</small></div>
+              <small id="ob-last-hint" className="muted">받은 적 없으면 비워 두십시오.</small></div>
             <Seg label="직장 유형" options={[['office', '사무직'], ['nonOffice', '비사무직'], ['other', '직장 없음·기타']]}
               value={p.jobType ?? 'office'} onChange={(v) => upd({ jobType: v })} />
             <Seg label={`공단 조회 결과 ${thisYear}년 검진`} options={[[0, '모름·대상 아님'], [1, '대상자']]}
               value={p.confirmedTargetYear === thisYear ? 1 : 0} onChange={(v) => upd({ confirmedTargetYear: v ? thisYear : null })} />
           </div>
-          <p className="small muted">비사무직(현장·생산·판매직 등) 직장가입자는 해마다 대상입니다. 작년에 못 받아 추가 등록했다면 공단 조회 결과로 '대상자'를 고르세요. 고른 값이 출생연도 짝·홀 규칙보다 우선합니다.</p>
+          <p className="small muted">비사무직(현장·생산·판매직 등) 직장가입자는 해마다 대상입니다. 작년에 못 받아 추가 등록했다면 공단 조회 결과로 '대상자'를 고르십시오. 고른 값이 출생연도 짝·홀 규칙보다 우선합니다.</p>
         </section>
 
         <section className="sec">
@@ -117,7 +117,7 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
               <input id="ob-pack" type="number" min={0} max={200} placeholder="하루 갑 수 × 피운 햇수" value={p.packYears ?? ''}
                 onChange={(e) => upd({ packYears: e.target.value ? Number(e.target.value) : null })} /></div>
             <div className="field"><label htmlFor="ob-colo">마지막 대장내시경 연도</label>
-              <input id="ob-colo" type="number" min={1990} max={thisYear} placeholder="받은 적 없으면 비워 두세요" value={p.colonoscopyYear ?? ''}
+              <input id="ob-colo" type="number" min={1990} max={thisYear} placeholder="받은 적 없으면 비워 두십시오" value={p.colonoscopyYear ?? ''}
                 onChange={(e) => upd({ colonoscopyYear: e.target.value ? Number(e.target.value) : null })} /></div>
           </div>
           <div className="field"><span className="label">암 산정특례 중인 암</span>
@@ -127,7 +127,7 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
         </section>
 
         <div>
-          <h2 className="subhead">복용 중인 약 <span>계열을 눌러 고르세요 · {p.medications.length ? `${p.medications.length}개 선택` : '없음'}</span></h2>
+          <h2 className="subhead">복용 중인 약 <span>계열을 눌러 고르십시오 · {p.medications.length ? `${p.medications.length}개 선택` : '없음'}</span></h2>
           <ul className="list">
             <li className="li">
               <span className="li-main"><b>먹는 약 없음</b></span>
@@ -161,7 +161,7 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
         <div className="cols even">
           <section className="sec">
             <div className="sec-head"><h2>진단받은 질환</h2></div>
-            <p className="small muted">병원에서 진단받은 적이 있는 것만 고르세요. 영양제 주의 문구를 고르는 데만 씁니다.</p>
+            <p className="small muted">병원에서 진단받은 적이 있는 것만 고르십시오. 영양제 주의 문구를 고르는 데만 씁니다.</p>
             <Pick options={CONDITION_OPTIONS} value={p.conditions ?? []} onChange={(v) => upd({ conditions: v })} />
           </section>
           <section className="sec">

@@ -59,7 +59,7 @@ const toLabel = (m: Map<string, string>, values: string[] = []) => {
 }
 interface RCheckupRow { id: number; date: string; source: string; status: string }
 interface RCheckup { id: number; date: string; source: string; items: { code: string; name: string; value: number; unit: string }[] }
-interface RSupp { id: number; supplementId: string; name: string; ingredients: Record<string, string>; timeSlots: Slot[]; paused: boolean; startedAt: string }
+interface RSupp { id: number; supplementId: string; name: string; ingredients: Record<string, string>; timeSlots: Slot[]; recommendedSlots?: Slot[]; timingReason?: string; paused: boolean; startedAt: string }
 interface RReason { code: string; name: string; value: number; unit: string }
 interface RWarning { level: 'info' | 'caution'; message: string; type: string; ingredient?: string; drugs?: string[] }
 interface RRec {
@@ -96,7 +96,7 @@ const mapWarning = (w: RWarning): Warning => ({
 export async function loadAll() {
   const today = new Date()
   const from = new Date(today); from.setDate(from.getDate() - 40)
-  const iso = (d: Date) => d.toISOString().slice(0, 10)
+  const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` // 기기 날짜(한국 시간). UTC로 바꾸면 새벽에 오늘 기록이 빠진다.
   const [user, rows, supps, logs, recs, meds, ms, reminder, mydata, options] = await Promise.all([
     call<RUser>('/api/users/me'),
     call<RCheckupRow[]>('/api/checkups'),
@@ -136,7 +136,8 @@ export async function loadAll() {
   }
   const supplements: Supplement[] = supps.map((x) => {
     const [ing, amt] = firstEntry(x.ingredients)
-    return { id: String(x.id), name: x.name, ingredient: ing, dose: amt, timing: toTiming(x.timeSlots), paused: x.paused, startDate: x.startedAt }
+    return { id: String(x.id), name: x.name, ingredient: ing, dose: amt, timing: toTiming(x.timeSlots), paused: x.paused, startDate: x.startedAt,
+      recommendedTiming: x.recommendedSlots && toTiming(x.recommendedSlots), timingReason: x.timingReason }
   })
   const intake: IntakeLog = {}
   for (const l of logs.logs) (intake[l.date] ??= {})[String(l.supplementId)] = l.taken
