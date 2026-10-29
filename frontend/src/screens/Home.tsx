@@ -40,9 +40,11 @@ export default function Home({ go }: { go: (r: Route) => void }) {
         <p>
           {due ? <>{p.name} 님은 <b>{t.year}년 일반건강검진 대상</b>이고, 아직 받지 않으셨어요. 12월 31일에 마감합니다.</>
             : t.done ? <>최근 결과는 {last.date} 검진이고, 기준을 벗어난 항목은 <b>{flagged}개</b>입니다.</>
-              : <>{odd}년생은 {t.year + 1}년에 검진 대상입니다.</>}
+              : <>{p.jobType === 'nonOffice' ? '비사무직은' : `${odd}년생은`} {t.nextYear}년에 검진 대상입니다.</>}
         </p>
-        <p className="small muted">{odd}년에 태어난 분은 {odd}년에 무료로 받습니다. 비용은 건강보험이 부담합니다.
+        <p className="small muted">{t.reason === 'nonOffice' ? '비사무직 직장가입자는 해마다 무료로 받습니다.'
+          : t.reason === 'confirmed' ? '공단 조회 결과에 따라 올해 대상으로 표시합니다.'
+            : <>{odd}년에 태어난 분은 {odd}년에 무료로 받습니다. 공단 조회 결과가 다르면 내 정보에서 바꿀 수 있어요.</>} 비용은 건강보험이 부담합니다.
           {t.extras.length > 0 && <> 올해 추가 검사: {t.extras.join(', ')}.</>}</p>
         <div className="actions">
           <button className="btn flat" onClick={() => go('upload')}>결과지 등록</button>

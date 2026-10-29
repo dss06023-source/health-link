@@ -27,7 +27,12 @@ export interface UserProfile {
   conditions?: string[]
   allergies?: string[]
   pregnant?: boolean
+  // 검진 대상 예외. 앱이 알 수 없어 사용자가 고른다.
+  jobType?: JobType
+  confirmedTargetYear?: number | null
 }
+
+export type JobType = 'office' | 'nonOffice' | 'other'
 
 export interface CheckupItem {
   code: string
@@ -95,6 +100,9 @@ export interface CheckupCenter {
 export interface CheckupTarget {
   year: number
   isTarget: boolean
+  // 대상인 이유: 출생연도 짝·홀, 비사무직(매년), 공단 조회에서 대상으로 나옴
+  reason: 'parity' | 'nonOffice' | 'confirmed' | null
+  nextYear: number
   done: boolean
   deadline: string
   daysLeft: number

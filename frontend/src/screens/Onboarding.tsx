@@ -51,6 +51,7 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
   const [group, setGroup] = useState<string | null>(null)
   const [draft, setDraft] = useState<string[]>([])
   const [theme, setTheme] = useState<Theme>(loadTheme)
+  const thisYear = new Date().getFullYear()
   const upd = (patch: Partial<UserProfile>) => setP((x) => ({ ...x, ...patch }))
   const life = (patch: Partial<Lifestyle>) => setP((x) => ({ ...x, lifestyle: { ...x.lifestyle, ...patch } }))
   const L = p.lifestyle
@@ -92,7 +93,12 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
               <input id="ob-region" value={p.region} placeholder="예: 서울 마포구" onChange={(e) => upd({ region: e.target.value })} /></div>
             <div className="field"><label htmlFor="ob-last">마지막 검진 연도</label>
               <input id="ob-last" type="number" value={p.lastCheckupYear ?? ''} onChange={(e) => upd({ lastCheckupYear: e.target.value ? Number(e.target.value) : null })} /></div>
+            <Seg label="직장 유형" options={[['office', '사무직'], ['nonOffice', '비사무직'], ['other', '직장 없음·기타']]}
+              value={p.jobType ?? 'office'} onChange={(v) => upd({ jobType: v })} />
+            <Seg label={`공단 조회 결과 ${thisYear}년 검진`} options={[[0, '모름·대상 아님'], [1, '대상자']]}
+              value={p.confirmedTargetYear === thisYear ? 1 : 0} onChange={(v) => upd({ confirmedTargetYear: v ? thisYear : null })} />
           </div>
+          <p className="small muted">비사무직(현장·생산·판매직 등) 직장가입자는 해마다 대상입니다. 작년에 못 받아 추가 등록했다면 공단 조회 결과로 '대상자'를 고르세요. 고른 값이 출생연도 짝·홀 규칙보다 우선합니다.</p>
         </section>
 
         <div>

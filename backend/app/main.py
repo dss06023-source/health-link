@@ -87,17 +87,34 @@ def checkup_notice(user, conn):
     year = db.today().year
     age = year - user["birthYear"]
     # 일반건강검진: 20세 이상, 2년 주기, 출생연도 짝·홀에 맞춰 대상 연도가 정해진다.
-    is_target = age >= 20 and (user["birthYear"] % 2) == (year % 2)
+    # 예외 두 가지는 앱이 알 수 없어 사용자가 고른다. 비사무직 직장가입자는 매년 대상이고,
+    # 전년도 미수검 추가 등록 등으로 공단 조회 결과가 다르면 그 해에 한해 공단 결과를 따른다.
+    parity = age >= 20 and (user["birthYear"] % 2) == (year % 2)
+    yearly = user.get("jobType") == "nonOffice"
+    if user.get("confirmedTargetYear") == year:
+        reason = "confirmed"
+    elif yearly and age >= 20:
+        reason = "nonOffice"
+    else:
+        reason = "parity" if parity else None
+    is_target = reason is not None
     done = any(c["date"].startswith(str(year)) for c in confirmed_checkups(conn))
-    next_year = year if is_target and not done else year + (1 if not is_target else 2)
+    if is_target and not done:
+        next_year = year
+    elif yearly:
+        next_year = year + 1
+    else:
+        next_year = year + (2 if parity else 1)
     due = is_target and not done
     if due:
-        message = f"{year}년 국가건강검진 대상자입니다. 아직 검진 기록이 없습니다. 연말 전에 받으세요."
+        why = {"confirmed": " (공단 조회 결과)", "nonOffice": " (비사무직은 매년 대상)"}.get(reason, "")
+        message = f"{year}년 국가건강검진 대상자입니다{why}. 아직 검진 기록이 없습니다. 연말 전에 받으세요."
     elif is_target:
         message = f"{year}년 검진 결과가 등록되었습니다. 다음 검진은 {next_year}년입니다."
     else:
         message = f"다음 국가건강검진은 {next_year}년입니다."
-    return {"age": age, "isTargetThisYear": is_target, "nextCheckupYear": next_year, "checkupDue": due, "message": message}
+    return {"age": age, "isTargetThisYear": is_target, "targetReason": reason, "nextCheckupYear": next_year,
+            "checkupDue": due, "message": message}
 
 
 class UserUpdate(BaseModel):
@@ -105,6 +122,8 @@ class UserUpdate(BaseModel):
     birthYear: Optional[int] = None
     gender: Optional[str] = None
     heightCm: Optional[float] = None
+    jobType: Optional[str] = None  # office·nonOffice·other
+    confirmedTargetYear: Optional[int] = None  # 공단 조회에서 대상자로 나온 해. 0이면 지운다.
     lifestyle: Optional[dict] = None
     medications: Optional[list[str]] = None
     currentSupplements: Optional[list[str]] = None
@@ -132,6 +151,8 @@ def get_me():
 def update_me(body: UserUpdate):
     if body.gender and body.gender not in ("M", "F"):
         raise HTTPException(422, "gender는 M 또는 F입니다.")
+    if body.jobType and body.jobType not in ("office", "nonOffice", "other"):
+        raise HTTPException(422, "jobType은 office, nonOffice, other 중 하나입니다.")
     errors = options.check_codes(body.currentSupplements, options.SUPPLEMENTS, "영양제")
     errors += options.check_codes(body.conditions, options.CONDITIONS, "질환")
     errors += options.check_codes(body.allergies, options.ALLERGIES, "알레르기")
@@ -146,6 +167,8 @@ def update_me(body: UserUpdate):
     with db.connect() as conn:
         user = load_user(conn)
         changes = body.model_dump(exclude_none=True)
+        if changes.get("confirmedTargetYear") == 0:
+            changes["confirmedTargetYear"] = None
         if lifestyle is not None:
             changes["lifestyle"] = {**user.get("lifestyle", {}), **lifestyle}
         user.update(changes)
