@@ -83,6 +83,35 @@ def active_supplements(conn, include_paused=True):
     return items if include_paused else [s for s in items if not s["paused"]]
 
 
+# 내 정보의 '먹고 있는 영양제'와 복용 관리 목록은 하나다. 둘 다에 있는 영양제(종합비타민·비타민D 등)는
+# 복용 관리 목록이 기준이고, 복용 관리에 넣을 수 없는 보기(유산균·루테인 등)만 사용자 정보에 따로 저장한다.
+SYNCED_SUPPLEMENTS = options.SUPPLEMENTS & set(ref.SUPPLEMENTS)
+
+
+def extra_supplements(user):
+    """사용자 정보에만 저장된 영양제(복용 관리에 넣을 수 없는 보기)."""
+    return [c for c in user.get("currentSupplements", []) if c not in SYNCED_SUPPLEMENTS]
+
+
+def current_supplements(user, conn):
+    taking = [s["supplementId"] for s in active_supplements(conn) if s["supplementId"] in SYNCED_SUPPLEMENTS]
+    return list(dict.fromkeys(taking)) + [c for c in extra_supplements(user) if c not in taking]
+
+
+def sync_supplements(conn, wanted):
+    """내 정보에서 고른 영양제에 맞춰 복용 관리 목록을 바꾼다. 뺀 것은 중단(기록은 남김), 새로 고른 것은 추가."""
+    active = {s["supplementId"]: s for s in active_supplements(conn)}
+    for cid, s in active.items():
+        if cid in SYNCED_SUPPLEMENTS and cid not in wanted:
+            conn.execute("UPDATE supplements SET ended_at = ? WHERE id = ?", (db.today().isoformat(), s["id"]))
+    for cid in wanted:
+        if cid in SYNCED_SUPPLEMENTS and cid not in active:
+            conn.execute(
+                "INSERT INTO supplements (catalog_id, time_slots, started_at, source) VALUES (?, ?, ?, 'manual')",
+                (cid, json.dumps(ref.SUPPLEMENTS[cid]["timeSlots"]), db.today().isoformat()),
+            )
+
+
 # ---------- 1. 사용자·검진 알림 ----------
 
 def checkup_notice(user, conn):
@@ -160,6 +189,7 @@ def get_me():
         checkups = confirmed_checkups(conn)
         return {
             **user,
+            "currentSupplements": current_supplements(user, conn),
             **checkup_notice(user, conn),
             "lastCheckupDate": checkups[-1]["date"] if checkups else None,
             "isDemoData": True,
@@ -194,6 +224,9 @@ def update_me(body: UserUpdate):
                 changes[key] = None
         if lifestyle is not None:
             changes["lifestyle"] = {**user.get("lifestyle", {}), **lifestyle}
+        if body.currentSupplements is not None:
+            sync_supplements(conn, body.currentSupplements)
+            changes["currentSupplements"] = [c for c in body.currentSupplements if c not in SYNCED_SUPPLEMENTS]
         user.update(changes)
         conn.execute("UPDATE users SET data = ? WHERE id = 1", (json.dumps(user, ensure_ascii=False),))
     result = get_me()
@@ -495,7 +528,7 @@ def recommendations(checkupId: Optional[int] = None):
         checkup = get_checkup(conn, resolve_checkup_id(conn, checkupId))
         active = [s["supplementId"] for s in active_supplements(conn)]
     # 입력 화면에서 '먹고 있다'고 고른 영양제도 중복 점검에 넣는다(규칙표에 있는 것만).
-    active += [c for c in user.get("currentSupplements", []) if c in ref.SUPPLEMENTS and c not in active]
+    active += [c for c in extra_supplements(user) if c in ref.SUPPLEMENTS and c not in active]
     result = logic.recommend(user, checkup["values"], active)
     return {"checkupId": checkup["id"], "checkupDate": checkup["date"], "medications": user.get("medications", []), **result}
 
@@ -523,7 +556,7 @@ def check_supplements():
         active = active_supplements(conn, include_paused=False)
     ids = [s["supplementId"] for s in active]
     # 입력 화면에서 '먹고 있다'고 고른 영양제(규칙표 밖의 칼슘·비타민K 등 포함)도 약과의 상호작용을 본다.
-    taking = ids + [c for c in user.get("currentSupplements", []) if c not in ids]
+    taking = ids + [c for c in extra_supplements(user) if c not in ids]
     meds = user.get("medications", [])
     classes = logic.medication_classes(meds)
     interactions = [
