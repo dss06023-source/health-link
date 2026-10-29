@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { notifySupported, requestNotify } from '../reminders'
-import { TIMING_LABEL } from '../data/rules'
-import { addDays, useStore, ymd } from '../store'
+import { interpret, recommend, reviewCurrent, TIMING_LABEL } from '../data/rules'
+import { addDays, latestCheckup, useStore, ymd } from '../store'
 import type { Supplement, Timing } from '../types'
 import { Icon, Sheet, Snackbar } from '../ui'
 
@@ -13,6 +13,13 @@ export default function Intake() {
   const today = new Date()
   const key = ymd(today)
   const active = s.supplements.filter((x) => !x.paused)
+  // 약·질환과 부딪히는데 먹고 있다고 한 영양제는 구성 관리에 경고를 붙인다.
+  const conflicts = (() => {
+    if (s.remote) return s.remote.current
+    if (!s.profile) return []
+    const items = interpret(latestCheckup(s).items, s.profile.sex)
+    return reviewCurrent(s.profile, items, recommend(items, s.profile))
+  })().filter((c) => c.status === 'conflict')
   const times = s.reminderTimes
   const setTimes = s.setReminderTimes
   const [perm, setPerm] = useState(() => (notifySupported() ? Notification.permission : 'unsupported'))
@@ -131,6 +138,7 @@ export default function Intake() {
                 <div style={{ minWidth: 0 }}>
                   <div className="row" style={{ gap: 8 }}><b>{x.name}</b>{x.paused && <span className="tag">일시정지</span>}</div>
                   <span className="small muted">{x.ingredient} {x.dose} · {Number(x.startDate.slice(5, 7))}/{Number(x.startDate.slice(8))}부터</span>
+                  {conflicts.filter((c) => c.name === x.name).map((c) => <p key={c.name} className="small" style={{ margin: '4px 0 0', color: 'var(--danger)' }}>{c.message.replace(' 드시고 있다고 하셔서 복용 관리에는 넣어 두었습니다.', '')}</p>)}
                 </div>
                 <div className="seg" role="group" aria-label={`${x.name} 복용 시간대`}>
                   {TIMINGS.map((t) => (

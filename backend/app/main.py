@@ -99,7 +99,8 @@ def current_supplements(user, conn):
 
 
 def sync_supplements(conn, wanted):
-    """내 정보에서 고른 영양제에 맞춰 복용 관리 목록을 바꾼다. 뺀 것은 중단(기록은 남김), 새로 고른 것은 추가."""
+    """내 정보에서 고른 영양제에 맞춰 복용 관리 목록을 바꾼다. 뺀 것은 중단(기록은 남김), 새로 고른 것은 추가.
+    약·질환과 부딪히는 영양제도 사용자가 먹고 있다고 했으므로 넣는다(경고는 추천·복용 관리 화면에서 보여 준다)."""
     active = {s["supplementId"]: s for s in active_supplements(conn)}
     for cid, s in active.items():
         if cid in SYNCED_SUPPLEMENTS and cid not in wanted:

@@ -73,6 +73,14 @@ export interface Recommendation {
   skipped?: string
 }
 
+// 이미 먹는 영양제 중 추천 구성에 없는 것: 계속 먹어도 되는지(keep), 피해야 하는지(conflict)
+export interface CurrentReview {
+  name: string
+  status: 'keep' | 'conflict'
+  message: string
+  cautions: string[]
+}
+
 export interface Warning {
   level: 'info' | 'caution' | 'danger'
   title: string

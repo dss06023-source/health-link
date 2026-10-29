@@ -77,9 +77,14 @@
   "excluded": [{"supplementId": "red_yeast_rice", "name": "홍국", "reasons": [], "message": "홍국의 모나콜린K는 스타틴 계열 약과 …추천에서 뺐습니다."}],
   "warnings": [{"type": "duplicate", "level": "info", "supplementId": "vitamin_d", "message": "…"}],
   "notes": [{"items": ["hdl"], "message": "HDL 콜레스테롤을 올리는 기능성을 인정받은 건강기능식품 원료는 없습니다. …"}],
+  "current": [{"supplementId": "probiotics", "name": "유산균", "claim": "유산균 증식 및 유해균 억제…", "purpose": "장 건강",
+    "status": "keep", "message": "장 건강을 위해 드신다면 계속 드셔도 됩니다. …", "cautions": ["질환이 있거나 의약품을 먹고 있으면 전문가와 상담하세요."]}],
   "disclaimer": "…"
 }
 ```
+
+- `current`: 이미 먹는 영양제 중 추천에 없는 것. `status`는 `keep`(약·질환·검진 수치·임신과 피해야 할 조합 없음) 또는 `conflict`(피해야 할 조합 있음, 그래도 복용 관리에는 넣고 경고). `cautions`는 해당하는 주의(고시 섭취 시 주의사항 중 약·질환·흡연에 해당하는 것 포함).
+- 이미 먹는 영양제와 함께 먹지 않도록 묶였거나(`notTogether`) 같은 성분이 하루 상한을 넘는 새 추천은 `excluded`로 옮긴다.
 - `warnings[].type`: `duplicate`(성분 중복) / `interaction`(약물 상호작용, `drugs[]` 포함, 시간 간격이 필요하면 `hours`) / `condition`(검진 수치 때문에 주의) / `diagnosis`(사용자가 고른 진단받은 질환 때문에 주의) / `spacing`(함께 먹는 영양제와 시간 간격, `hours` 포함)
 - `excluded` 이유: 약물 상호작용, 검진 수치, 진단받은 질환(`conditions`), 생애주기(`lifestyle.pregnant`·`breastfeeding`·`child` 가 true), 함께 먹지 않도록 묶인 원료(가르시니아·녹차추출물은 하나만).
 - `notes`: 기준치 밖이지만 권할 영양제가 없는 항목(HDL, 저체중, 콩팥 수치)의 안내.

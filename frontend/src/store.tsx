@@ -5,6 +5,7 @@ import type {
 } from './types'
 import { FOLLOWUP_ITEMS, MYDATA_CHECKUP, MYDATA_INSTITUTION, MYDATA_PRESCRIPTIONS, OCR_RESULT, PAST_CHECKUP, SAMPLE_PROFILE, SUPPLEMENT_OPTIONS } from './data/mock'
 import { seededMeasurements } from './data/measure'
+import { CURRENT_INFO } from './data/rules'
 import { USE_API } from './api'
 import { loadAll, remote } from './api/remote'
 import type { RemoteExtras } from './api/remote'
@@ -49,6 +50,21 @@ function withTaking(current: string[], supplements: Supplement[]) {
   return [...new Set([...current, ...supplements.map((x) => x.name).filter(isOption)])]
 }
 
+// 내 정보에서 고른 영양제는 복용 관리에도 넣는다(서버 sync_supplements와 같은 규칙).
+// 약·질환과 부딪히는 것도 먹고 있다고 했으니 넣고, 경고는 추천·복용 관리 화면에서 보여 준다.
+function syncCurrent(x: AppState): AppState {
+  const p = x.profile
+  if (!p) return x
+  const add = p.currentSupplements.filter((n) => CURRENT_INFO[n] && !x.supplements.some((m) => m.name === n || m.id === CURRENT_INFO[n].id))
+  return {
+    ...x,
+    supplements: [
+      ...x.supplements,
+      ...add.map((n) => { const i = CURRENT_INFO[n]; return { id: i.id, name: n, ingredient: i.ingredient, dose: i.dose, timing: i.timing, paused: false, startDate: ymd(new Date()) } }),
+    ],
+  }
+}
+
 function fullDemo(): AppState {
   const today = new Date()
   const start = addDays(today, -186)
@@ -62,7 +78,7 @@ function fullDemo(): AppState {
   intake[ymd(today)] = { milkthistle: true, vitd: true }
   const v = (items: CheckupItem[]) => Object.fromEntries(items.map((i) => [i.code, i.value]))
   const measurements = seededMeasurements(addDays(start, 7), addDays(today, -1), v(OCR_RESULT), v(FOLLOWUP_ITEMS), SAMPLE_PROFILE.heightCm ?? 175)
-  return {
+  return syncCurrent({
     ...NEW_FIELDS,
     measurements,
     profile: { ...SAMPLE_PROFILE, lastCheckupYear: today.getFullYear(), currentSupplements: withTaking(SAMPLE_PROFILE.currentSupplements, supplements) },
@@ -71,7 +87,7 @@ function fullDemo(): AppState {
     supplements,
     intake,
     reservedCenter: null,
-  }
+  })
 }
 
 // "처음부터 시연": 검진 전 상태(개인정보 입력부터)
@@ -84,7 +100,7 @@ function load(): AppState {
   try {
     const raw = localStorage.getItem(KEY)
     // 기능이 늘기 전에 저장된 상태에는 새 항목을 기본값으로 채운다.
-    if (raw) return { ...NEW_FIELDS, ...(JSON.parse(raw) as Partial<AppState>) } as AppState
+    if (raw) return syncCurrent({ ...NEW_FIELDS, ...(JSON.parse(raw) as Partial<AppState>) } as AppState)
   } catch { /* 저장소를 못 쓰면 기본 시연 상태로 시작 */ }
   return fullDemo()
 }
@@ -137,7 +153,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const local = useMemo<Actions>(() => ({
     // 내 정보에서 뺀 영양제는 복용 관리에서도 뺀다.
-    setProfile: (p) => set((x) => ({
+    setProfile: (p) => set((x) => syncCurrent({
       ...x, profile: p,
       supplements: x.supplements.filter((m) => !isOption(m.name) || p.currentSupplements.includes(m.name)),
     })),
