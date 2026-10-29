@@ -2,6 +2,7 @@
 
 import json
 
+from . import db
 from . import reference as ref
 
 # 측정 종류 → 입력 필드와 허용 범위
@@ -44,7 +45,7 @@ def to_codes(kind, values, fasting, height_cm):
 
 def load(conn, height_cm, start=None, end=None, kind=None):
     """기간(날짜 문자열, 양끝 포함) 안의 측정 기록을 오래된 순으로."""
-    sql, args = "SELECT * FROM measurements WHERE 1=1", []
+    sql, args = "SELECT * FROM measurements WHERE user_id = ?", [db.uid()]
     if start:
         sql += " AND substr(measured_at, 1, 10) >= ?"
         args.append(start)

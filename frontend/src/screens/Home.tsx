@@ -43,7 +43,9 @@ export default function Home({ go }: { go: (r: Route) => void }) {
         ? { done: true, title: `${t.done ? t.year : p.lastCheckupYear}년 검진 받음`, sub: `최근 결과 ${last.date}` }
         : { done: false, title: `${t.year - 1}년 검진을 받지 않음`, sub: '올해 추가신청으로 받을 수 있습니다.', act: { label: '주의사항', to: 'guide' } },
     { done: s.checkups.some((c) => c.source !== 'sample'), title: '결과지 등록하기', sub: '종이 결과지 사진이나 공단 PDF를 올리면 수치를 읽어 옵니다.', act: { label: '등록', to: 'upload' } },
-    { done: false, title: `결과 해석 확인 · 기준 벗어남 ${flagged}개`, sub: `${last.items.length}개 항목 중`, act: { label: '해석 보기', to: 'results' } },
+    last.items.length
+      ? { done: false, title: `결과 해석 확인 · 기준 벗어남 ${flagged}개`, sub: `${last.items.length}개 항목 중`, act: { label: '해석 보기', to: 'results' } }
+      : { done: false, title: '결과 해석 확인', sub: '결과지를 등록하면 수치를 해석해 드립니다.' },
     { done: active.length > 0 && takenToday === active.length, title: `오늘 영양제 ${takenToday} / ${active.length}개 먹음`, sub: active.length ? '시간대별로 체크합니다.' : '추천을 받고 복용을 시작하면 여기에 표시됩니다.', act: { label: active.length ? '복용 체크' : '추천 받기', to: active.length ? 'intake' : 'recommend' } },
     { done: !!s.followup, title: s.followup ? '중간 점검 결과 도착' : '복용 6개월 뒤 중간 점검', sub: s.followup ? `${s.followup.date} · 변화 리포트에서 비교합니다.` : '약국 간이검사(혈당·지질)로 변화를 미리 확인합니다.', act: { label: '리포트', to: 'report' } },
   ]

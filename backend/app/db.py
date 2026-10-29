@@ -1,4 +1,4 @@
-"""저장소와 가짜 데이터 시드. 시연에는 가상 인물 1명만 쓴다.
+"""저장소와 가짜 데이터 시드. 사용자(계정)마다 기록을 나눠 저장한다.
 
 DATABASE_URL(postgresql://…)이 있으면 Postgres(Neon 등)에 저장해 서버가 잠들거나 다시 배포돼도 남는다.
 없으면 서버 안 SQLite 파일을 쓴다(개발·시험용). 두 경우 모두 같은 SQL(? 자리표시)로 다룬다.
@@ -7,6 +7,7 @@ DATABASE_URL(postgresql://…)이 있으면 Postgres(Neon 등)에 저장해 서�
 import json
 import os
 import sqlite3
+from contextvars import ContextVar
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -16,6 +17,12 @@ SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY,
     data TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    token_hash TEXT NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL,
+    expires_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS checkups (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,6 +58,25 @@ CREATE TABLE IF NOT EXISTS measurements (
     note TEXT
 );
 """
+
+# 예전(사용자 1명) 표에 나중에 붙인 칸. 이미 있는 DB에도 init이 덧붙인다.
+ADDED_COLUMNS = {
+    "users": [("username", "TEXT"), ("password_hash", "TEXT"), ("is_guest", "INTEGER NOT NULL DEFAULT 0"),
+              ("created_at", "TEXT")],
+    "checkups": [("user_id", "INTEGER NOT NULL DEFAULT 1")],
+    "supplements": [("user_id", "INTEGER NOT NULL DEFAULT 1")],
+    "intake_logs": [("user_id", "INTEGER NOT NULL DEFAULT 1")],
+    "measurements": [("user_id", "INTEGER NOT NULL DEFAULT 1")],
+}
+TABLES = ("users", "sessions", "checkups", "supplements", "intake_logs", "measurements")
+
+# 지금 요청을 보낸 사용자. 로그인 확인(main.auth_guard)이 정하고, 모든 질의가 이 값으로 거른다.
+current_user: ContextVar[int] = ContextVar("current_user")
+
+
+def uid():
+    return current_user.get()
+
 
 DEMO_USER = {
     "name": "김건강",
@@ -172,22 +198,70 @@ def connect():
     return conn
 
 
+def _columns(conn, table):
+    if isinstance(conn, sqlite3.Connection):
+        return {r["name"] for r in conn.execute(f"PRAGMA table_info({table})")}
+    return {r["column_name"] for r in conn.execute(
+        "SELECT column_name FROM information_schema.columns WHERE table_name = ?", (table,))}
+
+
 def init(reset=False):
     with connect() as conn:
         if reset:
-            for table in ("users", "checkups", "supplements", "intake_logs", "measurements"):
+            for table in TABLES:
                 conn.execute(f"DROP TABLE IF EXISTS {table}")
         conn.executescript(SCHEMA if isinstance(conn, sqlite3.Connection)
                            else SCHEMA.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY"))
-        if conn.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0:
-            seed(conn)
+        for table, columns in ADDED_COLUMNS.items():
+            have = _columns(conn, table)
+            for name, kind in columns:
+                if name not in have:
+                    conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {kind}")
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS users_username ON users (username)")
+        # 예전 1번 사용자(계정 없음)의 기록은 아무도 볼 수 없으므로 정리한다.
+        if conn.execute("SELECT 1 FROM users WHERE id = 1 AND username IS NULL").fetchone():
+            delete_user(conn, 1)
 
 
-def seed(conn):
-    conn.execute("INSERT INTO users (id, data) VALUES (1, ?)", (json.dumps(DEMO_USER, ensure_ascii=False),))
+def delete_user(conn, user_id):
+    for table in ("intake_logs", "supplements", "checkups", "measurements"):
+        conn.execute(f"DELETE FROM {table} WHERE user_id = ?", (user_id,))
+    conn.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
+    conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
+
+
+def create_user(conn, username, password_hash, data, is_guest=False):
+    """새 계정. users.id는 예전 표(자동 번호 없음)와 맞추려고 직접 매긴다."""
+    user_id = (conn.execute("SELECT MAX(id) FROM users").fetchone()[0] or 0) + 1
     conn.execute(
-        "INSERT INTO checkups (date, source, status, file_name, item_values) VALUES (?, ?, ?, ?, ?)",
-        ("2024-10-15", "pdf", "confirmed", "2024_건강검진결과.pdf", json.dumps(CHECKUP_2024)),
+        "INSERT INTO users (id, data, username, password_hash, is_guest, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+        (user_id, json.dumps(data, ensure_ascii=False), username, password_hash, int(is_guest),
+         datetime.now(ZoneInfo("Asia/Seoul")).isoformat(timespec="seconds")),
+    )
+    return user_id
+
+
+# 새로 가입한 사람의 처음 값. 시작 화면(onboarded=False)에서 채운다.
+def new_user_data(name):
+    return {
+        **{k: v for k, v in DEMO_USER.items() if k in ("lifestyle", "reminders", "mydata", "location", "address")},
+        "name": name, "birthYear": 1990, "gender": "M", "heightCm": None,
+        "lifestyle": {"smoking": "never", "drinkingPerWeek": 0, "drinksPerSession": 0, "exercisePerWeek": 0,
+                      "lowSunlight": False, "sleepHours": 7, "diet": []},
+        "medications": [], "currentSupplements": [], "conditions": [], "allergies": [], "customAllergies": [],
+        "consent": {"sensitiveData": False, "agreedAt": None},
+        "onboarded": False,
+    }
+
+
+def seed(conn, user_id):
+    """체험 계정에 가상 인물의 검진·복용·측정 기록을 채운다."""
+    conn.execute("UPDATE users SET data = ? WHERE id = ?", (json.dumps(DEMO_USER, ensure_ascii=False), user_id))
+    for table in ("intake_logs", "supplements", "checkups", "measurements"):
+        conn.execute(f"DELETE FROM {table} WHERE user_id = ?", (user_id,))
+    conn.execute(
+        "INSERT INTO checkups (user_id, date, source, status, file_name, item_values) VALUES (?, ?, ?, ?, ?, ?)",
+        (user_id, "2024-10-15", "pdf", "confirmed", "2024_건강검진결과.pdf", json.dumps(CHECKUP_2024)),
     )
     plan = [
         ("omega3", ["morning"], "2024-11-01", "recommendation"),
@@ -198,8 +272,8 @@ def seed(conn):
     ids = []
     for catalog_id, slots, started, source in plan:
         cur = conn.execute(
-            "INSERT INTO supplements (catalog_id, time_slots, started_at, source) VALUES (?, ?, ?, ?)",
-            (catalog_id, json.dumps(slots), started, source),
+            "INSERT INTO supplements (user_id, catalog_id, time_slots, started_at, source) VALUES (?, ?, ?, ?, ?)",
+            (user_id, catalog_id, json.dumps(slots), started, source),
         )
         ids.append(cur.lastrowid)
     # 최근 60일 복용 기록. 정해진 패턴으로 약 85%를 먹은 것으로 만든다.
@@ -209,13 +283,13 @@ def seed(conn):
         for n, supplement_id in enumerate(ids):
             taken = (day.toordinal() * 7 + n * 3) % 20 >= 3
             conn.execute(
-                "INSERT INTO intake_logs (date, time_slot, supplement_id, taken) VALUES (?, ?, ?, ?)",
-                (day.isoformat(), "morning", supplement_id, int(taken)),
+                "INSERT INTO intake_logs (user_id, date, time_slot, supplement_id, taken) VALUES (?, ?, ?, ?, ?)",
+                (user_id, day.isoformat(), "morning", supplement_id, int(taken)),
             )
-    seed_measurements(conn, end)
+    seed_measurements(conn, end, user_id)
 
 
-def seed_measurements(conn, end):
+def seed_measurements(conn, end, user_id):
     """2025년 1월부터 매달, 최근 8주는 매주 가정 측정 기록을 만든다. 2024 검진값에서 2026 샘플 값 쪽으로 서서히 움직인다."""
     start = date(2025, 1, 15)
     days = []
@@ -242,6 +316,6 @@ def seed_measurements(conn, end):
             rows.append(("glucose", {"fbs": round(lerp(108, 101, 3))}, 1))
         for kind, values, fasting in rows:
             conn.execute(
-                "INSERT INTO measurements (type, measured_at, item_values, fasting) VALUES (?, ?, ?, ?)",
-                (kind, at, json.dumps(values), fasting),
+                "INSERT INTO measurements (user_id, type, measured_at, item_values, fasting) VALUES (?, ?, ?, ?, ?)",
+                (user_id, kind, at, json.dumps(values), fasting),
             )

@@ -5,6 +5,7 @@ import { Icon, Sheet, Wordmark } from '../ui'
 import { ALLERGY_OPTIONS, CONDITION_OPTIONS, DIET_OPTIONS, MEDICATION_GROUPS, SAMPLE_PROFILE, SUPPLEMENT_OPTIONS } from '../data/mock'
 import type { Lifestyle, UserProfile } from '../types'
 import { loadTheme, saveTheme, type Theme } from '../theme'
+import { USE_API } from '../api'
 import { regionLabel } from '../data/regions'
 import AddressField from './AddressField'
 
@@ -47,10 +48,18 @@ function Seg<T extends string | number>({ label, options, value, onChange }: { l
   )
 }
 
+// 새로 가입한 계정은 빈 값에서 시작한다(모의 모드는 시연을 빠르게 하려고 가상 인물 값으로 채운다).
+const BLANK_PROFILE: UserProfile = {
+  name: '', birthYear: 1990, sex: 'M', region: '', lastCheckupYear: null, medications: [], currentSupplements: [],
+  lifestyle: { smoking: false, smokingStatus: 'never', drinkingPerWeek: 0, drinksPerSession: 0, exercisePerWeek: 0, lowOutdoor: false, sleepHours: 7, diet: [] },
+  conditions: [], allergies: [],
+}
+
 export default function Onboarding({ onDone, onCancel, initial }: { onDone: () => void; onCancel?: () => void; initial?: UserProfile }) {
-  const { setProfile } = useStore()
+  const { setProfile, account, logout, deleteAccount } = useStore()
+  const [leaving, setLeaving] = useState(false)
   // 처음 쓸 때는 시연을 빠르게 하도록 가상 인물 값으로 미리 채워 둔다. 내 정보 수정은 지금 값에서 시작.
-  const [p, setP] = useState<UserProfile>(initial ?? SAMPLE_PROFILE)
+  const [p, setP] = useState<UserProfile>(initial ?? (USE_API ? BLANK_PROFILE : SAMPLE_PROFILE))
   const [group, setGroup] = useState<string | null>(null)
   const [draft, setDraft] = useState<string[]>([])
   const [theme, setTheme] = useState<Theme>(loadTheme)
@@ -209,14 +218,34 @@ export default function Onboarding({ onDone, onCancel, initial }: { onDone: () =
           </section>
         )}
 
+        {initial && USE_API && account && (
+          <section className="sec">
+            <div className="sec-head"><h2>계정</h2></div>
+            <p className="small muted">{account.isGuest ? '체험 계정입니다. 기록은 2일 뒤 지워집니다.' : `아이디 ${account.username}(으)로 로그인했습니다.`}</p>
+            <div className="row" style={{ gap: 8 }}>
+              <button type="button" className="btn flat sm" onClick={() => logout()}>로그아웃</button>
+              {!account.isGuest && <button type="button" className="btn flat sm danger" onClick={() => setLeaving(true)}>회원 탈퇴</button>}
+            </div>
+          </section>
+        )}
+
         <div className="stack" style={{ gap: 12 }}>
-          <p className="small muted" style={{ padding: '0 4px' }}>복용 약과 질환은 건강에 관한 민감정보입니다. 시연 모드에서는 이 브라우저에만 저장되고 서버로 보내지 않습니다.</p>
+          <p className="small muted" style={{ padding: '0 4px' }}>복용 약과 질환은 건강에 관한 민감정보입니다. {USE_API
+            ? '입력한 정보는 내 계정에만 저장되고 다른 사람은 볼 수 없습니다. 시연용 서비스이므로 실제 정보는 입력하지 마십시오.'
+            : '시연 모드에서는 이 브라우저에만 저장되고 서버로 보내지 않습니다.'}</p>
           <div className="actions">
             {initial && <button type="button" className="btn flat" onClick={onCancel}>취소</button>}
             <button className="btn" type="submit">{initial ? '저장' : '검진 대상 확인하기'}</button>
           </div>
         </div>
       </form>
+      {leaving && (
+        <Sheet title="탈퇴하시겠습니까?" onClose={() => setLeaving(false)}
+          actions={<><button className="btn flat" onClick={() => setLeaving(false)}>취소</button>
+            <button className="btn flat danger" onClick={() => { setLeaving(false); deleteAccount() }}>탈퇴</button></>}>
+          <p className="small muted">계정과 검진 결과, 복용 기록, 측정 기록이 모두 지워지고 되돌릴 수 없습니다.</p>
+        </Sheet>
+      )}
     </div>
     {group && (() => {
       const g = MEDICATION_GROUPS.find((x) => x.group === group)!

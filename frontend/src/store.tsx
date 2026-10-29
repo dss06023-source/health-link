@@ -7,8 +7,8 @@ import { FOLLOWUP_ITEMS, MYDATA_CHECKUP, MYDATA_INSTITUTION, MYDATA_PRESCRIPTION
 import { seededMeasurements } from './data/measure'
 import { CURRENT_INFO } from './data/rules'
 import { USE_API } from './api'
-import { loadAll, remote } from './api/remote'
-import type { RemoteExtras } from './api/remote'
+import { AuthError, auth, loadAll, remote } from './api/remote'
+import type { Account, RemoteExtras } from './api/remote'
 
 export interface AppState {
   profile: UserProfile | null
@@ -125,15 +125,26 @@ interface Actions {
   mydataSync: (applyMedications: boolean) => Promise<MydataResult>
 }
 
+// 서버 연결 모드의 계정. undefined는 확인 중, null은 로그인 전.
+interface AccountActions {
+  account: Account | null | undefined
+  login: (username: string, password: string) => Promise<void>
+  signup: (username: string, password: string) => Promise<void>
+  startGuest: () => Promise<void>
+  logout: () => Promise<void>
+  deleteAccount: () => Promise<void>
+}
+
 // 알림 미루기: `날짜:시간대` → 다시 알릴 시각(ISO). 새로고침하면 사라져도 되는 값이라 저장하지 않는다.
 interface Remote { remote: RemoteExtras | null; remoteError: string | null; snoozed: Record<string, string> }
-const Ctx = createContext<(AppState & Actions & Remote) | null>(null)
+const Ctx = createContext<(AppState & Actions & Remote & AccountActions) | null>(null)
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [s, set] = useState<AppState>(USE_API ? freshDemo : load)
   const [extras, setExtras] = useState<RemoteExtras | null>(null)
   const [remoteError, setRemoteError] = useState<string | null>(null)
   const [snoozed, setSnoozed] = useState<Record<string, string>>({})
+  const [account, setAccount] = useState<Account | null | undefined>(USE_API ? undefined : null)
   const current = useRef(s)
   useEffect(() => { current.current = s }, [s])
   useEffect(() => { if (!USE_API) try { localStorage.setItem(KEY, JSON.stringify(s)) } catch { /* 무시 */ } }, [s])
@@ -145,11 +156,32 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       set((x) => ({ ...x, ...state, followup: null }))
       setExtras(ex); setRemoteError(null)
     } catch (e) {
+      if (e instanceof AuthError) { setAccount(null); return }
       setRemoteError(e instanceof Error ? e.message : '서버에 연결하지 못했습니다.')
     }
   }, [])
-  useEffect(() => { if (USE_API) refresh() }, [refresh])
-  const run = (p: Promise<unknown>) => { p.then(refresh, (e) => setRemoteError(e instanceof Error ? e.message : String(e))) }
+  // 처음 열 때 로그인 상태를 확인하고, 로그인돼 있으면 그 사람의 기록을 불러온다.
+  useEffect(() => {
+    if (!USE_API) return
+    auth.me().then((a) => { setAccount(a); refresh() }, (e) => {
+      if (e instanceof AuthError) setAccount(null)
+      else setRemoteError(e instanceof Error ? e.message : '서버에 연결하지 못했습니다.')
+    })
+  }, [refresh])
+  const run = (p: Promise<unknown>) => {
+    p.then(refresh, (e) => { if (e instanceof AuthError) setAccount(null); else setRemoteError(e instanceof Error ? e.message : String(e)) })
+  }
+  // 계정이 바뀌면 화면의 이전 사람 기록을 비우고 새로 불러온다.
+  const enter = async (a: Account) => { set(freshDemo()); setExtras(null); setRemoteError(null); setAccount(a); await refresh() }
+  const leave = () => { set(freshDemo()); setExtras(null); setAccount(null) }
+  const accountActions: AccountActions = {
+    account,
+    login: async (u, pw) => enter(await auth.login(u, pw)),
+    signup: async (u, pw) => enter(await auth.signup(u, pw)),
+    startGuest: async () => enter(await auth.guest()),
+    logout: async () => { await auth.logout().catch(() => null); leave() },
+    deleteAccount: async () => { await auth.deleteAccount(); leave() },
+  }
 
   const local = useMemo<Actions>(() => ({
     // 내 정보에서 뺀 영양제는 복용 관리에서도 뺀다.
@@ -218,7 +250,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const actions: Actions = !USE_API ? local : {
     ...local,
-    setProfile: (p) => { local.setProfile(p); run(remote.saveProfile(p)) },
+    setProfile: (p) => { local.setProfile(p); setAccount((a) => a && { ...a, onboarded: true }); run(remote.saveProfile(p)) },
     addCheckup: (items, source, remoteId) => { if (remoteId != null) run(remote.confirm(remoteId, items)); else local.addCheckup(items, source) },
     addSupplements: (recs) => run(Promise.all(recs.map((r) => remote.addSupplement(r.id)))),
     updateSupplement: (id, patch) => { local.updateSupplement(id, patch); run(remote.patchSupplement(id, patch)) },
@@ -239,7 +271,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     mydataSync: async (apply) => { const r = await remote.mydataSync(apply); await refresh(); return r },
   }
 
-  return <Ctx.Provider value={{ ...s, ...actions, remote: extras, remoteError, snoozed }}>{children}</Ctx.Provider>
+  return <Ctx.Provider value={{ ...s, ...actions, ...accountActions, remote: extras, remoteError, snoozed }}>{children}</Ctx.Provider>
 }
 
 export function useStore() {
@@ -248,4 +280,7 @@ export function useStore() {
   return v
 }
 
-export const latestCheckup = (s: AppState) => s.checkups[s.checkups.length - 1]
+// 새로 가입해 검진 결과가 하나도 없을 때는 빈 결과로 대신한다(화면은 hasCheckup으로 안내를 따로 보여 준다).
+const NO_CHECKUP: Checkup = { id: 'none', date: '', source: 'sample', label: '검진 결과 없음', items: [] }
+export const latestCheckup = (s: AppState) => s.checkups[s.checkups.length - 1] ?? NO_CHECKUP
+export const hasCheckup = (s: AppState) => s.checkups.length > 0

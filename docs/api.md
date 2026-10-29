@@ -1,10 +1,21 @@
 # 건강잇다 시연용 API 규격 (v0.1)
 
 - 주소: `http://localhost:8000` (프론트는 `/api` 를 이 주소로 프록시)
-- 형식: JSON, 필드명 camelCase. 인증 없음(가상 사용자 1명).
+- 형식: JSON, 필드명 camelCase. 인증: 로그인하면 세션 쿠키(`itda_session`, HttpOnly)로 사용자를 구분하고, 모든 기록은 그 사용자 것만 다룸. 로그인 없이 부를 수 있는 것은 `/api/auth/*`, 보기·공공 검색(`/api/options`, `/api/health`, `/api/config`, `/api/medications`, `/api/drugs/search`, `/api/address/search`, `/api/geocode`, `/api/supplements/catalog`, `/api/measurements/types`)뿐이고 나머지는 401.
 - 실제 응답 예시 전체: [`api-examples.json`](./api-examples.json) — 프론트 모의 데이터로 그대로 쓸 수 있습니다. 서버를 띄우면 `http://localhost:8000/docs` 에서 직접 호출해 볼 수 있습니다.
 - 모든 데이터는 가상입니다. 수치 상태값은 `normal` / `caution` / `danger` 세 가지입니다.
-- 오류는 `{"detail": "한국어 메시지"}` 와 HTTP 상태코드(404, 409, 415, 422)로 돌려줍니다.
+- 오류는 `{"detail": "한국어 메시지"}` 와 HTTP 상태코드(401, 404, 409, 415, 422, 429)로 돌려줍니다.
+
+## 0. 계정
+
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| POST | `/api/auth/signup` | `{username(영문 소문자·숫자·밑줄 4~20자), password(8~72자)}` → 201 `{username, isGuest, name, onboarded:false}` + 세션 쿠키. 중복 아이디 409 |
+| POST | `/api/auth/login` | 같은 몸통. 틀리면 401, 아이디별 10분에 10번 넘게 틀리면 429 |
+| POST | `/api/auth/guest` | 체험하기: 가상 인물 기록이 든 임시 계정(2일 뒤 삭제) |
+| GET | `/api/auth/me` | 지금 계정. 로그인 전이면 401 |
+| POST | `/api/auth/logout` | 세션 삭제 |
+| DELETE | `/api/auth/account` | 계정과 모든 기록 삭제 |
 
 ## 1. 사용자·검진 알림
 
@@ -188,7 +199,7 @@
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
-| POST | `/api/demo/reset` | 가상 데이터를 처음 상태로 되돌림(리허설마다 사용) |
+| POST | `/api/demo/reset` | 체험 계정의 기록을 가상 인물 처음 상태로 되돌림. 가입한 계정은 403 |
 | GET | `/api/health` | 서버 상태 확인. `publicApis{dataGoKr, juso, kakao}`: 서버에 키가 들어 있는지(true/false)만 알려 줌 |
 
 ## 시연 시나리오와 데이터
