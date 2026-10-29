@@ -57,6 +57,12 @@ class OCRUnavailable(RuntimeError):
     pass
 
 
+def warm_up():
+    """서버가 켜질 때 모델을 미리 올려 둔다. 첫 업로드가 모델 읽는 시간까지 기다리지 않게 한다."""
+    if available() and os.environ.get("HEALTH_ITDA_OCR") != "mock":
+        _get_engine()
+
+
 def available():
     try:
         import rapidocr  # noqa: F401
