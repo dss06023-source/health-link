@@ -1,0 +1,1926 @@
+{
+  "GET /api/users/me": {
+    "status": 200,
+    "body": {
+      "name": "김건강",
+      "birthYear": 1986,
+      "gender": "M",
+      "heightCm": 174,
+      "lifestyle": {
+        "smoking": false,
+        "drinkingPerWeek": 2,
+        "exercisePerWeek": 1,
+        "lowSunlight": true
+      },
+      "medications": [
+        "아토르바스타틴"
+      ],
+      "consent": {
+        "sensitiveData": true,
+        "agreedAt": "2024-10-20"
+      },
+      "location": {
+        "lat": 37.5665,
+        "lng": 126.978
+      },
+      "age": 40,
+      "isTargetThisYear": true,
+      "nextCheckupYear": 2026,
+      "checkupDue": true,
+      "message": "2026년 국가건강검진 대상자입니다. 아직 검진 기록이 없습니다. 연말 전에 받으세요.",
+      "lastCheckupDate": "2024-10-15",
+      "isDemoData": true
+    }
+  },
+  "GET /api/checkup-centers": {
+    "status": 200,
+    "body": [
+      {
+        "id": 2,
+        "name": "샘플건강검진센터",
+        "address": "서울 종로구 예시길 5",
+        "lat": 37.572,
+        "lng": 126.9794,
+        "phone": "02-000-0002",
+        "distanceKm": 0.62,
+        "bookingUrl": "https://www.nhis.or.kr",
+        "isDemoData": true
+      },
+      {
+        "id": 3,
+        "name": "데모가정의학과",
+        "address": "서울 중구 테스트로 88",
+        "lat": 37.56,
+        "lng": 126.975,
+        "phone": "02-000-0003",
+        "distanceKm": 0.77,
+        "bookingUrl": "https://www.nhis.or.kr",
+        "isDemoData": true
+      },
+      {
+        "id": 1,
+        "name": "가상내과의원",
+        "address": "서울 중구 가상로 12",
+        "lat": 37.5651,
+        "lng": 126.9895,
+        "phone": "02-000-0001",
+        "distanceKm": 1.03,
+        "bookingUrl": "https://www.nhis.or.kr",
+        "isDemoData": true
+      },
+      {
+        "id": 4,
+        "name": "모의종합병원 검진센터",
+        "address": "서울 용산구 시연대로 30",
+        "lat": 37.5384,
+        "lng": 126.9654,
+        "phone": "02-000-0004",
+        "distanceKm": 3.32,
+        "bookingUrl": "https://www.nhis.or.kr",
+        "isDemoData": true
+      },
+      {
+        "id": 5,
+        "name": "예시연세의원",
+        "address": "서울 서대문구 견본로 7",
+        "lat": 37.56,
+        "lng": 126.941,
+        "phone": "02-000-0005",
+        "distanceKm": 3.34,
+        "bookingUrl": "https://www.nhis.or.kr",
+        "isDemoData": true
+      }
+    ]
+  },
+  "GET /api/medications": {
+    "status": 200,
+    "body": [
+      {
+        "name": "아토르바스타틴",
+        "drugClass": "statin"
+      },
+      {
+        "name": "로수바스타틴",
+        "drugClass": "statin"
+      },
+      {
+        "name": "와파린",
+        "drugClass": "anticoagulant"
+      },
+      {
+        "name": "아스피린(저용량)",
+        "drugClass": "anticoagulant"
+      },
+      {
+        "name": "메트포르민",
+        "drugClass": "antidiabetic"
+      },
+      {
+        "name": "레보티록신",
+        "drugClass": "thyroid"
+      },
+      {
+        "name": "암로디핀",
+        "drugClass": "antihypertensive"
+      }
+    ]
+  },
+  "GET /api/recommendations (2024 검진)": {
+    "status": 200,
+    "body": {
+      "checkupId": 1,
+      "checkupDate": "2024-10-15",
+      "medications": [
+        "아토르바스타틴"
+      ],
+      "recommendations": [
+        {
+          "supplementId": "banaba",
+          "name": "바나바잎 추출물",
+          "ingredients": {
+            "코로솔산": "1.3mg"
+          },
+          "dose": "1일 1회 1정",
+          "timing": "아침 식전",
+          "timeSlots": [
+            "morning"
+          ],
+          "claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
+          "priority": 1,
+          "reasons": [
+            {
+              "code": "fbs",
+              "name": "공복혈당",
+              "value": 108,
+              "unit": "mg/dL",
+              "status": "caution"
+            }
+          ],
+          "lifestyleReasons": [],
+          "alreadyTaking": false,
+          "warnings": []
+        },
+        {
+          "supplementId": "omega3",
+          "name": "오메가-3",
+          "ingredients": {
+            "EPA·DHA": "1000mg"
+          },
+          "dose": "1일 1회 1캡슐",
+          "timing": "아침 식후",
+          "timeSlots": [
+            "morning"
+          ],
+          "claim": "혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음",
+          "priority": 1,
+          "reasons": [
+            {
+              "code": "tg",
+              "name": "중성지방",
+              "value": 210,
+              "unit": "mg/dL",
+              "status": "danger"
+            }
+          ],
+          "lifestyleReasons": [],
+          "alreadyTaking": true,
+          "warnings": []
+        },
+        {
+          "supplementId": "coq10",
+          "name": "코엔자임Q10",
+          "ingredients": {
+            "코엔자임Q10": "100mg"
+          },
+          "dose": "1일 1회 1캡슐",
+          "timing": "아침 식후",
+          "timeSlots": [
+            "morning"
+          ],
+          "claim": "높은 혈압 감소에 도움을 줄 수 있음",
+          "priority": 2,
+          "reasons": [
+            {
+              "code": "sbp",
+              "name": "수축기 혈압",
+              "value": 134,
+              "unit": "mmHg",
+              "status": "caution"
+            },
+            {
+              "code": "dbp",
+              "name": "이완기 혈압",
+              "value": 86,
+              "unit": "mmHg",
+              "status": "caution"
+            }
+          ],
+          "lifestyleReasons": [],
+          "alreadyTaking": false,
+          "warnings": []
+        },
+        {
+          "supplementId": "milk_thistle",
+          "name": "밀크씨슬",
+          "ingredients": {
+            "실리마린": "130mg"
+          },
+          "dose": "1일 1회 1정",
+          "timing": "아침 식후",
+          "timeSlots": [
+            "morning"
+          ],
+          "claim": "간 건강에 도움을 줄 수 있음",
+          "priority": 2,
+          "reasons": [
+            {
+              "code": "alt",
+              "name": "ALT",
+              "value": 48,
+              "unit": "U/L",
+              "status": "danger"
+            },
+            {
+              "code": "ggt",
+              "name": "감마지티피(γ-GTP)",
+              "value": 72,
+              "unit": "U/L",
+              "status": "caution"
+            }
+          ],
+          "lifestyleReasons": [],
+          "alreadyTaking": true,
+          "warnings": []
+        },
+        {
+          "supplementId": "vitamin_d",
+          "name": "비타민D",
+          "ingredients": {
+            "비타민D": "25μg"
+          },
+          "dose": "1일 1회 1정",
+          "timing": "아침 식후",
+          "timeSlots": [
+            "morning"
+          ],
+          "claim": "칼슘과 인이 흡수되고 이용되는데 필요, 뼈의 형성과 유지에 필요",
+          "priority": 3,
+          "reasons": [],
+          "lifestyleReasons": [
+            "실내 생활이 길어 햇빛 노출이 적다고 답했습니다."
+          ],
+          "alreadyTaking": true,
+          "warnings": [
+            {
+              "type": "duplicate",
+              "level": "info",
+              "ingredient": "비타민D",
+              "supplements": [
+                "multivitamin",
+                "vitamin_d"
+              ],
+              "total": "35μg",
+              "upperLimit": "100μg",
+              "message": "비타민D 성분이 종합비타민, 비타민D에 함께 들어 있습니다. 하루 합계 35μg(상한 100μg)입니다."
+            }
+          ]
+        }
+      ],
+      "excluded": [
+        {
+          "supplementId": "red_yeast_rice",
+          "name": "홍국",
+          "reasons": [
+            {
+              "code": "ldl",
+              "name": "LDL 콜레스테롤",
+              "value": 152,
+              "unit": "mg/dL",
+              "status": "caution"
+            },
+            {
+              "code": "tc",
+              "name": "총콜레스테롤",
+              "value": 228,
+              "unit": "mg/dL",
+              "status": "caution"
+            }
+          ],
+          "message": "홍국의 모나콜린K는 스타틴 계열 약과 작용이 같아 함께 먹으면 부작용 위험이 커질 수 있습니다. 추천에서 뺐습니다."
+        },
+        {
+          "supplementId": "garcinia",
+          "name": "가르시니아",
+          "reasons": [
+            {
+              "code": "bmi",
+              "name": "체질량지수(BMI)",
+              "value": 25.6,
+              "unit": "kg/m²",
+              "status": "danger"
+            }
+          ],
+          "message": "간 수치가 기준치 밖일 때는 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."
+        }
+      ],
+      "warnings": [
+        {
+          "type": "duplicate",
+          "level": "info",
+          "ingredient": "비타민D",
+          "supplements": [
+            "multivitamin",
+            "vitamin_d"
+          ],
+          "total": "35μg",
+          "upperLimit": "100μg",
+          "message": "비타민D 성분이 종합비타민, 비타민D에 함께 들어 있습니다. 하루 합계 35μg(상한 100μg)입니다.",
+          "supplementId": "vitamin_d"
+        }
+      ],
+      "disclaimer": "이 추천은 검진 수치와 규칙표에 따른 참고 정보이며 진단이나 치료를 대신하지 않습니다. 복용 중인 약이 있거나 주의 항목이 있으면 의사·약사와 상담하세요."
+    }
+  },
+  "GET /api/supplements": {
+    "status": 200,
+    "body": [
+      {
+        "id": 1,
+        "supplementId": "omega3",
+        "name": "오메가-3",
+        "ingredients": {
+          "EPA·DHA": "1000mg"
+        },
+        "dose": "1일 1회 1캡슐",
+        "claim": "혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음",
+        "timeSlots": [
+          "morning"
+        ],
+        "paused": false,
+        "startedAt": "2024-11-01",
+        "endedAt": null,
+        "source": "recommendation"
+      },
+      {
+        "id": 2,
+        "supplementId": "milk_thistle",
+        "name": "밀크씨슬",
+        "ingredients": {
+          "실리마린": "130mg"
+        },
+        "dose": "1일 1회 1정",
+        "claim": "간 건강에 도움을 줄 수 있음",
+        "timeSlots": [
+          "morning"
+        ],
+        "paused": false,
+        "startedAt": "2024-11-01",
+        "endedAt": null,
+        "source": "recommendation"
+      },
+      {
+        "id": 3,
+        "supplementId": "multivitamin",
+        "name": "종합비타민",
+        "ingredients": {
+          "비타민D": "10μg",
+          "철": "8mg",
+          "비타민C": "100mg",
+          "비타민B군": "1일분"
+        },
+        "dose": "1일 1회 1정",
+        "claim": "에너지 생성과 정상적인 면역기능에 필요",
+        "timeSlots": [
+          "morning"
+        ],
+        "paused": false,
+        "startedAt": "2023-03-01",
+        "endedAt": null,
+        "source": "manual"
+      },
+      {
+        "id": 4,
+        "supplementId": "vitamin_d",
+        "name": "비타민D",
+        "ingredients": {
+          "비타민D": "25μg"
+        },
+        "dose": "1일 1회 1정",
+        "claim": "칼슘과 인이 흡수되고 이용되는데 필요, 뼈의 형성과 유지에 필요",
+        "timeSlots": [
+          "morning"
+        ],
+        "paused": false,
+        "startedAt": "2025-02-10",
+        "endedAt": null,
+        "source": "manual"
+      }
+    ]
+  },
+  "GET /api/supplements/check": {
+    "status": 200,
+    "body": {
+      "supplements": [
+        "omega3",
+        "milk_thistle",
+        "multivitamin",
+        "vitamin_d"
+      ],
+      "duplicates": [
+        {
+          "type": "duplicate",
+          "level": "info",
+          "ingredient": "비타민D",
+          "supplements": [
+            "multivitamin",
+            "vitamin_d"
+          ],
+          "total": "35μg",
+          "upperLimit": "100μg",
+          "message": "비타민D 성분이 종합비타민, 비타민D에 함께 들어 있습니다. 하루 합계 35μg(상한 100μg)입니다."
+        }
+      ],
+      "interactions": [],
+      "ok": false
+    }
+  },
+  "GET /api/intake-logs/today": {
+    "status": 200,
+    "body": {
+      "date": "2026-10-28",
+      "items": [
+        {
+          "supplementId": 1,
+          "name": "오메가-3",
+          "timeSlot": "morning",
+          "taken": false
+        },
+        {
+          "supplementId": 2,
+          "name": "밀크씨슬",
+          "timeSlot": "morning",
+          "taken": false
+        },
+        {
+          "supplementId": 3,
+          "name": "종합비타민",
+          "timeSlot": "morning",
+          "taken": false
+        },
+        {
+          "supplementId": 4,
+          "name": "비타민D",
+          "timeSlot": "morning",
+          "taken": false
+        }
+      ],
+      "takenCount": 0,
+      "scheduledCount": 4,
+      "rate": 0.0
+    }
+  },
+  "GET /api/intake-logs?from=2026-10-22&to=2026-10-28": {
+    "status": 200,
+    "body": {
+      "from": "2026-10-22",
+      "to": "2026-10-28",
+      "logs": [
+        {
+          "date": "2026-10-22",
+          "timeSlot": "morning",
+          "supplementId": 1,
+          "taken": true
+        },
+        {
+          "date": "2026-10-22",
+          "timeSlot": "morning",
+          "supplementId": 2,
+          "taken": false
+        },
+        {
+          "date": "2026-10-22",
+          "timeSlot": "morning",
+          "supplementId": 3,
+          "taken": true
+        },
+        {
+          "date": "2026-10-22",
+          "timeSlot": "morning",
+          "supplementId": 4,
+          "taken": true
+        },
+        {
+          "date": "2026-10-23",
+          "timeSlot": "morning",
+          "supplementId": 1,
+          "taken": true
+        },
+        {
+          "date": "2026-10-23",
+          "timeSlot": "morning",
+          "supplementId": 2,
+          "taken": true
+        },
+        {
+          "date": "2026-10-23",
+          "timeSlot": "morning",
+          "supplementId": 3,
+          "taken": true
+        },
+        {
+          "date": "2026-10-23",
+          "timeSlot": "morning",
+          "supplementId": 4,
+          "taken": true
+        },
+        {
+          "date": "2026-10-24",
+          "timeSlot": "morning",
+          "supplementId": 1,
+          "taken": true
+        },
+        {
+          "date": "2026-10-24",
+          "timeSlot": "morning",
+          "supplementId": 2,
+          "taken": true
+        },
+        {
+          "date": "2026-10-24",
+          "timeSlot": "morning",
+          "supplementId": 3,
+          "taken": true
+        },
+        {
+          "date": "2026-10-24",
+          "timeSlot": "morning",
+          "supplementId": 4,
+          "taken": false
+        },
+        {
+          "date": "2026-10-25",
+          "timeSlot": "morning",
+          "supplementId": 1,
+          "taken": true
+        },
+        {
+          "date": "2026-10-25",
+          "timeSlot": "morning",
+          "supplementId": 2,
+          "taken": false
+        },
+        {
+          "date": "2026-10-25",
+          "timeSlot": "morning",
+          "supplementId": 3,
+          "taken": true
+        },
+        {
+          "date": "2026-10-25",
+          "timeSlot": "morning",
+          "supplementId": 4,
+          "taken": true
+        },
+        {
+          "date": "2026-10-26",
+          "timeSlot": "morning",
+          "supplementId": 1,
+          "taken": true
+        },
+        {
+          "date": "2026-10-26",
+          "timeSlot": "morning",
+          "supplementId": 2,
+          "taken": true
+        },
+        {
+          "date": "2026-10-26",
+          "timeSlot": "morning",
+          "supplementId": 3,
+          "taken": true
+        },
+        {
+          "date": "2026-10-26",
+          "timeSlot": "morning",
+          "supplementId": 4,
+          "taken": true
+        },
+        {
+          "date": "2026-10-27",
+          "timeSlot": "morning",
+          "supplementId": 1,
+          "taken": true
+        },
+        {
+          "date": "2026-10-27",
+          "timeSlot": "morning",
+          "supplementId": 2,
+          "taken": true
+        },
+        {
+          "date": "2026-10-27",
+          "timeSlot": "morning",
+          "supplementId": 3,
+          "taken": true
+        },
+        {
+          "date": "2026-10-27",
+          "timeSlot": "morning",
+          "supplementId": 4,
+          "taken": false
+        }
+      ],
+      "daily": [
+        {
+          "date": "2026-10-22",
+          "scheduled": 4,
+          "taken": 3,
+          "rate": 0.75
+        },
+        {
+          "date": "2026-10-23",
+          "scheduled": 4,
+          "taken": 4,
+          "rate": 1.0
+        },
+        {
+          "date": "2026-10-24",
+          "scheduled": 4,
+          "taken": 3,
+          "rate": 0.75
+        },
+        {
+          "date": "2026-10-25",
+          "scheduled": 4,
+          "taken": 3,
+          "rate": 0.75
+        },
+        {
+          "date": "2026-10-26",
+          "scheduled": 4,
+          "taken": 4,
+          "rate": 1.0
+        },
+        {
+          "date": "2026-10-27",
+          "scheduled": 4,
+          "taken": 3,
+          "rate": 0.75
+        },
+        {
+          "date": "2026-10-28",
+          "scheduled": 4,
+          "taken": 0,
+          "rate": 0.0
+        }
+      ],
+      "recordedFrom": "2026-10-22",
+      "rate": 0.71
+    }
+  },
+  "POST /api/checkups/upload (사진)": {
+    "status": 200,
+    "body": {
+      "id": 2,
+      "date": "2026-10-28",
+      "source": "photo",
+      "status": "pending_review",
+      "fileName": "2026_건강검진결과.jpg",
+      "values": {
+        "sbp": 126,
+        "dbp": 82,
+        "fbs": 101,
+        "tc": 205,
+        "ldl": 128,
+        "hdl": 47,
+        "tg": 162,
+        "ast": 31,
+        "alt": 37,
+        "ggt": 58,
+        "hb": 14.9,
+        "bmi": 24.4
+      },
+      "ocr": {
+        "engine": "mock",
+        "fields": [
+          {
+            "code": "sbp",
+            "name": "수축기 혈압",
+            "value": 126,
+            "unit": "mmHg",
+            "confidence": 0.98,
+            "needsReview": false
+          },
+          {
+            "code": "dbp",
+            "name": "이완기 혈압",
+            "value": 82,
+            "unit": "mmHg",
+            "confidence": 0.98,
+            "needsReview": false
+          },
+          {
+            "code": "fbs",
+            "name": "공복혈당",
+            "value": 101,
+            "unit": "mg/dL",
+            "confidence": 0.98,
+            "needsReview": false
+          },
+          {
+            "code": "tc",
+            "name": "총콜레스테롤",
+            "value": 205,
+            "unit": "mg/dL",
+            "confidence": 0.98,
+            "needsReview": false
+          },
+          {
+            "code": "ldl",
+            "name": "LDL 콜레스테롤",
+            "value": 128,
+            "unit": "mg/dL",
+            "confidence": 0.98,
+            "needsReview": false
+          },
+          {
+            "code": "hdl",
+            "name": "HDL 콜레스테롤",
+            "value": 47,
+            "unit": "mg/dL",
+            "confidence": 0.72,
+            "needsReview": true
+          },
+          {
+            "code": "tg",
+            "name": "중성지방",
+            "value": 162,
+            "unit": "mg/dL",
+            "confidence": 0.98,
+            "needsReview": false
+          },
+          {
+            "code": "ast",
+            "name": "AST",
+            "value": 31,
+            "unit": "U/L",
+            "confidence": 0.98,
+            "needsReview": false
+          },
+          {
+            "code": "alt",
+            "name": "ALT",
+            "value": 37,
+            "unit": "U/L",
+            "confidence": 0.98,
+            "needsReview": false
+          },
+          {
+            "code": "ggt",
+            "name": "감마지티피(γ-GTP)",
+            "value": 58,
+            "unit": "U/L",
+            "confidence": 0.72,
+            "needsReview": true
+          },
+          {
+            "code": "hb",
+            "name": "혈색소",
+            "value": 14.9,
+            "unit": "g/dL",
+            "confidence": 0.98,
+            "needsReview": false
+          },
+          {
+            "code": "bmi",
+            "name": "체질량지수(BMI)",
+            "value": 24.4,
+            "unit": "kg/m²",
+            "confidence": 0.98,
+            "needsReview": false
+          }
+        ],
+        "message": "인식한 수치를 확인해 주세요. 틀린 값은 고친 뒤 확정하세요."
+      }
+    }
+  },
+  "PATCH /api/checkups/2 {confirm:true}": {
+    "status": 200,
+    "body": {
+      "id": 2,
+      "date": "2026-10-28",
+      "source": "photo",
+      "status": "confirmed",
+      "fileName": "2026_건강검진결과.jpg",
+      "summary": {
+        "overall": "caution",
+        "headline": "수축기 혈압, 이완기 혈압, 공복혈당 외 4개 항목이 기준치를 벗어났습니다.",
+        "totalCount": 12,
+        "cautionCount": 7
+      },
+      "items": [
+        {
+          "code": "sbp",
+          "name": "수축기 혈압",
+          "group": "혈압",
+          "value": 126,
+          "unit": "mmHg",
+          "normalRange": "120 미만",
+          "status": "caution",
+          "direction": "high",
+          "explanation": "심장이 피를 내보낼 때 혈관에 걸리는 압력입니다. 기준치보다 조금 높습니다. 생활습관 점검을 권합니다.",
+          "consultDoctor": false,
+          "history": [
+            {
+              "date": "2024-10-15",
+              "value": 134
+            },
+            {
+              "date": "2026-10-28",
+              "value": 126
+            }
+          ]
+        },
+        {
+          "code": "dbp",
+          "name": "이완기 혈압",
+          "group": "혈압",
+          "value": 82,
+          "unit": "mmHg",
+          "normalRange": "80 미만",
+          "status": "caution",
+          "direction": "high",
+          "explanation": "심장이 쉬는 동안 혈관에 남아 있는 압력입니다. 기준치보다 조금 높습니다. 생활습관 점검을 권합니다.",
+          "consultDoctor": false,
+          "history": [
+            {
+              "date": "2024-10-15",
+              "value": 86
+            },
+            {
+              "date": "2026-10-28",
+              "value": 82
+            }
+          ]
+        },
+        {
+          "code": "fbs",
+          "name": "공복혈당",
+          "group": "혈당",
+          "value": 101,
+          "unit": "mg/dL",
+          "normalRange": "100 미만",
+          "status": "caution",
+          "direction": "high",
+          "explanation": "8시간 이상 굶은 뒤 잰 혈액 속 포도당 양입니다. 기준치보다 조금 높습니다. 생활습관 점검을 권합니다.",
+          "consultDoctor": false,
+          "history": [
+            {
+              "date": "2024-10-15",
+              "value": 108
+            },
+            {
+              "date": "2026-10-28",
+              "value": 101
+            }
+          ]
+        },
+        {
+          "code": "tc",
+          "name": "총콜레스테롤",
+          "group": "지질",
+          "value": 205,
+          "unit": "mg/dL",
+          "normalRange": "200 미만",
+          "status": "caution",
+          "direction": "high",
+          "explanation": "혈액 속 콜레스테롤을 모두 더한 양입니다. 기준치보다 조금 높습니다. 생활습관 점검을 권합니다.",
+          "consultDoctor": false,
+          "history": [
+            {
+              "date": "2024-10-15",
+              "value": 228
+            },
+            {
+              "date": "2026-10-28",
+              "value": 205
+            }
+          ]
+        },
+        {
+          "code": "ldl",
+          "name": "LDL 콜레스테롤",
+          "group": "지질",
+          "value": 128,
+          "unit": "mg/dL",
+          "normalRange": "130 미만",
+          "status": "normal",
+          "direction": null,
+          "explanation": "혈관 벽에 쌓이기 쉬운 콜레스테롤입니다. 기준치 범위 안입니다.",
+          "consultDoctor": false,
+          "history": [
+            {
+              "date": "2024-10-15",
+              "value": 152
+            },
+            {
+              "date": "2026-10-28",
+              "value": 128
+            }
+          ]
+        },
+        {
+          "code": "hdl",
+          "name": "HDL 콜레스테롤",
+          "group": "지질",
+          "value": 47,
+          "unit": "mg/dL",
+          "normalRange": "40 이상",
+          "status": "normal",
+          "direction": null,
+          "explanation": "혈관에서 콜레스테롤을 실어 나르는 콜레스테롤로, 높을수록 좋습니다. 기준치 범위 안입니다.",
+          "consultDoctor": false,
+          "history": [
+            {
+              "date": "2024-10-15",
+              "value": 44
+            },
+            {
+              "date": "2026-10-28",
+              "value": 47
+            }
+          ]
+        },
+        {
+          "code": "tg",
+          "name": "중성지방",
+          "group": "지질",
+          "value": 162,
+          "unit": "mg/dL",
+          "normalRange": "150 미만",
+          "status": "caution",
+          "direction": "high",
+          "explanation": "몸에 저장되는 지방의 한 형태로, 식사·음주의 영향을 많이 받습니다. 기준치보다 조금 높습니다. 생활습관 점검을 권합니다.",
+          "consultDoctor": false,
+          "history": [
+            {
+              "date": "2024-10-15",
+              "value": 210
+            },
+            {
+              "date": "2026-10-28",
+              "value": 162
+            }
+          ]
+        },
+        {
+          "code": "ast",
+          "name": "AST",
+          "group": "간기능",
+          "value": 31,
+          "unit": "U/L",
+          "normalRange": "40 이하",
+          "status": "normal",
+          "direction": null,
+          "explanation": "간·근육에 있는 효소로, 간세포가 손상되면 혈액에 늘어납니다. 기준치 범위 안입니다.",
+          "consultDoctor": false,
+          "history": [
+            {
+              "date": "2024-10-15",
+              "value": 38
+            },
+            {
+              "date": "2026-10-28",
+              "value": 31
+            }
+          ]
+        },
+        {
+          "code": "alt",
+          "name": "ALT",
+          "group": "간기능",
+          "value": 37,
+          "unit": "U/L",
+          "normalRange": "35 이하",
+          "status": "caution",
+          "direction": "high",
+          "explanation": "주로 간에 있는 효소로, 간 상태를 볼 때 쓰는 대표 수치입니다. 기준치보다 조금 높습니다. 생활습관 점검을 권합니다.",
+          "consultDoctor": false,
+          "history": [
+            {
+              "date": "2024-10-15",
+              "value": 48
+            },
+            {
+              "date": "2026-10-28",
+              "value": 37
+            }
+          ]
+        },
+        {
+          "code": "ggt",
+          "name": "감마지티피(γ-GTP)",
+          "group": "간기능",
+          "value": 58,
+          "unit": "U/L",
+          "normalRange": "63 이하",
+          "status": "normal",
+          "direction": null,
+          "explanation": "음주·약물의 영향을 잘 받는 간 효소입니다. 기준치 범위 안입니다.",
+          "consultDoctor": false,
+          "history": [
+            {
+              "date": "2024-10-15",
+              "value": 72
+            },
+            {
+              "date": "2026-10-28",
+              "value": 58
+            }
+          ]
+        },
+        {
+          "code": "hb",
+          "name": "혈색소",
+          "group": "빈혈",
+          "value": 14.9,
+          "unit": "g/dL",
+          "normalRange": "13 이상",
+          "status": "normal",
+          "direction": null,
+          "explanation": "산소를 나르는 적혈구 속 단백질의 양입니다. 기준치 범위 안입니다.",
+          "consultDoctor": false,
+          "history": [
+            {
+              "date": "2024-10-15",
+              "value": 14.8
+            },
+            {
+              "date": "2026-10-28",
+              "value": 14.9
+            }
+          ]
+        },
+        {
+          "code": "bmi",
+          "name": "체질량지수(BMI)",
+          "group": "비만",
+          "value": 24.4,
+          "unit": "kg/m²",
+          "normalRange": "18.5~22.9",
+          "status": "caution",
+          "direction": "high",
+          "explanation": "몸무게(kg)를 키(m)의 제곱으로 나눈 값입니다. 기준치보다 조금 높습니다. 생활습관 점검을 권합니다.",
+          "consultDoctor": false,
+          "history": [
+            {
+              "date": "2024-10-15",
+              "value": 25.6
+            },
+            {
+              "date": "2026-10-28",
+              "value": 24.4
+            }
+          ]
+        }
+      ],
+      "cautionItems": [
+        "sbp",
+        "dbp",
+        "fbs",
+        "tc",
+        "tg",
+        "alt",
+        "bmi"
+      ],
+      "values": {
+        "sbp": 126,
+        "dbp": 82,
+        "fbs": 101,
+        "tc": 205,
+        "ldl": 128,
+        "hdl": 47,
+        "tg": 162,
+        "ast": 31,
+        "alt": 37,
+        "ggt": 58,
+        "hb": 14.9,
+        "bmi": 24.4
+      },
+      "disclaimer": "이 추천은 검진 수치와 규칙표에 따른 참고 정보이며 진단이나 치료를 대신하지 않습니다. 복용 중인 약이 있거나 주의 항목이 있으면 의사·약사와 상담하세요."
+    }
+  },
+  "GET /api/checkups": {
+    "status": 200,
+    "body": [
+      {
+        "id": 2,
+        "date": "2026-10-28",
+        "source": "photo",
+        "status": "confirmed",
+        "fileName": "2026_건강검진결과.jpg",
+        "summary": {
+          "overall": "caution",
+          "headline": "수축기 혈압, 이완기 혈압, 공복혈당 외 4개 항목이 기준치를 벗어났습니다.",
+          "totalCount": 12,
+          "cautionCount": 7
+        }
+      },
+      {
+        "id": 1,
+        "date": "2024-10-15",
+        "source": "pdf",
+        "status": "confirmed",
+        "fileName": "2024_건강검진결과.pdf",
+        "summary": {
+          "overall": "danger",
+          "headline": "수축기 혈압, 이완기 혈압, 공복혈당 외 6개 항목이 기준치를 벗어났습니다. 의사 상담을 권장합니다.",
+          "totalCount": 12,
+          "cautionCount": 9
+        }
+      }
+    ]
+  },
+  "GET /api/recommendations (2026 검진)": {
+    "status": 200,
+    "body": {
+      "checkupId": 2,
+      "checkupDate": "2026-10-28",
+      "medications": [
+        "아토르바스타틴"
+      ],
+      "recommendations": [
+        {
+          "supplementId": "banaba",
+          "name": "바나바잎 추출물",
+          "ingredients": {
+            "코로솔산": "1.3mg"
+          },
+          "dose": "1일 1회 1정",
+          "timing": "아침 식전",
+          "timeSlots": [
+            "morning"
+          ],
+          "claim": "식후 혈당상승 억제에 도움을 줄 수 있음",
+          "priority": 1,
+          "reasons": [
+            {
+              "code": "fbs",
+              "name": "공복혈당",
+              "value": 101,
+              "unit": "mg/dL",
+              "status": "caution"
+            }
+          ],
+          "lifestyleReasons": [],
+          "alreadyTaking": false,
+          "warnings": []
+        },
+        {
+          "supplementId": "omega3",
+          "name": "오메가-3",
+          "ingredients": {
+            "EPA·DHA": "1000mg"
+          },
+          "dose": "1일 1회 1캡슐",
+          "timing": "아침 식후",
+          "timeSlots": [
+            "morning"
+          ],
+          "claim": "혈중 중성지질 개선·혈행 개선에 도움을 줄 수 있음",
+          "priority": 1,
+          "reasons": [
+            {
+              "code": "tg",
+              "name": "중성지방",
+              "value": 162,
+              "unit": "mg/dL",
+              "status": "caution"
+            }
+          ],
+          "lifestyleReasons": [],
+          "alreadyTaking": true,
+          "warnings": []
+        },
+        {
+          "supplementId": "coq10",
+          "name": "코엔자임Q10",
+          "ingredients": {
+            "코엔자임Q10": "100mg"
+          },
+          "dose": "1일 1회 1캡슐",
+          "timing": "아침 식후",
+          "timeSlots": [
+            "morning"
+          ],
+          "claim": "높은 혈압 감소에 도움을 줄 수 있음",
+          "priority": 2,
+          "reasons": [
+            {
+              "code": "sbp",
+              "name": "수축기 혈압",
+              "value": 126,
+              "unit": "mmHg",
+              "status": "caution"
+            },
+            {
+              "code": "dbp",
+              "name": "이완기 혈압",
+              "value": 82,
+              "unit": "mmHg",
+              "status": "caution"
+            }
+          ],
+          "lifestyleReasons": [],
+          "alreadyTaking": false,
+          "warnings": []
+        },
+        {
+          "supplementId": "milk_thistle",
+          "name": "밀크씨슬",
+          "ingredients": {
+            "실리마린": "130mg"
+          },
+          "dose": "1일 1회 1정",
+          "timing": "아침 식후",
+          "timeSlots": [
+            "morning"
+          ],
+          "claim": "간 건강에 도움을 줄 수 있음",
+          "priority": 2,
+          "reasons": [
+            {
+              "code": "alt",
+              "name": "ALT",
+              "value": 37,
+              "unit": "U/L",
+              "status": "caution"
+            }
+          ],
+          "lifestyleReasons": [],
+          "alreadyTaking": true,
+          "warnings": []
+        },
+        {
+          "supplementId": "vitamin_d",
+          "name": "비타민D",
+          "ingredients": {
+            "비타민D": "25μg"
+          },
+          "dose": "1일 1회 1정",
+          "timing": "아침 식후",
+          "timeSlots": [
+            "morning"
+          ],
+          "claim": "칼슘과 인이 흡수되고 이용되는데 필요, 뼈의 형성과 유지에 필요",
+          "priority": 3,
+          "reasons": [],
+          "lifestyleReasons": [
+            "실내 생활이 길어 햇빛 노출이 적다고 답했습니다."
+          ],
+          "alreadyTaking": true,
+          "warnings": [
+            {
+              "type": "duplicate",
+              "level": "info",
+              "ingredient": "비타민D",
+              "supplements": [
+                "multivitamin",
+                "vitamin_d"
+              ],
+              "total": "35μg",
+              "upperLimit": "100μg",
+              "message": "비타민D 성분이 종합비타민, 비타민D에 함께 들어 있습니다. 하루 합계 35μg(상한 100μg)입니다."
+            }
+          ]
+        }
+      ],
+      "excluded": [
+        {
+          "supplementId": "red_yeast_rice",
+          "name": "홍국",
+          "reasons": [
+            {
+              "code": "tc",
+              "name": "총콜레스테롤",
+              "value": 205,
+              "unit": "mg/dL",
+              "status": "caution"
+            }
+          ],
+          "message": "홍국의 모나콜린K는 스타틴 계열 약과 작용이 같아 함께 먹으면 부작용 위험이 커질 수 있습니다. 추천에서 뺐습니다."
+        },
+        {
+          "supplementId": "garcinia",
+          "name": "가르시니아",
+          "reasons": [
+            {
+              "code": "bmi",
+              "name": "체질량지수(BMI)",
+              "value": 24.4,
+              "unit": "kg/m²",
+              "status": "caution"
+            }
+          ],
+          "message": "간 수치가 기준치 밖일 때는 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."
+        }
+      ],
+      "warnings": [
+        {
+          "type": "duplicate",
+          "level": "info",
+          "ingredient": "비타민D",
+          "supplements": [
+            "multivitamin",
+            "vitamin_d"
+          ],
+          "total": "35μg",
+          "upperLimit": "100μg",
+          "message": "비타민D 성분이 종합비타민, 비타민D에 함께 들어 있습니다. 하루 합계 35μg(상한 100μg)입니다.",
+          "supplementId": "vitamin_d"
+        }
+      ],
+      "disclaimer": "이 추천은 검진 수치와 규칙표에 따른 참고 정보이며 진단이나 치료를 대신하지 않습니다. 복용 중인 약이 있거나 주의 항목이 있으면 의사·약사와 상담하세요."
+    }
+  },
+  "GET /api/reports/compare": {
+    "status": 200,
+    "body": {
+      "from": {
+        "id": 1,
+        "date": "2024-10-15"
+      },
+      "to": {
+        "id": 2,
+        "date": "2026-10-28"
+      },
+      "items": [
+        {
+          "code": "sbp",
+          "name": "수축기 혈압",
+          "unit": "mmHg",
+          "normalRange": "120 미만",
+          "before": 134,
+          "after": 126,
+          "change": -8,
+          "beforeStatus": "caution",
+          "afterStatus": "caution",
+          "statusChanged": false,
+          "trend": "improved"
+        },
+        {
+          "code": "dbp",
+          "name": "이완기 혈압",
+          "unit": "mmHg",
+          "normalRange": "80 미만",
+          "before": 86,
+          "after": 82,
+          "change": -4,
+          "beforeStatus": "caution",
+          "afterStatus": "caution",
+          "statusChanged": false,
+          "trend": "improved"
+        },
+        {
+          "code": "fbs",
+          "name": "공복혈당",
+          "unit": "mg/dL",
+          "normalRange": "100 미만",
+          "before": 108,
+          "after": 101,
+          "change": -7,
+          "beforeStatus": "caution",
+          "afterStatus": "caution",
+          "statusChanged": false,
+          "trend": "improved"
+        },
+        {
+          "code": "tc",
+          "name": "총콜레스테롤",
+          "unit": "mg/dL",
+          "normalRange": "200 미만",
+          "before": 228,
+          "after": 205,
+          "change": -23,
+          "beforeStatus": "caution",
+          "afterStatus": "caution",
+          "statusChanged": false,
+          "trend": "improved"
+        },
+        {
+          "code": "ldl",
+          "name": "LDL 콜레스테롤",
+          "unit": "mg/dL",
+          "normalRange": "130 미만",
+          "before": 152,
+          "after": 128,
+          "change": -24,
+          "beforeStatus": "caution",
+          "afterStatus": "normal",
+          "statusChanged": true,
+          "trend": "improved"
+        },
+        {
+          "code": "hdl",
+          "name": "HDL 콜레스테롤",
+          "unit": "mg/dL",
+          "normalRange": "40 이상",
+          "before": 44,
+          "after": 47,
+          "change": 3,
+          "beforeStatus": "normal",
+          "afterStatus": "normal",
+          "statusChanged": false,
+          "trend": "same"
+        },
+        {
+          "code": "tg",
+          "name": "중성지방",
+          "unit": "mg/dL",
+          "normalRange": "150 미만",
+          "before": 210,
+          "after": 162,
+          "change": -48,
+          "beforeStatus": "danger",
+          "afterStatus": "caution",
+          "statusChanged": true,
+          "trend": "improved"
+        },
+        {
+          "code": "ast",
+          "name": "AST",
+          "unit": "U/L",
+          "normalRange": "40 이하",
+          "before": 38,
+          "after": 31,
+          "change": -7,
+          "beforeStatus": "normal",
+          "afterStatus": "normal",
+          "statusChanged": false,
+          "trend": "same"
+        },
+        {
+          "code": "alt",
+          "name": "ALT",
+          "unit": "U/L",
+          "normalRange": "35 이하",
+          "before": 48,
+          "after": 37,
+          "change": -11,
+          "beforeStatus": "danger",
+          "afterStatus": "caution",
+          "statusChanged": true,
+          "trend": "improved"
+        },
+        {
+          "code": "ggt",
+          "name": "감마지티피(γ-GTP)",
+          "unit": "U/L",
+          "normalRange": "63 이하",
+          "before": 72,
+          "after": 58,
+          "change": -14,
+          "beforeStatus": "caution",
+          "afterStatus": "normal",
+          "statusChanged": true,
+          "trend": "improved"
+        },
+        {
+          "code": "hb",
+          "name": "혈색소",
+          "unit": "g/dL",
+          "normalRange": "13 이상",
+          "before": 14.8,
+          "after": 14.9,
+          "change": 0.1,
+          "beforeStatus": "normal",
+          "afterStatus": "normal",
+          "statusChanged": false,
+          "trend": "same"
+        },
+        {
+          "code": "bmi",
+          "name": "체질량지수(BMI)",
+          "unit": "kg/m²",
+          "normalRange": "18.5~22.9",
+          "before": 25.6,
+          "after": 24.4,
+          "change": -1.2,
+          "beforeStatus": "danger",
+          "afterStatus": "caution",
+          "statusChanged": true,
+          "trend": "improved"
+        }
+      ],
+      "summary": {
+        "improved": 9,
+        "same": 3,
+        "worsened": 0,
+        "headline": "기준치에 가까워진 항목 9개, 멀어진 항목 0개입니다."
+      },
+      "note": "검진 수치는 식사·운동·음주·약 등 여러 요인의 영향을 받습니다. 이 비교는 영양제의 효과를 뜻하지 않습니다.",
+      "supplementsDuring": [
+        {
+          "id": 1,
+          "supplementId": "omega3",
+          "name": "오메가-3",
+          "startedAt": "2024-11-01",
+          "endedAt": null
+        },
+        {
+          "id": 2,
+          "supplementId": "milk_thistle",
+          "name": "밀크씨슬",
+          "startedAt": "2024-11-01",
+          "endedAt": null
+        },
+        {
+          "id": 3,
+          "supplementId": "multivitamin",
+          "name": "종합비타민",
+          "startedAt": "2023-03-01",
+          "endedAt": null
+        },
+        {
+          "id": 4,
+          "supplementId": "vitamin_d",
+          "name": "비타민D",
+          "startedAt": "2025-02-10",
+          "endedAt": null
+        }
+      ],
+      "adherence": {
+        "rate": 0.84,
+        "recordedFrom": "2026-08-29",
+        "daily": [
+          {
+            "date": "2026-08-29",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-08-30",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-08-31",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-01",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-02",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-09-03",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-04",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-05",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-09-06",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-07",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-08",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-09-09",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-10",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-09-11",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-09-12",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-13",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-09-14",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-15",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-16",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-09-17",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-18",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-19",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-09-20",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-21",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-22",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-09-23",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-24",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-25",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-09-26",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-27",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-28",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-09-29",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-09-30",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-10-01",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-10-02",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-03",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-10-04",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-05",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-06",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-10-07",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-08",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-09",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-10-10",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-11",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-12",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-10-13",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-14",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-15",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-10-16",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-17",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-18",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-10-19",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-20",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-10-21",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-10-22",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-23",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-10-24",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-25",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-26",
+            "scheduled": 4,
+            "taken": 4,
+            "rate": 1.0
+          },
+          {
+            "date": "2026-10-27",
+            "scheduled": 4,
+            "taken": 3,
+            "rate": 0.75
+          },
+          {
+            "date": "2026-10-28",
+            "scheduled": 4,
+            "taken": 0,
+            "rate": 0.0
+          }
+        ]
+      }
+    }
+  }
+}
