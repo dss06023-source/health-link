@@ -1,6 +1,5 @@
-// 글꼴: 주요 글자와 앱 이름은 카페24 써라운드, 나머지는 도현(둘 다 OFL).
+// 글꼴: 모든 글자를 카페24 써라운드(OFL)로 쓴다.
 import '@noonnu/cafe24-ssurround/index.css'
-import '@fontsource/do-hyeon/400.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'

@@ -33,7 +33,7 @@ function ItShapes({ ink, link, gap = false }: { ink: string; link: string; gap?:
       <path d="M71.2 276.9L78.7 216L121.8 231.4Z" fill={ink} stroke={ink} strokeWidth="8" strokeLinejoin="round" />
       <path d="M356 237V350a32 32 0 0 0 64 0V237z" fill={ink} />
       <rect x="356" y="92" width="64" height="290" rx="32" fill="none" stroke={ink} strokeWidth="22" />
-      <path d="M187.8 301.9L313 225.9L335.1 370.6" transform={gap ? 'translate(262 300) scale(.78) translate(-262 -300)' : undefined} fill="none" stroke={link} strokeWidth="30" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M165 352L313 225.9L333 408" transform={gap ? 'translate(262 300) scale(.78) translate(-262 -300)' : undefined} fill="none" stroke={link} strokeWidth="30" strokeLinecap="round" strokeLinejoin="round" />
     </g>
   )
 }
