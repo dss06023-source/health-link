@@ -164,17 +164,24 @@ export function interpret(items: CheckupItem[], sex: Sex): InterpretedItem[] {
 }
 
 // 일반건강검진: 만 20세 이상, 출생연도 짝·홀이 검진연도와 같은 해에 대상(2년 주기).
+// 예외(서버 checkup_notice와 같은 규칙): 비사무직 직장가입자는 매년, 공단 조회에서 대상으로 나온 해는 그 결과를 따른다.
 export function checkupTarget(p: UserProfile, today = new Date()): CheckupTarget {
   const year = today.getFullYear()
   const age = year - p.birthYear
-  const isTarget = age >= 20 && p.birthYear % 2 === year % 2
+  const parity = age >= 20 && p.birthYear % 2 === year % 2
+  const yearly = p.jobType === 'nonOffice'
+  const reason: CheckupTarget['reason'] = p.confirmedTargetYear === year ? 'confirmed'
+    : yearly && age >= 20 ? 'nonOffice' : parity ? 'parity' : null
+  const isTarget = reason !== null
+  const done = p.lastCheckupYear === year
+  const nextYear = isTarget && !done ? year : yearly ? year + 1 : year + (parity ? 2 : 1)
   const deadline = `${year}-12-31`
   const daysLeft = Math.ceil((new Date(`${year}-12-31T23:59:59`).getTime() - today.getTime()) / 86400000)
   const extras: string[] = []
   if (isTarget && age >= 40) extras.push('위암 검진(위내시경)')
   if (isTarget && age >= 50) extras.push('대장암 검진(분변잠혈)')
   if (age === 40 || age === 66) extras.push('생애전환기 검진')
-  return { year, isTarget, done: p.lastCheckupYear === year, deadline, daysLeft, extras }
+  return { year, isTarget, reason, nextYear, done, deadline, daysLeft, extras }
 }
 
 // ---- 추천 규칙표 ----

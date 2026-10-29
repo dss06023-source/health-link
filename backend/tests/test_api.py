@@ -31,6 +31,26 @@ def test_odd_birth_year_is_not_target_in_even_year(client):
     assert me["isTargetThisYear"] is False and me["nextCheckupYear"] == 2027
 
 
+def test_non_office_worker_is_target_every_year(client):
+    me = client.put("/api/users/me", json={"birthYear": 2003, "jobType": "nonOffice"}).json()
+    assert me["isTargetThisYear"] is True and me["targetReason"] == "nonOffice" and me["nextCheckupYear"] == 2026
+    upload_and_confirm(client)
+    assert client.get("/api/users/me").json()["nextCheckupYear"] == 2027
+
+
+def test_nhis_confirmed_year_overrides_parity_for_that_year_only(client):
+    me = client.put("/api/users/me", json={"birthYear": 2003, "confirmedTargetYear": 2026}).json()
+    assert me["checkupDue"] is True and me["targetReason"] == "confirmed" and "공단 조회" in me["message"]
+    me = client.put("/api/users/me", json={"confirmedTargetYear": 0}).json()
+    assert me["isTargetThisYear"] is False and me["confirmedTargetYear"] is None
+    me = client.put("/api/users/me", json={"confirmedTargetYear": 2025}).json()
+    assert me["isTargetThisYear"] is False
+
+
+def test_job_type_must_be_known(client):
+    assert client.put("/api/users/me", json={"jobType": "x"}).status_code == 422
+
+
 def test_upload_rejects_other_files(client):
     r = client.post("/api/checkups/upload", files={"file": ("a.txt", b"x", "text/plain")})
     assert r.status_code == 415
