@@ -91,11 +91,6 @@ function keyed(title: string) {
   if (w) return <><mark className="kw">{w[1]}</mark>{w[2]} <span className="kw-do">{w[3]}</span></>
   return title
 }
-// 설명 속 해야 할 일(상의·상담, 추천에서 뺌)만 굵게 한다.
-const ACTION_RE = /(의사·약사와 (?:상의|상담)하십시오\.|의사 상담이 필요합니다\.|추천에서 뺐습니다\.|섭취를 피해야 하는 원료입니다\.)/
-function keyedDetail(detail: string) {
-  return detail.split(ACTION_RE).map((part, i) => (i % 2 ? <b key={i} className="kw-act">{part}</b> : part))
-}
 
 export function CautionList({ items, keywords }: { items: Warning[]; keywords?: boolean }) {
   return (
@@ -103,7 +98,7 @@ export function CautionList({ items, keywords }: { items: Warning[]; keywords?: 
       {items.map((w, i) => (
         <li key={i} className={w.level}>
           <span className="sym" aria-hidden="true">{SYM[w.level]}</span>
-          <div><b>{keywords ? keyed(w.title) : w.title}</b><p>{keywords ? keyedDetail(w.detail) : w.detail}</p></div>
+          <div><b>{keywords ? keyed(w.title) : w.title}</b><p>{w.detail}</p></div>
         </li>
       ))}
     </ul>
