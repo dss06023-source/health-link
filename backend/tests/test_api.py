@@ -249,7 +249,7 @@ def test_purchase_checks_list_ingredients_to_look_for_on_labels():
     checks = logic.recommend(user, {"tg": 250}, ["garcinia"])["purchaseChecks"]
     by_id = {c.get("supplementId", c["ingredient"]): c for c in checks}
     assert by_id["red_yeast_rice"]["type"] == "avoid"
-    assert by_id["red_yeast_rice"]["check"] == "제품에 홍국(모나콜린K)이 들어 있지 않은지 확인하십시오."
+    assert by_id["red_yeast_rice"]["check"] == "홍국(모나콜린K)이 든 제품은 피하십시오."
     assert "추천에서 뺐습니다" not in by_id["red_yeast_rice"]["message"]
     # 가르시니아를 먹고 있으면 함께 먹지 않는 녹차추출물을 피한다.
     assert by_id["green_tea"]["type"] == "avoid" and "이미 가르시니아를 드시고 있습니다" in by_id["green_tea"]["message"]

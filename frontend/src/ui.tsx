@@ -80,13 +80,21 @@ export function StatusText({ status }: { status: Status }) {
 }
 
 const SYM = { danger: '!', caution: '!', info: 'i' }
-export function CautionList({ items }: { items: Warning[] }) {
+// "홍국(모나콜린K)이 든 제품은 피하십시오.", "제품에 식물스테롤이 들어 있으면 … 상의하십시오." → 성분 이름과 해야 할 일에 판정 색을 입힌다.
+const CHECK_RE = /^(제품에 )?(.+?)(이|가)( 든 제품은 | )(피하십시오|들어 있으면 먹기 전에 의사·약사와 상의|들어 있으면 합친 양이 하루 상한을 넘지 않는지)(.*)$/
+function keyed(title: string) {
+  const m = CHECK_RE.exec(title)
+  if (!m) return title
+  return <>{m[1]}<mark className="kw">{m[2]}</mark>{m[3]}{m[4]}<span className="kw-do">{m[5]}</span>{m[6]}</>
+}
+
+export function CautionList({ items, keywords }: { items: Warning[]; keywords?: boolean }) {
   return (
     <ul className="cautions">
       {items.map((w, i) => (
         <li key={i} className={w.level}>
           <span className="sym" aria-hidden="true">{SYM[w.level]}</span>
-          <div><b>{w.title}</b><p>{w.detail}</p></div>
+          <div><b>{keywords ? keyed(w.title) : w.title}</b><p>{w.detail}</p></div>
         </li>
       ))}
     </ul>

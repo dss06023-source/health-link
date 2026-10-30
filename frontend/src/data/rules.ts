@@ -371,7 +371,7 @@ export function purchaseChecks(p: UserProfile, items: InterpretedItem[]): Warnin
   const out: Warning[] = []
   for (const [name, label] of [['홍국', '홍국(모나콜린K)'], ['루테인', '루테인']]) {
     const avoid = avoidReasons(name, p, items)
-    if (avoid.length) out.push({ level: 'danger', title: `제품에 ${label}${josa(name, '이', '가')} 들어 있지 않은지 확인하십시오.`, detail: avoid.join(' ') })
+    if (avoid.length) out.push({ level: 'danger', title: `${label}${josa(name, '이', '가')} 든 제품은 피하십시오.`, detail: avoid.join(' ') })
   }
   if (p.medications.some((m) => ANTICOAG.includes(m))) {
     out.push({ level: 'caution', title: '제품에 오메가-3(EPA·DHA)이 들어 있으면 먹기 전에 의사·약사와 상의하십시오.', detail: '항응고·항혈소판제와 함께 먹으면 출혈 경향이 커질 수 있습니다.' })
