@@ -10,6 +10,11 @@ import { ProductChecks } from './Shop'
 function politeClaim(claim: string) {
   return claim.replace(/필요, /g, '필요하며, ').replace(/있음$/, '있습니다.').replace(/필요$/, '필요합니다.')
 }
+// 기능성 문구에서 무엇에 도움이 되는지(첫 '~에 도움', '~에 필요' 앞)를 초록으로 강조한다.
+function Claim({ text }: { text: string }) {
+  const m = /^(.+?)(에 (?:도움|필요).*)$/.exec(text)
+  return m ? <><b className="kw-good">{m[1]}</b>{m[2]}</> : <>{text}</>
+}
 
 export default function Recommend({ go }: { go: (r: Route) => void }) {
   const s = useStore()
@@ -54,8 +59,8 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
                   <span className={`wire${evid.length ? '' : ' soft'}`} aria-hidden="true" />
                   <div className="supp">
                     <b>{r.name}</b>
-                    <span className="dose">{r.ingredient} {r.dose} · {TIMING_LABEL[r.timing]}</span>
-                    {r.skipped ? <span className="skip">{r.skipped}</span> : <span className="claim">기능성: {politeClaim(r.claim)}</span>}
+                    <span className="dose">{r.ingredient} {r.dose} · <b className="kw-good">{TIMING_LABEL[r.timing]}</b></span>
+                    {r.skipped ? <span className="skip">{r.skipped}</span> : <span className="claim">기능성: <Claim text={politeClaim(r.claim)} /></span>}
                   </div>
                   {!r.skipped && (
                     <button className="switch" role="switch" aria-checked={!isOff} aria-label={`${r.name} 포함`} onClick={() => setOff(toggle(off, r.id))} />
@@ -96,7 +101,7 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
       <div className="page">
         <section className="sec">
           <div className="sec-head"><h2>함께 먹을 때 주의할 점</h2><span className="count">{warnings.length ? `${warnings.length}건` : '없음'}</span></div>
-          {warnings.length ? <CautionList items={warnings} /> : <p className="muted small">복용 약, 이미 먹는 영양제와 겹치거나 부딪히는 성분이 없습니다.</p>}
+          {warnings.length ? <CautionList items={warnings} keywords /> : <p className="muted small">복용 약, 이미 먹는 영양제와 겹치거나 부딪히는 성분이 없습니다.</p>}
         </section>
 
         <section className="sec">
