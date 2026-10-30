@@ -9,7 +9,7 @@ import { CautionList, Sheet } from '../ui'
 // 제품을 사기 전에 원재료 표시에서 확인할 성분. 맞춤 추천 화면과 구매 탭이 같이 쓴다.
 export function ProductChecks({ checks }: { checks: Warning[] }) {
   return checks.length
-    ? <><p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제를 기준으로 했습니다. 제품 뒷면의 원재료명과 영양·기능정보에서 찾아보십시오.</p><CautionList items={checks} /></>
+    ? <><p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제를 기준으로 했습니다. 제품 뒷면의 원재료명과 영양·기능정보에서 찾아보십시오.</p><CautionList items={checks} keywords /></>
     : <p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제와 부딪히는 성분이 없습니다. 제품의 1일 섭취량만 지키십시오.</p>
 }
 

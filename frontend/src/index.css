@@ -255,6 +255,12 @@ button.li:hover { background: var(--hover); }
 .cautions { list-style: none; padding: 0; }
 .cautions li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; padding: 12px 0; }
 .cautions li + li { border-top: 1px solid var(--line); }
+/* 제품 확인 항목: 성분 이름은 판정 색 바탕, 해야 할 일은 판정 색 글자 */
+.cautions .kw { padding: 0 5px; border-radius: 6px; color: inherit; background: var(--accent-soft); }
+.cautions .danger .kw { background: var(--danger-soft); color: var(--danger); }
+.cautions .caution .kw { background: var(--caution-soft); color: var(--caution); }
+.cautions .danger .kw-do { color: var(--danger); }
+.cautions .caution .kw-do { color: var(--caution); }
 .cautions .sym {
   width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; margin-top: 1px;
   font-family: var(--num); font-weight: 700; font-size: 14px;
