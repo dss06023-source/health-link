@@ -205,7 +205,62 @@ def recommend(user, values, active_catalog_ids):
     current = [review_current(cid, user, described, med_classes, medications)
                for cid in dict.fromkeys(active_catalog_ids) if cid not in recommended]
     return {"recommendations": recommendations, "excluded": excluded, "warnings": flat, "notes": notes,
-            "current": current, "disclaimer": ref.DISCLAIMER}
+            "current": current, "purchaseChecks": purchase_checks(user, described, med_classes, medications, taking),
+            "disclaimer": ref.DISCLAIMER}
+
+
+def _plain(message):
+    """추천용 문구의 '추천에서 뺐습니다.'를 걷어 낸다("…밖이라 추천에서 뺐습니다." → "…밖입니다.")."""
+    return re.sub(r"이라 추천에서 뺐습니다\.$", "입니다.", message).replace(" 추천에서 뺐습니다.", "").strip()
+
+
+def label_name(cid):
+    """제품 원재료 표시에서 찾을 이름. 원료 이름과 대표 성분 이름이 다르면 함께 적는다(홍국(모나콜린K))."""
+    info = ref.SUPPLEMENTS[cid]
+    others = [k for k in info["ingredients"] if k != info["name"]]
+    return f"{info['name']}({', '.join(others)})" if others and len(others) == 1 else info["name"]
+
+
+def purchase_checks(user, described, med_classes, medications, taking):
+    """영양제를 살 때 원재료 표시에서 확인할 성분. 같은 규칙표(약·검진 수치·진단 질환·임신, 함께 먹지 않는 원료, 하루 상한)에서 만든다.
+    avoid: 들어 있지 않은지 확인, caution: 들어 있으면 먹기 전에 상담, amount: 이미 먹는 양과 합쳐 상한을 넘지 않는지 확인."""
+    checks = []
+    for cid, info in ref.SUPPLEMENTS.items():
+        if len(info["ingredients"]) > 1:
+            continue  # 종합비타민처럼 여러 성분을 묶은 제품은 성분별 항목(비타민K·철분 등)으로 안내한다.
+        warnings = supplement_warnings(cid, user, described, med_classes, medications)
+        avoid = [_plain(w["message"]) for w in warnings if w["level"] == "avoid"]
+        for group in ref.NOT_TOGETHER:
+            with_it = [c for c in taking if c in group["supplements"] and c != cid]
+            if cid in group["supplements"] and cid not in taking and with_it:
+                names = ", ".join(ref.SUPPLEMENTS[c]["name"] for c in with_it)
+                avoid.append(f"{group['message']} 이미 {names}{_josa(names, '을', '를')} 드시고 있습니다.")
+        caution = [w["message"] for w in warnings if w["level"] == "caution"]
+        name = label_name(cid)
+        if avoid:
+            checks.append({"type": "avoid", "supplementId": cid, "ingredient": name, "message": " ".join(dict.fromkeys(avoid)),
+                           "check": f"제품에 {name}{_josa(ref.SUPPLEMENTS[cid]['name'], '이', '가')} 들어 있지 않은지 확인하십시오."})
+        elif caution:
+            checks.append({"type": "caution", "supplementId": cid, "ingredient": name, "message": " ".join(dict.fromkeys(caution)),
+                           "check": f"제품에 {name}{_josa(ref.SUPPLEMENTS[cid]['name'], '이', '가')} 들어 있으면 먹기 전에 의사·약사와 상의하십시오."})
+    # 하루 상한에 가까워 같은 성분이 든 제품을 하나 더하면(목록에서 가장 많이 든 양 기준) 넘는 성분만 알린다.
+    found = {}
+    for cid in taking:
+        for ingredient, amount in ref.SUPPLEMENTS[cid]["ingredients"].items():
+            if ingredient in ref.UPPER_LIMITS and _amount(amount) is not None:
+                entry = found.setdefault(ingredient, {"total": 0.0, "unit": _unit(amount), "from": []})
+                entry["total"] += _amount(amount)
+                entry["from"].append(ref.SUPPLEMENTS[cid]["name"])
+    for ingredient, entry in found.items():
+        limit, unit = ref.UPPER_LIMITS[ingredient], entry["unit"]
+        largest = max(_amount(i["ingredients"][ingredient]) or 0 for i in ref.SUPPLEMENTS.values() if ingredient in i["ingredients"])
+        if entry["total"] + largest <= limit:
+            continue
+        names = ", ".join(entry["from"])
+        checks.append({"type": "amount", "ingredient": ingredient, "total": f"{entry['total']:g}{unit}", "upperLimit": f"{limit:g}{unit}",
+                       "message": f"추천 구성과 드시는 영양제({names})만으로 하루 {entry['total']:g}{unit}이고, 하루 상한은 {limit:g}{unit}입니다.",
+                       "check": f"제품에 {ingredient}{_josa(ingredient, '이', '가')} 들어 있으면 합친 양이 하루 상한을 넘지 않는지 확인하십시오."})
+    return checks
 
 
 def supplement_warnings(cid, user, described, med_classes, medications):
@@ -249,10 +304,8 @@ def review_current(cid, user, described, med_classes, medications):
     """이미 먹는 영양제(추천에 없는 것)를 계속 먹어도 되는지. 피해야 할 조합이 있으면 conflict."""
     info = ref.SUPPLEMENTS[cid]
     warnings = supplement_warnings(cid, user, described, med_classes, medications)
-    # 추천용 문구의 '추천에서 뺐습니다.'를 걷어 낸다("…밖이라 추천에서 뺐습니다." → "…밖입니다.").
-    plain = lambda m: re.sub(r"이라 추천에서 뺐습니다\.$", "입니다.", m).replace(" 추천에서 뺐습니다.", "").strip()
-    avoid = [plain(w["message"]) for w in warnings if w["level"] == "avoid"]
-    cautions = [plain(w["message"]) for w in warnings if w["level"] != "avoid"]
+    avoid = [_plain(w["message"]) for w in warnings if w["level"] == "avoid"]
+    cautions = [_plain(w["message"]) for w in warnings if w["level"] != "avoid"]
     # 고시의 섭취 시 주의사항 중 이 사람에게 해당하는 것(약·질환이 있거나 흡연)을 함께 보여 준다.
     smoking = user.get("lifestyle", {}).get("smoking") in (True, "current")
     cautions += [c for c in info.get("cautions", []) if c not in cautions and (
@@ -272,10 +325,12 @@ def review_current(cid, user, described, med_classes, medications):
 
 
 def _josa(word, with_final, without_final):
-    """받침이 있으면 앞의 조사, 없으면 뒤의 조사."""
-    last = word[-1] if word else ""
+    """받침이 있으면 앞의 조사, 없으면 뒤의 조사. 영문 글자는 읽는 소리로 본다(비타민K → 케이, HCA → 에이)."""
+    last = word.rstrip(")")[-1:] if word else ""
     if "가" <= last <= "힣":
         return with_final if (ord(last) - 0xAC00) % 28 else without_final
+    if last.isascii() and last.isalpha():
+        return with_final if last.upper() in "LMNR" else without_final
     return with_final
 
 

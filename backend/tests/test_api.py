@@ -240,3 +240,21 @@ def test_new_recommendation_that_clashes_with_taking_is_excluded():
     r = logic.recommend(user, values, ["green_tea"])
     excluded = {e["supplementId"]: e["message"] for e in r["excluded"]}
     assert "garcinia" in excluded and "이미 녹차추출물을 드시고 있어" in excluded["garcinia"]
+
+
+def test_purchase_checks_list_ingredients_to_look_for_on_labels():
+    # 제품을 살 때 원재료 표시에서 확인할 성분: 피해야 할 원료, 상의할 원료, 상한에 가까운 성분
+    from app import logic
+    user = {"gender": "M", "medications": ["아토르바스타틴", "와파린"], "conditions": [], "lifestyle": {}}
+    checks = logic.recommend(user, {"tg": 250}, ["garcinia"])["purchaseChecks"]
+    by_id = {c.get("supplementId", c["ingredient"]): c for c in checks}
+    assert by_id["red_yeast_rice"]["type"] == "avoid"
+    assert by_id["red_yeast_rice"]["check"] == "제품에 홍국(모나콜린K)이 들어 있지 않은지 확인하십시오."
+    assert "추천에서 뺐습니다" not in by_id["red_yeast_rice"]["message"]
+    # 가르시니아를 먹고 있으면 함께 먹지 않는 녹차추출물을 피한다.
+    assert by_id["green_tea"]["type"] == "avoid" and "이미 가르시니아를 드시고 있습니다" in by_id["green_tea"]["message"]
+    assert by_id["vitamin_k"]["type"] == "caution" and by_id["vitamin_k"]["check"].startswith("제품에 비타민K가 들어 있으면")
+    assert "multivitamin" not in by_id  # 여러 성분을 묶은 제품은 성분별 항목으로 안내한다.
+    assert by_id["HCA"]["type"] == "amount"  # 이미 고시 최대량(1500mg)을 먹고 있다.
+    # 부딪히는 규칙이 없으면 확인할 성분도 없다.
+    assert logic.recommend({"gender": "F", "medications": [], "conditions": [], "lifestyle": {}}, {}, [])["purchaseChecks"] == []
