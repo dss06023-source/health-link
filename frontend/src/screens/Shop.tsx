@@ -13,6 +13,15 @@ export function ProductChecks({ checks }: { checks: Warning[] }) {
     : <p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제와 부딪히는 성분이 없습니다. 제품의 1일 섭취량만 지키십시오.</p>
 }
 
+// 맞춤 추천에서 스위치로 뺀 영양제. 구매 화면이 같은 구성을 보여 주도록 이 탭(세션) 동안만 기억한다.
+const OFF_KEY = 'itda-rec-off'
+export function readOff(): string[] {
+  try { return JSON.parse(sessionStorage.getItem(OFF_KEY) ?? '[]') } catch { return [] }
+}
+export function saveOff(ids: string[]) {
+  try { sessionStorage.setItem(OFF_KEY, JSON.stringify(ids)) } catch { /* 저장 못 해도 추천 화면은 그대로 동작 */ }
+}
+
 // 영양제 구매: 맞춤 추천에 든 영양제만 쿠팡 링크로 보여 준다. 링크를 누르면 확인할 성분 창이 먼저 뜬다.
 export default function Shop({ go }: { go: (r: Route) => void }) {
   const s = useStore()
@@ -22,7 +31,8 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
   const checks = s.remote?.purchaseChecks ?? purchaseChecks(p, items)
   // 빼야 할 원료로 안내된 영양제(예: 스타틴을 먹는 사람의 홍국)는 추천에 들어 있더라도 링크를 띄우지 않는다.
   const blocked = (r: Recommendation) => checks.some((c) => c.level === 'danger' && c.title.includes(r.name))
-  const recs = (s.remote?.recs ?? local).filter((r) => !r.skipped && !blocked(r))
+  const off = readOff()
+  const recs = (s.remote?.recs ?? local).filter((r) => !r.skipped && !off.includes(r.id) && !blocked(r))
   const [picked, setPicked] = useState<Recommendation | null>(null)
   const link = picked && shopLink(picked.name)
 
@@ -33,7 +43,7 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
       </section>
       <section className="sec">
         <div className="sec-head"><h2>추천받은 영양제 {recs.length}가지</h2></div>
-        <p className="small muted">맞춤 추천에 든 영양제만 보여 드립니다. 제품은 성분과 1일 섭취량을 보고 직접 고르십시오.</p>
+        <p className="small muted">맞춤 추천 구성에 넣은 영양제만 보여 드립니다. 제품은 성분과 1일 섭취량을 보고 직접 고르십시오.</p>
         {recs.length
           ? <ul className="list">
               {recs.map((r) => (

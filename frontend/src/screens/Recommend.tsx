@@ -4,7 +4,7 @@ import { MEDICATION_OPTIONS, SUPPLEMENT_OPTIONS } from '../data/mock'
 import { checkWarnings, interpret, purchaseChecks, recommend, reviewCurrent, TIMING_LABEL } from '../data/rules'
 import { latestCheckup, useStore } from '../store'
 import { CautionList, Disclaimer, Sheet, Value } from '../ui'
-import { ProductChecks } from './Shop'
+import { ProductChecks, readOff, saveOff } from './Shop'
 
 // 기능성 문구는 고시 원문("~수 있음", "~에 필요")으로 저장하고, 화면에서만 합니다체로 바꾼다.
 function politeClaim(claim: string) {
@@ -22,7 +22,8 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
   const items = interpret(latestCheckup(s).items, p.sex)
   const local = useMemo(() => recommend(items, p), [items, p])
   const recs = s.remote?.recs ?? local
-  const [off, setOff] = useState<string[]>([])
+  const [off, setOffState] = useState<string[]>(readOff)
+  const setOff = (ids: string[]) => { setOffState(ids); saveOff(ids) }
   const chosen = recs.filter((r) => !r.skipped && !off.includes(r.id))
   const warnings = s.remote?.warnings ?? checkWarnings([...chosen.map((r) => r.name), ...s.supplements.filter((x) => !x.paused).map((x) => x.name)], p, items)
   const itemOf = (code: string) => items.find((i) => i.code === code)
@@ -83,6 +84,7 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
           </div>
           <div className="actions">
             <button className="btn flat" onClick={() => setBuying(true)}>제품 고를 때 확인할 성분</button>
+            <button className="btn flat strong" disabled={!chosen.length} onClick={() => go('shop')}>맞춤 영양제 구매하기</button>
             <button className="btn" disabled={!chosen.length}
               onClick={() => { s.addSupplements(chosen); go('intake') }}>
               {already === chosen.length && chosen.length ? '복용 관리로 이동' : '이 구성으로 복용 시작'}
