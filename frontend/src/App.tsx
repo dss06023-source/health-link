@@ -24,7 +24,7 @@ const NEEDS_CHECKUP: Route[] = ['results', 'recommend', 'shop', 'report']
 const TABS: { id: string; label: string; routes: [Route, string][] }[] = [
   { id: 'home', label: '홈', routes: [['home', '홈']] },
   { id: 'checkup', label: '검진', routes: [['results', '결과 해석'], ['upload', '결과지 등록']] },
-  { id: 'care', label: '영양', routes: [['recommend', '맞춤 추천'], ['intake', '복용 관리'], ['shop', '구매']] },
+  { id: 'care', label: '영양', routes: [['recommend', '맞춤 추천'], ['intake', '복용 관리'], ['shop', '영양제 구매']] },
   { id: 'log', label: '기록', routes: [['measure', '중간 점검'], ['report', '변화 리포트']] },
 ]
 // 검진 주의사항(guide)은 홈의 버튼으로 여는 화면이라 홈 탭에 속하지만 나눔 버튼은 만들지 않는다.
