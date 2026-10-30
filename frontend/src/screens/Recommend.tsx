@@ -4,6 +4,7 @@ import { MEDICATION_OPTIONS, SUPPLEMENT_OPTIONS } from '../data/mock'
 import { checkWarnings, interpret, purchaseChecks, recommend, reviewCurrent, TIMING_LABEL } from '../data/rules'
 import { latestCheckup, useStore } from '../store'
 import { CautionList, Disclaimer, Sheet, Value } from '../ui'
+import { ProductChecks } from './Shop'
 
 // 기능성 문구는 고시 원문("~수 있음", "~에 필요")으로 저장하고, 화면에서만 합니다체로 바꾼다.
 function politeClaim(claim: string) {
@@ -117,9 +118,7 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
       {buying && (
         <Sheet title="제품을 사기 전에 확인하십시오" onClose={() => setBuying(false)}
           actions={<button className="btn flat strong" onClick={() => setBuying(false)}>확인했습니다</button>}>
-          {checks.length
-            ? <><p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제를 기준으로 했습니다. 제품 뒷면의 원재료명과 영양·기능정보에서 찾아보십시오.</p><CautionList items={checks} /></>
-            : <p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제와 부딪히는 성분이 없습니다. 제품의 1일 섭취량만 지키십시오.</p>}
+          <ProductChecks checks={checks} />
         </Sheet>
       )}
     </div>
