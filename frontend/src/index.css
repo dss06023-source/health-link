@@ -261,6 +261,9 @@ button.li:hover { background: var(--hover); }
 .cautions .caution .kw { background: var(--caution-soft); color: var(--caution); }
 .cautions .danger .kw-do { color: var(--danger); }
 .cautions .caution .kw-do { color: var(--caution); }
+/* 설명 속 해야 할 일은 색 없이 진하게만: 제목 색과 겹치면 오히려 어지럽다 */
+.cautions .kw-act { font-weight: 700; color: var(--fg); }
+.kw-good { color: var(--accent); font-weight: 700; }
 .cautions .sym {
   width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; margin-top: 1px;
   font-family: var(--num); font-weight: 700; font-size: 14px;
