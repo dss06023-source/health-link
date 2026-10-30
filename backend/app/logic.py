@@ -223,7 +223,7 @@ def label_name(cid):
 
 def purchase_checks(user, described, med_classes, medications, taking):
     """영양제를 살 때 원재료 표시에서 확인할 성분. 같은 규칙표(약·검진 수치·진단 질환·임신, 함께 먹지 않는 원료, 하루 상한)에서 만든다.
-    avoid: 들어 있지 않은지 확인, caution: 들어 있으면 먹기 전에 상담, amount: 이미 먹는 양과 합쳐 상한을 넘지 않는지 확인."""
+    avoid: 든 제품은 피함, caution: 들어 있으면 먹기 전에 상담, amount: 이미 먹는 양과 합쳐 상한을 넘지 않는지 확인."""
     checks = []
     for cid, info in ref.SUPPLEMENTS.items():
         if len(info["ingredients"]) > 1:
@@ -239,7 +239,7 @@ def purchase_checks(user, described, med_classes, medications, taking):
         name = label_name(cid)
         if avoid:
             checks.append({"type": "avoid", "supplementId": cid, "ingredient": name, "message": " ".join(dict.fromkeys(avoid)),
-                           "check": f"제품에 {name}{_josa(ref.SUPPLEMENTS[cid]['name'], '이', '가')} 들어 있지 않은지 확인하십시오."})
+                           "check": f"{name}{_josa(ref.SUPPLEMENTS[cid]['name'], '이', '가')} 든 제품은 피하십시오."})
         elif caution:
             checks.append({"type": "caution", "supplementId": cid, "ingredient": name, "message": " ".join(dict.fromkeys(caution)),
                            "check": f"제품에 {name}{_josa(ref.SUPPLEMENTS[cid]['name'], '이', '가')} 들어 있으면 먹기 전에 의사·약사와 상의하십시오."})
