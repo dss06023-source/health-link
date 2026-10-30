@@ -73,12 +73,14 @@ interface RRec {
   reasons: RReason[]; lifestyleReasons: string[]; alreadyTaking: boolean
 }
 interface RRecs { recommendations: RRec[]; excluded: { name: string; message: string }[]; warnings: (RWarning & { supplementId?: string })[]; notes?: { message: string }[]
-  current?: { name: string; status: 'keep' | 'conflict'; message: string; cautions: string[] }[] }
+  current?: { name: string; status: 'keep' | 'conflict'; message: string; cautions: string[] }[]
+  purchaseChecks?: { type: 'avoid' | 'caution' | 'amount'; check: string; message: string }[] }
 
 export interface RemoteExtras {
   checkupIds: Record<string, number>
   recs: Recommendation[]
   current: CurrentReview[]
+  purchaseChecks: Warning[]
   warnings: Warning[]
   notes: string[]
   medOptions: string[]
@@ -94,6 +96,8 @@ const mapCheckup = (c: RCheckup): Checkup => ({
 })
 
 const WARN_TITLE: Record<string, string> = { duplicate: '성분 중복', interaction: '약과 함께 먹을 때 주의', condition: '검진 수치 때문에 주의', spacing: '복용 간격' }
+// 제품 살 때 확인할 성분: 피해야 할 원료(avoid)는 빨강, 상의할 원료(caution)는 노랑, 상한에 가까운 성분(amount)은 안내.
+const CHECK_LEVEL = { avoid: 'danger', caution: 'caution', amount: 'info' } as const
 const mapWarning = (w: RWarning): Warning => ({
   level: w.level,
   title: w.type === 'duplicate' && w.ingredient ? `${w.ingredient} 중복`
@@ -165,6 +169,7 @@ export async function loadAll() {
       }
     }),
     current: (recs?.current ?? []).map((c) => ({ name: c.name, status: c.status, message: c.message, cautions: c.cautions })),
+    purchaseChecks: (recs?.purchaseChecks ?? []).map((c): Warning => ({ level: CHECK_LEVEL[c.type], title: c.check, detail: c.message })),
     warnings: [
       ...(recs?.excluded ?? []).map((e): Warning => ({ level: 'danger', title: `${e.name} 제외`, detail: e.message })),
       ...(recs?.warnings ?? []).map(mapWarning),

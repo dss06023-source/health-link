@@ -365,6 +365,22 @@ export function reviewCurrent(p: UserProfile, items: InterpretedItem[], recs: Re
   })
 }
 
+// 제품을 살 때 원재료 표시에서 확인할 성분(backend logic.purchase_checks를 줄인 것, 서버 없는 시연 모드용).
+const ANTICOAG = ['와파린', '아스피린', '클로피도그렐', '기타 항응고제']
+export function purchaseChecks(p: UserProfile, items: InterpretedItem[]): Warning[] {
+  const out: Warning[] = []
+  for (const [name, label] of [['홍국', '홍국(모나콜린K)'], ['루테인', '루테인']]) {
+    const avoid = avoidReasons(name, p, items)
+    if (avoid.length) out.push({ level: 'danger', title: `제품에 ${label}${josa(name, '이', '가')} 들어 있지 않은지 확인하십시오.`, detail: avoid.join(' ') })
+  }
+  if (p.medications.some((m) => ANTICOAG.includes(m))) {
+    out.push({ level: 'caution', title: '제품에 오메가-3(EPA·DHA)이 들어 있으면 먹기 전에 의사·약사와 상의하십시오.', detail: '항응고·항혈소판제와 함께 먹으면 출혈 경향이 커질 수 있습니다.' })
+    if (p.medications.includes('와파린'))
+      out.push({ level: 'caution', title: '제품에 비타민K가 들어 있으면 먹기 전에 의사·약사와 상의하십시오.', detail: '와파린 등 항응고제는 비타민K 양에 따라 효과가 달라집니다.' })
+  }
+  return out
+}
+
 export function checkWarnings(names: string[], p: UserProfile, items: InterpretedItem[]): Warning[] {
   const has = (n: string) => names.includes(n) || p.currentSupplements.includes(n)
   const med = (m: string) => p.medications.includes(m)

@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import type { Route } from '../App'
 import { MEDICATION_OPTIONS, SUPPLEMENT_OPTIONS } from '../data/mock'
-import { checkWarnings, interpret, recommend, reviewCurrent, TIMING_LABEL } from '../data/rules'
+import { checkWarnings, interpret, purchaseChecks, recommend, reviewCurrent, TIMING_LABEL } from '../data/rules'
 import { latestCheckup, useStore } from '../store'
-import { CautionList, Disclaimer, Value } from '../ui'
+import { CautionList, Disclaimer, Sheet, Value } from '../ui'
 
 // 기능성 문구는 고시 원문("~수 있음", "~에 필요")으로 저장하고, 화면에서만 합니다체로 바꾼다.
 function politeClaim(claim: string) {
@@ -23,6 +23,9 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
   const already = chosen.filter((r) => s.supplements.some((x) => x.id === r.id)).length
   // 이미 먹는 영양제 중 추천 구성에 없는 것: 계속 먹어도 되는지, 피해야 하는지
   const current = s.remote?.current ?? reviewCurrent(p, items, recs)
+  // 제품을 사려 할 때 원재료 표시에서 확인할 성분(약·질환·이미 먹는 영양제와 부딪히는 것)
+  const checks = s.remote?.purchaseChecks ?? purchaseChecks(p, items)
+  const [buying, setBuying] = useState(false)
   const weight = items.some((i) => (i.code === 'BMI' || i.code === 'WAIST') && i.status !== 'normal')
 
   const toggle = (list: string[], v: string) => (list.includes(v) ? list.filter((x) => x !== v) : [...list, v])
@@ -73,6 +76,7 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
             {!recs.length && <p className="muted" style={{ padding: '14px 0' }}>지금 수치와 생활습관으로는 추가할 영양제가 없습니다.</p>}
           </div>
           <div className="actions">
+            <button className="btn flat" onClick={() => setBuying(true)}>제품 고를 때 확인할 성분</button>
             <button className="btn" disabled={!chosen.length}
               onClick={() => { s.addSupplements(chosen); go('intake') }}>
               {already === chosen.length && chosen.length ? '복용 관리로 이동' : '이 구성으로 복용 시작'}
@@ -109,6 +113,15 @@ export default function Recommend({ go }: { go: (r: Route) => void }) {
         </section>
         <Disclaimer />
       </div>
+
+      {buying && (
+        <Sheet title="제품을 사기 전에 확인하십시오" onClose={() => setBuying(false)}
+          actions={<button className="btn flat strong" onClick={() => setBuying(false)}>확인했습니다</button>}>
+          {checks.length
+            ? <><p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제를 기준으로 했습니다. 제품 뒷면의 원재료명과 영양·기능정보에서 찾아보십시오.</p><CautionList items={checks} /></>
+            : <p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제와 부딪히는 성분이 없습니다. 제품의 1일 섭취량만 지키십시오.</p>}
+        </Sheet>
+      )}
     </div>
   )
 }
