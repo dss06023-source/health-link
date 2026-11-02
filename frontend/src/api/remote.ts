@@ -1,6 +1,6 @@
 import type { JobType,
   Address, AddressHit, CenterPlace, Checkup, CheckupCenter, CheckupItem, CurrentReview, IntakeLog, Measurement, MydataResult, MydataState, Recommendation, ReminderTimes,
-  Supplement, Timing, UserProfile, Warning,
+  Pack, Supplement, Timing, UserProfile, Warning,
 } from '../types'
 import type { UploadResult } from './index'
 import { regionLabel } from '../data/regions'
@@ -65,7 +65,7 @@ const toLabel = (m: Map<string, string>, values: string[] = []) => {
 }
 interface RCheckupRow { id: number; date: string; source: string; status: string }
 interface RCheckup { id: number; date: string; source: string; items: { code: string; name: string; value: number; unit: string }[] }
-interface RSupp { id: number; supplementId: string; name: string; ingredients: Record<string, string>; timeSlots: Slot[]; recommendedSlots?: Slot[]; altSlots?: Slot[]; timingReason?: string; slotNote?: string | null; paused: boolean; startedAt: string }
+interface RSupp { id: number; supplementId: string; name: string; ingredients: Record<string, string>; timeSlots: Slot[]; recommendedSlots?: Slot[]; altSlots?: Slot[]; timingReason?: string; slotNote?: string | null; paused: boolean; startedAt: string; pack?: Pack | null }
 interface RReason { code: string; name: string; value: number; unit: string }
 interface RWarning { level: 'info' | 'caution'; message: string; type: string; ingredient?: string; drugs?: string[] }
 interface RRec {
@@ -151,7 +151,7 @@ export async function loadAll() {
     const [ing, amt] = firstEntry(x.ingredients)
     return { id: String(x.id), name: x.name, ingredient: ing, dose: amt, timing: toTiming(x.timeSlots), paused: x.paused, startDate: x.startedAt,
       recommendedTiming: x.recommendedSlots && toTiming(x.recommendedSlots), timingReason: x.timingReason,
-      altTimings: x.altSlots?.map((slot) => toTiming([slot])), slotNote: x.slotNote }
+      altTimings: x.altSlots?.map((slot) => toTiming([slot])), slotNote: x.slotNote, pack: x.pack ?? null }
   })
   const intake: IntakeLog = {}
   for (const l of logs.logs) (intake[l.date] ??= {})[String(l.supplementId)] = l.taken
@@ -240,6 +240,8 @@ export const remote = {
   patchSupplement: (id: string, patch: { timing?: Timing; paused?: boolean }) =>
     call(`/api/supplements/${id}`, json('PATCH', { ...(patch.timing && { timeSlots: [patch.timing] }), ...(patch.paused !== undefined && { paused: patch.paused }) })),
   removeSupplement: (id: string) => call(`/api/supplements/${id}`, { method: 'DELETE' }),
+  startPack: (id: string, pack: { count: number; perDose: number; startedAt: string }) =>
+    call(`/api/supplements/${id}/pack`, json('PUT', pack)),
   intake: (id: string, timing: Timing, taken: boolean, date: string) =>
     call('/api/intake-logs', json('POST', { supplementId: Number(id), timeSlot: timing, taken, date })),
   reset: () => call('/api/demo/reset', { method: 'POST' }),

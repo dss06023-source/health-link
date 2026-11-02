@@ -73,7 +73,9 @@ ADDED_COLUMNS = {
     "users": [("username", "TEXT"), ("password_hash", "TEXT"), ("is_guest", "INTEGER NOT NULL DEFAULT 0"),
               ("created_at", "TEXT")],
     "checkups": [("user_id", "INTEGER NOT NULL DEFAULT 1")],
-    "supplements": [("user_id", "INTEGER NOT NULL DEFAULT 1")],
+    "supplements": [("user_id", "INTEGER NOT NULL DEFAULT 1"),
+                    # 영양제 복용 시작(한 통): 알 수, 1회 알 수, 시작일. 다 떨어지는 날 계산에 쓴다.
+                    ("pack_count", "INTEGER"), ("pack_per_dose", "INTEGER"), ("pack_started", "TEXT")],
     "intake_logs": [("user_id", "INTEGER NOT NULL DEFAULT 1")],
     "measurements": [("user_id", "INTEGER NOT NULL DEFAULT 1")],
 }

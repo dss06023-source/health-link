@@ -5,6 +5,8 @@ import { MOCK_TIMING_GUIDE } from '../data/mock'
 import { addDays, latestCheckup, useStore, ymd } from '../store'
 import type { Supplement, Timing } from '../types'
 import { Icon, Sheet, Snackbar } from '../ui'
+import { md, packStatus } from '../data/pack'
+import PackSheet from './PackSheet'
 
 const TIMINGS: Timing[] = ['morning', 'lunch', 'evening']
 
@@ -38,6 +40,7 @@ export default function Intake() {
   const [perm, setPerm] = useState(() => (notifySupported() ? Notification.permission : 'unsupported'))
   const [toast, setToast] = useState<string | null>(null)
   const [removing, setRemoving] = useState<Supplement | null>(null)
+  const [packing, setPacking] = useState<Supplement | null>(null)
   const [moving, setMoving] = useState<{ x: Supplement; to: Timing; guide: { timing: Timing; reason: string } } | null>(null)
   // 권장 시간대에서 벗어나게 바꿀 때만 이유를 보여 주고 한 번 더 묻는다.
   const changeTiming = (x: Supplement, to: Timing) => {
@@ -163,6 +166,16 @@ export default function Intake() {
                     <p className="small timing-why"><b>{TIMING_LABEL[guideOf(x)!.timing]} 권장</b> · {guideOf(x)!.reason}</p>
                   )}
                   {x.slotNote && x.timing !== guideOf(x)?.timing && <p className="small muted" style={{ margin: '4px 0 0' }}>{x.slotNote}</p>}
+                  {(() => {
+                    const pk = packStatus(x, s.intake)
+                    return pk
+                      ? <p className="small" style={{ margin: '4px 0 0' }}>
+                          <b style={pk.remindNow ? { color: 'var(--caution)' } : undefined}>{pk.daysLeft <= 0 ? '다 소진되었습니다' : pk.remindNow ? `거의 소진되었습니다 · ${md(pk.runOutDate)}에 다 떨어집니다` : `${md(pk.runOutDate)}에 다 떨어집니다`}</b>
+                          <span className="muted"> · 남은 {pk.remaining}정 · </span>
+                          <button className="btn flat sm" onClick={() => setPacking(x)}>영양제 복용 시작</button>
+                        </p>
+                      : <p style={{ margin: '4px 0 0' }}><button className="btn flat sm strong" onClick={() => setPacking(x)}>영양제 복용 시작</button></p>
+                  })()}
                   {conflicts.filter((c) => c.name === x.name).map((c) => <p key={c.name} className="small" style={{ margin: '4px 0 0', color: 'var(--danger)' }}>{c.message.replace(' 드시고 있다고 하셔서 복용 관리에는 넣어 두었습니다.', '')}</p>)}
                 </div>
                 <div className="seg" role="group" aria-label={`${x.name} 복용 시간대`}>
@@ -181,6 +194,7 @@ export default function Intake() {
       </div>
 
       {toast && <Snackbar text={toast} onClose={() => setToast(null)} />}
+      {packing && <PackSheet x={packing} onClose={() => setPacking(null)} />}
       {moving && (
         <Sheet title={`${josa(moving.x.name, '을', '를')} ${TIMING_LABEL[moving.to]}으로 바꾸시겠습니까?`} onClose={() => setMoving(null)}
           actions={<><button className="btn flat" onClick={() => setMoving(null)}>취소</button>
