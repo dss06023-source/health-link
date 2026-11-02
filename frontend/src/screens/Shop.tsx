@@ -13,7 +13,7 @@ import PackSheet from './PackSheet'
 // 제품을 사기 전에 원재료 표시에서 확인할 성분. 맞춤 추천 화면과 구매 탭이 같이 쓴다.
 export function ProductChecks({ checks }: { checks: Warning[] }) {
   return checks.length
-    ? <><p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제를 기준으로 했습니다. 제품 뒷면의 원재료명과 영양·기능정보에서 찾아보십시오.</p><CautionList items={checks} keywords /></>
+    ? <><p className="small muted">입력하신 약·질환·알레르기·검진 수치·이미 먹는 영양제를 기준으로 했습니다. 제품 뒷면의 원재료명과 영양·기능정보에서 찾아보십시오.</p><CautionList items={checks} keywords /></>
     : <p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제와 부딪히는 성분이 없습니다. 제품의 1일 섭취량만 지키십시오.</p>
 }
 
@@ -25,7 +25,7 @@ export function splitChecks(name: string, checks: Warning[]): { mine: Warning[];
   const own = (PRODUCT_INGREDIENTS as Record<string, string[]>)[name]
   if (!own || MIXED.includes(name)) return { mine: checks, rest: [] }
   const keys = [...own, ...((PRODUCT_MIXES.items as Record<string, string[]>)[name] ?? [])]
-  const mine = checks.filter((c) => !c.keys || c.keys.some((k) => keys.includes(k)))
+  const mine = checks.filter((c) => !c.keys?.length || c.keys.some((k) => keys.includes(k)))
   return { mine, rest: checks.filter((c) => !mine.includes(c)) }
 }
 function ChecksFor({ name, checks }: { name: string; checks: Warning[] }) {
@@ -33,7 +33,7 @@ function ChecksFor({ name, checks }: { name: string; checks: Warning[] }) {
   return (
     <>
       {mine.length
-        ? <><p className="small muted">{name} 제품에 흔히 든 성분과 입력하신 약·질환·검진 수치·이미 먹는 영양제를 기준으로 했습니다. 제품 뒷면의 원재료명과 영양·기능정보에서 찾아보십시오.</p><CautionList items={mine} keywords /></>
+        ? <><p className="small muted">{name} 제품에 흔히 든 성분과 입력하신 약·질환·알레르기·검진 수치·이미 먹는 영양제를 기준으로 했습니다. 제품 뒷면의 원재료명과 영양·기능정보에서 찾아보십시오.</p><CautionList items={mine} keywords /></>
         : <p className="small muted">{name} 제품에 흔히 든 성분 중에는 입력하신 약·질환·검진 수치·이미 먹는 영양제와 부딪히는 성분이 없습니다. 제품의 1일 섭취량만 지키십시오.</p>}
       {rest.length > 0 && (
         <details className="more-checks">
