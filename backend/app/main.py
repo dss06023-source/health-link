@@ -399,11 +399,15 @@ def user_location():
 
 @app.get("/api/checkup-centers")
 def checkup_centers(lat: Optional[float] = None, lng: Optional[float] = None, limit: int = 5):
-    """건보공단 검진기관 API로 같은 시군구 기관을 찾는다. 키가 없거나 실패하면 가상 목록."""
+    """건보공단 검진기관 API로 같은 시군구 기관을 찾는다. 키가 없거나 실패하면 가상 목록.
+    호출은 됐는데 그 지역 자료가 0건이면(예: 2026-11 기준 경남·경북·대구·울산·제주) 빈 목록을 돌려주고,
+    화면이 공단 누리집 안내를 보여 준다. 먼 지역의 가상 기관을 실제 기관처럼 보이지 않게 하려는 것."""
     if lat is None or lng is None:
         loc = user_location()
         lat, lng = loc["lat"], loc["lng"]
     found = public_api.checkup_centers(lat, lng)
+    if found == []:
+        return []
     if found:
         centers = [dict(c, tags=[t for t in [c["kind"], *c["exams"]] if t and t != "일반"], bookingUrl=BOOKING_URL,
                         isDemoData=False, source="nhis") for c in found]

@@ -22,7 +22,7 @@ export default function Home({ go }: { go: (r: Route) => void }) {
   const s = useStore()
   const p = s.profile!
   const t = checkupTarget(p)
-  const [centers, setCenters] = useState<CheckupCenter[]>([])
+  const [centers, setCenters] = useState<CheckupCenter[] | null>(null)
   const [pick, setPick] = useState<{ c: CheckupCenter; slot: string } | null>(null)
   const [info, setInfo] = useState<CheckupCenter | null>(null)
   useEffect(() => { getCenters().then(setCenters) }, [])
@@ -128,7 +128,7 @@ export default function Home({ go }: { go: (r: Route) => void }) {
       <div id="centers">
         <h2 className="subhead">가까운 검진기관 <span>{p.region} 기준 · 거리순 · 공단 지정 기관</span></h2>
         <ul className="list">
-          {centers.map((c) => (
+          {centers?.map((c) => (
             <li key={c.id} className="li center">
               <div className="li-main">
                 <span className="row" style={{ gap: '2px 10px' }}><b>{c.name}</b><span className="num small muted">{c.distanceKm}km</span></span>
@@ -140,7 +140,12 @@ export default function Home({ go }: { go: (r: Route) => void }) {
               </div>
             </li>
           ))}
-          {!centers.length && <li className="li muted">검진기관을 불러오는 중입니다.</li>}
+          {!centers && <li className="li muted">검진기관을 불러오는 중입니다.</li>}
+          {centers && !centers.length && (
+            <li className="li"><span className="li-main"><b>이 지역은 공단 검진기관 자료가 아직 제공되지 않습니다.</b>
+              <small>국민건강보험공단 누리집의 건강iN 검진기관 찾기에서 가까운 기관을 확인하십시오.</small>
+              <a className="chip" href="https://www.nhis.or.kr" target="_blank" rel="noreferrer" style={{ marginTop: 8, alignSelf: 'flex-start' }}>공단 누리집 열기</a></span></li>
+          )}
         </ul>
       </div>
 
