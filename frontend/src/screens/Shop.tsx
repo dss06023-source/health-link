@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import type { Route } from '../App'
-import { interpret, purchaseChecks, recommend } from '../data/rules'
+import { direction, interpret, purchaseChecks, recommend, STATUS_LABEL } from '../data/rules'
 import { DISCLOSURE, shopLink } from '../data/shopLinks'
 import { latestCheckup, useStore } from '../store'
-import type { Recommendation, Warning } from '../types'
+import type { InterpretedItem, Recommendation, Sex, Warning } from '../types'
 import { CautionList, Sheet } from '../ui'
 
 // 제품을 사기 전에 원재료 표시에서 확인할 성분. 맞춤 추천 화면과 구매 탭이 같이 쓴다.
@@ -11,6 +11,26 @@ export function ProductChecks({ checks }: { checks: Warning[] }) {
   return checks.length
     ? <><p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제를 기준으로 했습니다. 제품 뒷면의 원재료명과 영양·기능정보에서 찾아보십시오.</p><CautionList items={checks} keywords /></>
     : <p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제와 부딪히는 성분이 없습니다. 제품의 1일 섭취량만 지키십시오.</p>
+}
+
+// 영양제 이름 위에 근거 수치를 판정 색으로 보여 준다("공복혈당 108mg/dL ▲ 높음 · 경계" → 바나바잎 추출물).
+// 색만으로 구분하지 않도록 기준보다 높은지 낮은지와 판정 글자, 기준치를 함께 쓴다.
+const DIR = { high: '▲ 높음', low: '▼ 낮음' }
+function Because({ items, sex }: { items: InterpretedItem[]; sex: Sex }) {
+  if (!items.length) return null
+  return (
+    <span className="because">
+      {items.map((it) => {
+        const d = direction(it.code, it.value, sex)
+        return (
+          <span key={it.code} className={`ev ${it.status}`}>
+            <span>{it.name}{it.rangeText && <small>기준 {it.rangeText}</small>}</span>
+            <span><b>{it.value}</b>{it.unit}<i>{d ? `${DIR[d]} · ` : ''}{STATUS_LABEL[it.status]}</i></span>
+          </span>
+        )
+      })}
+    </span>
+  )
 }
 
 // 맞춤 추천에서 스위치로 뺀 영양제. 구매 화면이 같은 구성을 보여 주도록 이 탭(세션) 동안만 기억한다.
@@ -33,6 +53,8 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
   const blocked = (r: Recommendation) => checks.some((c) => c.level === 'danger' && c.title.includes(r.name))
   const off = readOff()
   const recs = (s.remote?.recs ?? local).filter((r) => !r.skipped && !off.includes(r.id) && !blocked(r))
+  // 추천 근거가 된 검진 수치. 근거 코드 중 검진 항목이 아닌 것(흡연 등)은 이유 문장으로 대신한다.
+  const evidence = (r: Recommendation) => r.reasonCodes.map((c) => items.find((i) => i.code === c)).filter((x): x is InterpretedItem => !!x)
   const [picked, setPicked] = useState<Recommendation | null>(null)
   const link = picked && shopLink(picked.name)
 
@@ -48,7 +70,10 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
           ? <ul className="list">
               {recs.map((r) => (
                 <li key={r.id}><button type="button" className="li" onClick={() => setPicked(r)}>
-                  <span className="li-main"><b>{r.name}</b><small>{r.ingredient} {r.dose} · {r.reason}</small></span>
+                  <span className="li-main">
+                    <Because items={evidence(r)} sex={p.sex} />
+                    <b>{r.name}</b><small>{r.ingredient} {r.dose}</small>
+                  </span>
                   <span className="li-end strong">쿠팡에서 보기</span>
                 </button></li>
               ))}
