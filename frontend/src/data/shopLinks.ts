@@ -25,6 +25,18 @@ export const PARTNER_LINKS: Record<string, string> = {
   '엽산': 'https://link.coupang.com/a/ilpVIZMLwy',
   '유산균': 'https://link.coupang.com/a/ilpWXnbBf2',
   '루테인': 'https://link.coupang.com/a/ilpXpyiEQ8',
+  // 2026-11-02 추가(새 원료 11가지). 은행잎 추출물은 '은행잎추출물', 히알루론산은 '먹는 히알루론산' 검색 결과로 간다.
+  '홍삼': 'https://link.coupang.com/a/ilzIM5RsYK',
+  'MSM': 'https://link.coupang.com/a/ilzJVMFczI',
+  '은행잎 추출물': 'https://link.coupang.com/a/ilzKGNpMTk',
+  '프로폴리스': 'https://link.coupang.com/a/ilzLgrleUu',
+  '옥타코사놀': 'https://link.coupang.com/a/ilzL1EqOdM',
+  '쏘팔메토': 'https://link.coupang.com/a/ilzMCOKr9w',
+  '프락토올리고당': 'https://link.coupang.com/a/ilzN7UkjVk',
+  '테아닌': 'https://link.coupang.com/a/ilzOJfl0PQ',
+  '포스파티딜세린': 'https://link.coupang.com/a/ilzPgtMHAW',
+  '아스타잔틴': 'https://link.coupang.com/a/ilzQu4Hl9w',
+  '히알루론산': 'https://link.coupang.com/a/ilzRbugRP2',
 }
 
 // 검색어가 영양제 이름과 다른 것만 적는다(철분 → 철분제 등).
