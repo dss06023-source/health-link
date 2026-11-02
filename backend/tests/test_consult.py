@@ -93,3 +93,19 @@ def test_pdf_fits_two_pages_and_reads_cleanly(app):
         assert questions.index("직접 적은 질문") < questions.index("함께 먹어도 되는지")
         # 출처를 확인하지 못한 규칙(식물스테롤×스타틴 등)은 원문 대조표에 싣지 않는다.
         assert "콜레스테롤 약을 대신하지" not in text and "식물스테롤을 아토르바스타틴" not in text
+
+
+def test_allergies_go_into_pdf_with_notice_basis(app):
+    # 고시 3. 2-29(포스파티딜세린 원재료 대두 레시틴)·2-30·2-31·2-49(게·새우). 알레르기는 한글 이름으로 싣는다.
+    with TestClient(app) as c:
+        c.post("/api/auth/guest")
+        assert c.put("/api/users/me", json={"allergies": ["shellfish", "soy"], "customAllergies": ["땅콩"]}).status_code == 200
+        pid = c.post("/api/consult/checkout", json={"method": "card", "amount": 1900}).json()["purchaseId"]
+        with pdfplumber.open(io.BytesIO(c.get(f"/api/consult/{pid}/pdf").content)) as pdf:
+            text = "".join(p.extract_text() for p in pdf.pages).replace("\n", "")
+        assert "shellfish" not in text and "갑각류, 대두, 땅콩" in text
+        flat = text.replace(" ", "")
+        assert "알레르기:갑각류" in flat and "알레르기:대두" in flat and "2-49" in flat and "2-29" in flat
+        assert "땅콩 알레르기가 있는데" in text and "갑각류 알레르기가 있는데" in text
+        # 출처 없는 직접 입력 알레르기는 대조표에 싣지 않고 질문으로만 남긴다.
+        assert "알레르기:땅콩" not in flat
