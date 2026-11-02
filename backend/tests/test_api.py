@@ -271,3 +271,16 @@ def test_frontend_product_ingredients_match_seed():
     from app import reference as ref
     front = Path(__file__).resolve().parents[2] / "frontend/src/data/product_ingredients.json"
     assert json.loads(front.read_text(encoding="utf-8")) == {i["name"]: list(i["ingredients"]) for i in ref.SUPPLEMENTS.values()}
+
+
+def test_frontend_product_mixes_use_known_ingredient_names():
+    # 구매 탭의 '흔히 함께 든 성분'(product_mixes.json)은 성분표 이름으로만 적어야 확인 항목과 맞물린다.
+    import json
+    from pathlib import Path
+    from app import reference as ref
+    front = Path(__file__).resolve().parents[2] / "frontend/src/data/product_mixes.json"
+    mixes = json.loads(front.read_text(encoding="utf-8"))["items"]
+    names = {i["name"] for i in ref.SUPPLEMENTS.values()}
+    keys = {k for i in ref.SUPPLEMENTS.values() for k in i["ingredients"]}
+    assert set(mixes) <= names
+    assert all(set(v) <= keys for v in mixes.values())
