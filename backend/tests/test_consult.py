@@ -71,3 +71,25 @@ def test_survey_answers_go_into_pdf_as_questions(app):
         assert "OO 오메가3 1000" in text and "하루 2캡슐" in text and "약은 아침 식후" in text
         assert "가끔 먹는 진통제를" in text and "속쓰림이" in text and "내시경(11월 말)" in text
         assert "하루 4잔" in text and "교대근무" in text and "오메가3를 저녁으로 옮겨도 되나요?" in text
+
+
+def test_pdf_fits_two_pages_and_reads_cleanly(app):
+    survey = {"products": [{"name": "OO 오메가3 1000", "perDay": "2캡슐"}, {"name": "OO 마그네슘", "perDay": "1정"}],
+              "timing": "약은 아침 식후", "otc": ["진통제"], "symptoms": ["속쓰림"], "procedure": "endoscopy",
+              "caffeine": 3, "shiftWork": True, "question": "오메가3를 저녁으로 옮겨도 되나요?"}
+    with TestClient(app) as c:
+        c.post("/api/auth/guest")
+        pid = c.post("/api/consult/checkout", json={"method": "card", "amount": 1900, "survey": survey}).json()["purchaseId"]
+        with pdfplumber.open(io.BytesIO(c.get(f"/api/consult/{pid}/pdf").content)) as pdf:
+            pages = len(pdf.pages)
+            text = "".join(p.extract_text() for p in pdf.pages).replace("\n", "")
+        assert pages <= 2
+        # 아래·위가 같은 섭취량은 한 숫자로, 섭취량이 없는 영양제는 빈칸 대신 안내를 쓴다.
+        assert "130~130" not in text and "실리마린 130mg" in text and "성분마다 따로 정해짐" in text
+        # 오래된 검진은 시점을 알린다(시연 검진일 2024-10-15, 작성일 2026-10-28).
+        assert "약 2년 앞섭니다" in text
+        # 직접 적은 질문이 질문 목록 맨 앞에 온다.
+        questions = text.split("여쭤볼 질문", 1)[1]
+        assert questions.index("직접 적은 질문") < questions.index("함께 먹어도 되는지")
+        # 출처를 확인하지 못한 규칙(식물스테롤×스타틴 등)은 원문 대조표에 싣지 않는다.
+        assert "콜레스테롤 약을 대신하지" not in text and "식물스테롤을 아토르바스타틴" not in text

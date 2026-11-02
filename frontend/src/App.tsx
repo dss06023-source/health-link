@@ -14,10 +14,11 @@ import Report from './screens/Report'
 import Onboarding from './screens/Onboarding'
 import Login from './screens/Login'
 import Measure from './screens/Measure'
+import ConsultPdf from './screens/ConsultPdf'
 import { ReminderWatcher } from './reminders'
 
-export type Route = 'home' | 'guide' | 'upload' | 'results' | 'recommend' | 'intake' | 'shop' | 'measure' | 'report'
-const NEEDS_CHECKUP: Route[] = ['results', 'recommend', 'shop', 'report']
+export type Route = 'home' | 'guide' | 'upload' | 'results' | 'recommend' | 'intake' | 'shop' | 'measure' | 'report' | 'consult'
+const NEEDS_CHECKUP: Route[] = ['results', 'recommend', 'shop', 'report', 'consult']
 
 // 아래 탭 4개(One UI는 5개 이하 권장). 한 탭 안의 두 화면은 탭 아래 나눔 버튼으로 오간다.
 // 주소(#results 등)는 예전과 같게 두어 링크와 서버 연결 작업이 그대로 동작한다.
@@ -25,7 +26,7 @@ const TABS: { id: string; label: string; routes: [Route, string][] }[] = [
   { id: 'home', label: '홈', routes: [['home', '홈']] },
   { id: 'checkup', label: '검진', routes: [['results', '결과 해석'], ['upload', '결과지 등록']] },
   { id: 'care', label: '영양', routes: [['recommend', '맞춤 추천'], ['intake', '복용 관리'], ['shop', '영양제 구매']] },
-  { id: 'log', label: '기록', routes: [['measure', '중간 점검'], ['report', '변화 리포트']] },
+  { id: 'log', label: '기록', routes: [['measure', '중간 점검'], ['report', '변화 리포트'], ['consult', '상담 자료']] },
 ]
 // 검진 주의사항(guide)은 홈의 버튼으로 여는 화면이라 홈 탭에 속하지만 나눔 버튼은 만들지 않는다.
 const ROUTES: Route[] = [...TABS.flatMap((t) => t.routes.map(([r]) => r)), 'guide']
@@ -67,6 +68,7 @@ function heroOf(route: Route, s: AppStore): { title: string; sub: string } {
     case 'shop': return { title: '영양제 구매', sub: '추천받은 영양제와 먹고 있는 영양제를 쿠팡에서 찾아봅니다' }
     case 'measure': return { title: '중간 점검', sub: '집에서 잰 혈압·혈당·체중으로 변화를 봅니다' }
     case 'report': return { title: '변화 리포트', sub: '복용 전후 검진 수치를 비교합니다' }
+    case 'consult': return { title: '상담 자료', sub: '약·영양제·검진 기록을 약국·병원 상담용 PDF로 모읍니다' }
   }
 }
 
@@ -154,6 +156,7 @@ function Shell() {
           {hasCheckup(store) && route === 'shop' && <Shop go={go} />}
           {route === 'measure' && <Measure go={go} />}
           {hasCheckup(store) && route === 'report' && <Report go={go} />}
+          {hasCheckup(store) && route === 'consult' && <ConsultPdf />}
         </div>
         <footer className="demo-foot">
           <span>{p.name}님({new Date().getFullYear() - p.birthYear}세 · {p.sex === 'M' ? '남' : '여'})의 데이터입니다.

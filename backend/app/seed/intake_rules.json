@@ -21,18 +21,18 @@
     {"supplement": "vitamin_d", "field": "lowSunlight", "reason": "실내 생활이 길어 햇빛 노출이 적다고 답했습니다.", "priority": 3}
   ],
   "interactions": [
-    {"supplement": "red_yeast_rice", "drugClass": "statin", "level": "avoid", "message": "홍국의 모나콜린K는 스타틴 계열 약과 작용이 같아 함께 먹으면 부작용 위험이 커질 수 있습니다. 추천에서 뺐습니다."},
+    {"supplement": "red_yeast_rice", "drugClass": "statin", "level": "avoid", "message": "홍국의 모나콜린K는 스타틴 계열 약과 작용이 같아 함께 먹으면 부작용 위험이 커질 수 있습니다. 추천에서 뺐습니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항('간 질환이 있거나 고지혈증 치료제를 먹고 있으면 섭취를 피하십시오')"},
     {"supplement": "plant_sterol", "drugClass": "statin", "level": "caution", "message": "식물스테롤은 콜레스테롤 약을 대신하지 않습니다. 함께 먹기 전에 의사·약사와 상의하십시오."},
-    {"supplement": "omega3", "drugClass": "anticoagulant", "level": "caution", "message": "항응고·항혈소판제와 함께 먹으면 출혈 경향이 커질 수 있습니다. 의사·약사와 상담하십시오."},
-    {"supplement": "omega3", "drugClass": "antiplatelet", "level": "caution", "message": "항응고·항혈소판제와 함께 먹으면 출혈 경향이 커질 수 있습니다. 의사·약사와 상담하십시오."},
-    {"supplement": "omega3", "drugClass": "antihypertensive", "level": "caution", "message": "혈압약을 먹고 있으면 오메가-3를 더하기 전에 의사·약사와 상담하십시오."},
-    {"supplement": "coq10", "drugClass": "anticoagulant", "level": "caution", "message": "항응고제를 먹고 있으면 전문가와 상담하십시오. 와파린은 효과가 약해질 수 있다는 보고가 있습니다."},
+    {"supplement": "omega3", "drugClass": "anticoagulant", "level": "caution", "message": "항응고·항혈소판제와 함께 먹으면 출혈 경향이 커질 수 있습니다. 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항('항응고제·항혈소판제·혈압강하제 등 의약품 복용 시 전문가와 상담')"},
+    {"supplement": "omega3", "drugClass": "antiplatelet", "level": "caution", "message": "항응고·항혈소판제와 함께 먹으면 출혈 경향이 커질 수 있습니다. 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항('항응고제·항혈소판제·혈압강하제 등 의약품 복용 시 전문가와 상담')"},
+    {"supplement": "omega3", "drugClass": "antihypertensive", "level": "caution", "message": "혈압약을 먹고 있으면 오메가-3를 더하기 전에 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항('항응고제·항혈소판제·혈압강하제 등 의약품 복용 시 전문가와 상담')"},
+    {"supplement": "coq10", "drugClass": "anticoagulant", "level": "caution", "message": "항응고제를 먹고 있으면 전문가와 상담하십시오. 와파린은 효과가 약해질 수 있다는 보고가 있습니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항('항응고제 복용 시 전문가와 상담')"},
     {"supplement": "banaba", "drugClass": "antidiabetic", "level": "caution", "message": "혈당강하제와 함께 먹으면 혈당이 지나치게 떨어질 수 있습니다. 의사·약사와 상담하십시오."},
     {"supplement": "indigestible_dextrin", "drugClass": "antidiabetic", "level": "caution", "message": "혈당강하제를 먹고 있으면 식후 혈당이 더 낮아질 수 있습니다. 의사·약사와 상담하십시오."},
-    {"supplement": "garcinia", "drugClass": "antidiabetic", "level": "caution", "message": "당뇨약과 함께 먹으면 부작용이 늘 수 있다는 보고가 있습니다. 의사·약사와 상담하십시오."},
-    {"supplement": "garcinia", "drugClass": "statin", "level": "caution", "message": "콜레스테롤 약과 함께 먹으면 부작용이 늘 수 있다는 보고가 있습니다. 의사·약사와 상담하십시오."},
-    {"supplement": "garcinia", "drugClass": "anticoagulant", "level": "caution", "message": "혈소판 응집에 영향을 줄 수 있어 항응고제와 함께 먹을 때 주의가 필요합니다. 의사·약사와 상담하십시오."},
-    {"supplement": "garcinia", "drugClass": "antiplatelet", "level": "caution", "message": "혈소판 응집에 영향을 줄 수 있어 항혈소판제와 함께 먹을 때 주의가 필요합니다. 의사·약사와 상담하십시오."},
+    {"supplement": "garcinia", "drugClass": "antidiabetic", "level": "caution", "message": "당뇨약과 함께 먹으면 부작용이 늘 수 있다는 보고가 있습니다. 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항('의약품 복용 시 전문가와 상담')"},
+    {"supplement": "garcinia", "drugClass": "statin", "level": "caution", "message": "콜레스테롤 약과 함께 먹으면 부작용이 늘 수 있다는 보고가 있습니다. 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항('의약품 복용 시 전문가와 상담')"},
+    {"supplement": "garcinia", "drugClass": "anticoagulant", "level": "caution", "message": "혈소판 응집에 영향을 줄 수 있어 항응고제와 함께 먹을 때 주의가 필요합니다. 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항('의약품 복용 시 전문가와 상담')"},
+    {"supplement": "garcinia", "drugClass": "antiplatelet", "level": "caution", "message": "혈소판 응집에 영향을 줄 수 있어 항혈소판제와 함께 먹을 때 주의가 필요합니다. 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항('의약품 복용 시 전문가와 상담')"},
     {"supplement": "iron", "drugClass": "thyroid", "level": "caution", "message": "갑상선 호르몬제의 흡수를 방해할 수 있어 4시간 이상 간격을 두십시오."},
     {"supplement": "red_yeast_rice", "drugClass": "lipid_other", "level": "avoid", "message": "홍국은 고지혈증 치료제를 먹고 있으면 섭취를 피해야 합니다. 추천에서 뺐습니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항"},
     {"supplement": "red_yeast_rice", "drugClass": "antibiotic", "level": "caution", "message": "홍국의 모나콜린K는 일부 항생제·항우울제와 같은 경로로 분해되어 부작용이 늘 수 있습니다. 의사·약사와 상담하십시오.", "basis": "데일리팜 2017-09-18 (CYP3A4 대사 약물과 상호작용)"},
@@ -93,11 +93,11 @@
     {"supplement": "saw_palmetto", "drugClass": "anticoagulant", "level": "caution", "message": "쏘팔메토는 항응고제 등을 먹고 있으면 전문가와 상담해야 하는 원료입니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 3. 2-28 쏘팔메토 열매 추출물 섭취 시 주의사항: 수술 전후, 출혈성 질환이 있거나 항응고제 등 복용 시 전문가와 상담할 것"}
   ],
   "conditionCautions": [
-    {"supplement": "garcinia", "items": ["alt", "ast"], "level": "avoid", "message": "간 수치가 기준치 밖일 때는 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."},
-    {"supplement": "green_tea", "items": ["alt", "ast"], "level": "avoid", "message": "간 수치가 기준치 밖일 때는 녹차추출물 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."},
-    {"supplement": "red_yeast_rice", "items": ["alt", "ast"], "level": "avoid", "message": "홍국은 간 질환이 있으면 섭취를 피해야 하는 원료입니다. 간 수치가 기준치 밖이라 추천에서 뺐습니다."},
+    {"supplement": "garcinia", "items": ["alt", "ast"], "level": "avoid", "message": "간 수치가 기준치 밖일 때는 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항('간 질환이 있으면 전문가와 상담')"},
+    {"supplement": "green_tea", "items": ["alt", "ast"], "level": "avoid", "message": "간 수치가 기준치 밖일 때는 녹차추출물 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항('간 질환이 있으면 전문가와 상담')"},
+    {"supplement": "red_yeast_rice", "items": ["alt", "ast"], "level": "avoid", "message": "홍국은 간 질환이 있으면 섭취를 피해야 하는 원료입니다. 간 수치가 기준치 밖이라 추천에서 뺐습니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항('간 질환이 있으면 섭취를 피하십시오')"},
     {"supplement": "red_yeast_rice", "items": ["creatinine", "egfr"], "level": "caution", "message": "콩팥 수치가 기준치 밖이면 홍국 섭취 전 의사 상담이 필요합니다."},
-    {"supplement": "garcinia", "items": ["creatinine", "egfr"], "level": "avoid", "message": "콩팥 수치가 기준치 밖일 때는 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."}
+    {"supplement": "garcinia", "items": ["creatinine", "egfr"], "level": "avoid", "message": "콩팥 수치가 기준치 밖일 때는 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항('신장 질환이 있으면 전문가와 상담')"}
   ],
   "lifeStage": {
     "_about": "user.lifestyle의 pregnant / breastfeeding / child 값이 true이면, 영양제의 lifeStageAvoid와 겹칠 때 추천에서 뺀다.",
