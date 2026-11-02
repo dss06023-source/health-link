@@ -171,6 +171,8 @@ def gather(conn, survey=None):
     rec = logic.recommend(user, checkup["values"], taking)
     recommended = [r["supplementId"] for r in rec["recommendations"] if r["supplementId"] not in taking]
     labels = {o["value"]: o["label"] for o in options.OPTIONS["conditions"]}
+    allergy_labels = {o["value"]: o["label"] for o in options.OPTIONS["allergies"]}
+    allergies = [allergy_labels.get(a, a) for a in user.get("allergies", [])] + user.get("customAllergies", [])
 
     supplements = []
     for cid, state in [*((c, "먹는 중") for c in taking), *((c, "추천받음") for c in recommended)]:
@@ -211,6 +213,14 @@ def gather(conn, survey=None):
                      "kind": "성분 중복", "level": w["level"],
                      "text": f"하루 합계 {w['total']}" + (f", 하루 상한 {w['upperLimit']}" if w["upperLimit"] else "") + ".",
                      "basis": "한국인 영양소 섭취기준 상한섭취량" if w["upperLimit"] else "입력하신 영양제 함량의 합계"})
+    # 알레르기: 포장의 알레르기 표시는 제품마다 확인해야 해서, 고른 알레르기마다 고시 근거를 싣는다.
+    # 원료가 정해진 영양제(포스파티딜세린=대두)를 먹거나 추천받았으면 그 이름을, 아니면 '제품 전체'를 적는다.
+    for rule in ref.ALLERGY_CHECKS:
+        if rule["allergy"] in user.get("allergies", []):
+            hit = [ref.SUPPLEMENTS[c]["name"] for c in ids if c in rule.get("supplements", [])]
+            rows.append({"supplement": ", ".join(hit) or "제품 전체", "with": allergy_labels.get(rule["allergy"], rule["allergy"]),
+                         "kind": "알레르기", "level": "caution", "text": f"{rule['message']} {rule['check']}",
+                         "basis": rule.get("basis", "")})
     # 원문 대조표에는 출처를 확인한 규칙만 싣는다(출처 없는 규칙은 앱 화면 경고에만 남는다).
     rows = [r for r in rows if r["basis"]]
 
@@ -223,6 +233,8 @@ def gather(conn, survey=None):
             questions.append(f"{r['with']}인 상태에서 {r['supplement']}{logic._josa(r['supplement'], '을', '를')} 먹어도 되는지")
         elif r["kind"] in ("영양제끼리", "성분 중복"):
             questions.append(f"{r['supplement']}{logic._josa(r['supplement'], '을', '를')} 함께 먹어도 되는지, 하나를 줄여야 하는지")
+    for a in allergies:
+        questions.append(f"{a} 알레르기가 있는데 지금 먹는 제품과 사려는 제품의 원재료가 괜찮은지")
     for x in s.products:
         questions.append(f"지금 먹는 제품 '{x.name}'{f'(하루 {x.perDay})' if x.perDay else ''}의 원료와 양이 지금 약과 함께 먹기에 괜찮은지")
     for x in s.otc:
@@ -274,7 +286,7 @@ def gather(conn, survey=None):
         "gender": "남" if gender == "M" else "여", "madeOn": made_on, "checkupDate": checkup["date"],
         "checkupAge": (f"약 {months // 12}년" if months >= 24 else f"{months}개월") if months >= 12 else "",
         "medications": medications, "conditions": [labels.get(c, c) for c in user.get("conditions", [])],
-        "allergies": user.get("allergies", []) + user.get("customAllergies", []),
+        "allergies": allergies,
         "items": [d for d in described.values() if d["status"] != ref.NORMAL],
         "supplements": supplements, "rows": rows, "questions": questions,
     }
@@ -366,7 +378,7 @@ def build_pdf(d):
         story += [Paragraph(n, small) for n in notes]
 
     story.append(P("5. 원문 대조표", head))
-    story.append(P("영양제와 약·검진 수치·질환·다른 영양제가 만나는 곳에 공공 자료가 남긴 문구입니다. 표시는 원문 규칙의 강도(피함·주의·참고)입니다.", small))
+    story.append(P("영양제와 약·검진 수치·질환·알레르기·다른 영양제가 만나는 곳에 공공 자료가 남긴 문구입니다. 표시는 원문 규칙의 강도(피함·주의·참고)입니다.", small))
     story.append(Spacer(1, 2 * mm))
     if d["rows"]:
         story.append(table(["영양제", "만나는 것", "표시", "원문 문구", "출처"], [
