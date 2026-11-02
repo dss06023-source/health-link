@@ -9,7 +9,6 @@ import type { InterpretedItem, Recommendation, Sex, Supplement, Warning } from '
 import { CautionList, Sheet } from '../ui'
 import { md, packStatus, REMIND_DAYS } from '../data/pack'
 import PackSheet from './PackSheet'
-import ConsultPdf from './ConsultPdf'
 
 // 제품을 사기 전에 원재료 표시에서 확인할 성분. 맞춤 추천 화면과 구매 탭이 같이 쓴다.
 export function ProductChecks({ checks }: { checks: Warning[] }) {
@@ -158,7 +157,11 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
           : <p className="muted">복용 관리에 넣은 영양제가 없습니다.</p>}
         <div className="actions"><button className="btn flat" onClick={() => go('intake')}>복용 관리 보기</button></div>
       </section>
-      <ConsultPdf />
+      <section className="sec">
+        <div className="sec-head"><h2>약국·병원 상담 준비 자료</h2></div>
+        <p className="small muted">사기 전에 약사·의사와 상의하고 싶으시면, 드시는 약·영양제·검진 수치를 한데 모은 PDF를 기록 탭에서 만들 수 있습니다.</p>
+        <div className="actions"><button className="btn flat" onClick={() => go('consult')}>상담 자료 보기</button></div>
+      </section>
 
       {picked && link && (
         <Sheet title={`${picked.name} 사기 전에 확인하십시오`} onClose={() => setPicked(null)}

@@ -37,7 +37,8 @@ export default function ConsultPdf() {
   const [paid, setPaid] = useState<number | null>(null)
   const load = useCallback(() => send<Offer>('/api/consult/offer').then(setOffer).catch(() => setOffer(null)), [])
   useEffect(() => { if (USE_API) load() }, [load])
-  if (!USE_API || !offer) return null
+  if (!USE_API) return <section className="sec"><p className="muted">상담 준비 자료는 서버에 연결된 시연 사이트에서만 만들 수 있습니다.</p></section>
+  if (!offer) return null
 
   const pay = async () => {
     setBusy(true); setError(null)
