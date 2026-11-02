@@ -58,7 +58,8 @@ export const MEDICATION_GROUPS: { group: string; items: string[] }[] = [
   { group: '그 밖의 약', items: ['항생제', '항우울제', '호르몬제·피임약', '항경련제'] },
 ]
 export const MEDICATION_OPTIONS = MEDICATION_GROUPS.flatMap((g) => g.items)
-export const SUPPLEMENT_OPTIONS = ['종합비타민', '비타민B군', '비타민C', '비타민D', '비타민K', '칼슘', '마그네슘', '아연', '철분', '엽산', '오메가-3', '유산균', '루테인', '밀크씨슬', '홍국', '코엔자임Q10']
+export const SUPPLEMENT_OPTIONS = ['종합비타민', '비타민B군', '비타민C', '비타민D', '비타민K', '칼슘', '마그네슘', '아연', '철분', '엽산', '오메가-3', '유산균', '루테인', '밀크씨슬', '홍국', '코엔자임Q10',
+  '가르시니아', '바나바잎 추출물', '녹차추출물', '난소화성말토덱스트린', '홍삼', 'MSM', '은행잎 추출물', '프로폴리스', '옥타코사놀', '쏘팔메토', '프락토올리고당', '테아닌', '포스파티딜세린', '아스타잔틴', '히알루론산']
 export const CONDITION_OPTIONS = ['고혈압', '당뇨', '이상지질혈증', '간질환', '신장질환', '갑상선질환']
 export const ALLERGY_OPTIONS = ['갑각류', '대두', '우유']
 export const DIET_OPTIONS = ['아침 거름', '짠 음식', '채식', '유제품 안 먹음', '외식 잦음']

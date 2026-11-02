@@ -347,6 +347,22 @@ export const CURRENT_INFO: Record<string, { id: string; purpose: string; ingredi
   '밀크씨슬': { id: 'milkthistle', purpose: '간 건강', ingredient: '실리마린', dose: '130mg', timing: 'morning' },
   '홍국': { id: 'red_yeast_rice', purpose: '콜레스테롤 관리', ingredient: '모나콜린K', dose: '8mg', timing: 'evening' },
   '코엔자임Q10': { id: 'coq10', purpose: '혈압 관리', ingredient: '코엔자임Q10', dose: '100mg', timing: 'morning' },
+  // 2026-11-02 추가(식약처 I0030 제품 수 기준 상위 성분, 고시 제2026-43호 원문 대조). 서버 supplements.json과 같은 내용.
+  '가르시니아': { id: 'garcinia', purpose: '체지방 감소', ingredient: 'HCA', dose: '1,500mg', timing: 'morning', cautions: ['간·신장·심장 질환, 알레르기, 천식이 있거나 의약품을 먹고 있으면 전문가와 상담하십시오.'] },
+  '바나바잎 추출물': { id: 'banaba', purpose: '식후 혈당 관리', ingredient: '코로솔산', dose: '1.3mg', timing: 'morning' },
+  '녹차추출물': { id: 'green_tea', purpose: '체지방 감소', ingredient: '카테킨', dose: '300mg', timing: 'morning' },
+  '난소화성말토덱스트린': { id: 'fiber', purpose: '식후 혈당과 배변 활동', ingredient: '식이섬유', dose: '5g', timing: 'lunch' },
+  '홍삼': { id: 'red_ginseng', purpose: '면역력과 피로 개선', ingredient: '진세노사이드', dose: '10mg', timing: 'morning', cautions: ['당뇨약이나 혈액항응고제를 먹고 있으면 섭취에 주의하십시오.'] },
+  'MSM': { id: 'msm', purpose: '관절 건강', ingredient: 'MSM', dose: '2,000mg', timing: 'morning', cautions: ['신장 질환이 있으면 먹기 전에 전문가와 상담하십시오.'] },
+  '은행잎 추출물': { id: 'ginkgo', purpose: '기억력과 혈행 개선', ingredient: '플라보놀배당체', dose: '28mg', timing: 'morning', cautions: ['수술 전후이거나 항응고제를 먹고 있으면 전문가와 상담하십시오.'] },
+  '프로폴리스': { id: 'propolis', purpose: '항산화', ingredient: '총플라보노이드', dose: '20mg', timing: 'morning' },
+  '옥타코사놀': { id: 'octacosanol', purpose: '지구력 증진', ingredient: '옥타코사놀', dose: '20mg', timing: 'morning' },
+  '쏘팔메토': { id: 'saw_palmetto', purpose: '전립선 건강', ingredient: '로르산', dose: '100mg', timing: 'evening', cautions: ['수술 전후이거나 출혈성 질환이 있거나 항응고제 등을 먹고 있으면 전문가와 상담하십시오.'] },
+  '프락토올리고당': { id: 'fos', purpose: '장 건강', ingredient: '프락토올리고당', dose: '3g', timing: 'morning' },
+  '테아닌': { id: 'theanine', purpose: '긴장 완화', ingredient: 'L-테아닌', dose: '200mg', timing: 'evening' },
+  '포스파티딜세린': { id: 'phosphatidylserine', purpose: '인지력 개선', ingredient: '포스파티딜세린', dose: '300mg', timing: 'morning' },
+  '아스타잔틴': { id: 'astaxanthin', purpose: '눈의 피로 개선', ingredient: '아스타잔틴', dose: '6mg', timing: 'morning' },
+  '히알루론산': { id: 'hyaluronic_acid', purpose: '피부 보습', ingredient: '히알루론산', dose: '120mg', timing: 'morning' },
 }
 
 const josa = (w: string, a: string, b: string) => { const c = w.charCodeAt(w.length - 1); return c >= 0xac00 && c <= 0xd7a3 && (c - 0xac00) % 28 === 0 ? b : a }
@@ -357,7 +373,9 @@ export function avoidReasons(name: string, p: UserProfile, items: InterpretedIte
   if (name === '홍국' && p.medications.includes('스타틴')) out.push('홍국에 스타틴과 같은 성분(모나콜린K)이 있어 작용이 겹칩니다.')
   if (name === '홍국' && (p.conditions?.includes('간질환') || ['AST', 'ALT', 'GGT'].some((c) => flagged(byCode(items, c)))))
     out.push('간 수치가 기준 밖이거나 간 질환이 있으면 홍국 섭취를 피해야 합니다.')
-  if ((name === '홍국' || name === '루테인') && p.pregnant) out.push(`임신·수유 중에는 ${name} 섭취를 피해야 합니다.`)
+  if (['홍국', '루테인', '가르시니아', '은행잎 추출물', '옥타코사놀', '테아닌', '포스파티딜세린', '아스타잔틴'].includes(name) && p.pregnant)
+    out.push(`임신·수유 중에는 ${name} 섭취를 피해야 합니다.`)
+  if (name === '쏘팔메토' && p.sex === 'F') out.push('쏘팔메토는 성인 남성만 먹는 원료입니다.')
   return out
 }
 
@@ -435,6 +453,9 @@ export const ALT_TIMINGS: Record<string, Supplement['timing'][]> = {
   omega3: ['lunch', 'evening'], milkthistle: ['lunch', 'evening'], coq10: ['lunch', 'evening'], vitd: ['lunch', 'evening'],
   multivitamin: ['lunch'], b12: ['lunch'], vitamin_k: ['lunch', 'evening'], folic_acid: ['lunch', 'evening'],
   lutein: ['lunch', 'evening'], vitc: ['morning', 'evening'], magnesium: ['lunch'], fiber: ['morning', 'evening'],
+  red_ginseng: ['lunch'], ginkgo: ['lunch', 'evening'], propolis: ['lunch', 'evening'], octacosanol: ['lunch', 'evening'],
+  saw_palmetto: ['morning', 'lunch'], theanine: ['lunch'], phosphatidylserine: ['lunch', 'evening'], astaxanthin: ['lunch', 'evening'],
+  hyaluronic_acid: ['lunch', 'evening'],
 }
 export function balanceTiming(id: string, timing: Supplement['timing'], existing: Supplement[]): Pick<Supplement, 'timing' | 'altTimings' | 'slotNote'> {
   const alts = ALT_TIMINGS[id] ?? []

@@ -284,3 +284,26 @@ def test_frontend_product_mixes_use_known_ingredient_names():
     keys = {k for i in ref.SUPPLEMENTS.values() for k in i["ingredients"]}
     assert set(mixes) <= names
     assert all(set(v) <= keys for v in mixes.values())
+
+
+def test_saw_palmetto_is_for_adult_men_only():
+    # 고시 3. 2-28: 성인남성만 섭취할 것. 여성이 이미 먹고 있으면 피해야 할 조합으로 알린다.
+    from app import logic
+    woman = {"gender": "F", "medications": [], "conditions": [], "lifestyle": {}}
+    man = {"gender": "M", "medications": [], "conditions": [], "lifestyle": {}}
+    w = logic.recommend(woman, {}, ["saw_palmetto"])
+    assert [c["status"] for c in w["current"] if c["name"] == "쏘팔메토"] == ["conflict"]
+    assert "성인 남성만" in next(c["message"] for c in w["current"] if c["name"] == "쏘팔메토")
+    assert not [c for c in w["purchaseChecks"] if c["type"] == "avoid"]  # 구매 확인에는 성별 원료 경고를 띄우지 않는다.
+    m = logic.recommend(man, {}, ["saw_palmetto"])
+    assert [c["status"] for c in m["current"] if c["name"] == "쏘팔메토"] == ["keep"]
+
+
+def test_new_notice_rules_for_ginseng_ginkgo_msm():
+    from app import logic
+    user = {"gender": "M", "medications": ["와파린", "메트포르민"], "conditions": ["kidney"], "lifestyle": {}}
+    r = logic.recommend(user, {}, ["red_ginseng", "ginkgo", "msm"])
+    by = {c["name"]: c for c in r["current"]}
+    assert by["홍삼"]["status"] == "keep" and any("당뇨약" in x for x in by["홍삼"]["cautions"]) and any("혈액항응고제" in x for x in by["홍삼"]["cautions"])
+    assert any("항응고제" in x for x in by["은행잎 추출물"]["cautions"])
+    assert any("신장 질환" in x for x in by["MSM"]["cautions"])

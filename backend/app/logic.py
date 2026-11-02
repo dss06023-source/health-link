@@ -229,7 +229,8 @@ def purchase_checks(user, described, med_classes, medications, taking):
     for cid, info in ref.SUPPLEMENTS.items():
         if len(info["ingredients"]) > 1:
             continue  # 종합비타민처럼 여러 성분을 묶은 제품은 성분별 항목(비타민K·철분 등)으로 안내한다.
-        warnings = supplement_warnings(cid, user, described, med_classes, medications)
+        # 성별 원료(쏘팔메토)는 그 성별이 아니면 살 일이 거의 없어 구매 확인에서는 뺀다(이미 먹고 있으면 review_current가 알린다).
+        warnings = [w for w in supplement_warnings(cid, user, described, med_classes, medications) if w["type"] != "sex"]
         avoid = [_plain(w["message"]) for w in warnings if w["level"] == "avoid"]
         for group in ref.NOT_TOGETHER:
             with_it = [c for c in taking if c in group["supplements"] and c != cid]
@@ -277,6 +278,10 @@ def supplement_warnings(cid, user, described, med_classes, medications):
         if rule["supplement"] == cid and set(rule["conditions"]) & set(user.get("conditions", [])):
             warnings.append({"type": "diagnosis", "level": rule["level"], "message": rule["message"]})
     lifestyle = user.get("lifestyle", {})
+    # 고시가 한 성별만 먹도록 정한 원료(쏘팔메토: 성인남성만 섭취).
+    if info.get("sexOnly") and user.get("gender") and user["gender"] != info["sexOnly"]:
+        who = "남성" if info["sexOnly"] == "M" else "여성"
+        warnings.append({"type": "sex", "level": "avoid", "message": f"{info['name']}{_josa(info['name'], '은', '는')} 성인 {who}만 먹는 원료입니다. 추천에서 뺐습니다."})
     stages = [ref.LIFE_STAGE_LABELS[s] for s in info.get("lifeStageAvoid", []) if lifestyle.get(s)]
     if stages:
         warnings.append({"type": "lifeStage", "level": "avoid",
