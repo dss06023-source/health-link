@@ -393,8 +393,21 @@ export function reviewCurrent(p: UserProfile, items: InterpretedItem[], recs: Re
 
 // 제품을 살 때 원재료 표시에서 확인할 성분(backend logic.purchase_checks를 줄인 것, 서버 없는 시연 모드용).
 const ANTICOAG = ['와파린', '아스피린', '클로피도그렐', '기타 항응고제']
+// 서버 intake_rules.json allergyChecks와 같은 문구(식약처 고시 제2026-43호 2-30·2-31·2-49, 2-18·2-29·2-10·2-37, 2-64).
+// keys가 없으면 모든 제품에 해당한다(포장의 알레르기 표시는 제품마다 확인).
+const ALLERGY_CHECKS: Record<string, [string, string]> = {
+  갑각류: ['게·새우', '글루코사민·N-아세틸글루코사민·키토산·키토올리고당은 게·새우 껍질로 만들 수 있고, 크릴오일은 크릴(갑각류)이 원료입니다. 원재료명에서 이 원료와 게·새우를 확인하십시오.'],
+  대두: ['대두', '포스파티딜세린(대두 레시틴), 레시틴, 대두이소플라본, 대두식이섬유는 대두가 원료입니다.'],
+  우유: ['우유', '유단백가수분해물처럼 우유로 만든 원료가 들어간 제품이 있습니다.'],
+}
 export function purchaseChecks(p: UserProfile, items: InterpretedItem[]): Warning[] {
   const out: Warning[] = []
+  for (const a of p.allergies ?? []) {
+    const known = ALLERGY_CHECKS[a]
+    out.push(known
+      ? { level: 'danger', title: `제품 포장의 알레르기 표시에 ${known[0]}${josa(known[0], '이', '가')} 있으면 피하십시오.`, detail: known[1] }
+      : { level: 'danger', title: `제품 포장의 알레르기 표시와 원재료명에 ${a}${josa(a, '이', '가')} 있으면 피하십시오.`, detail: '직접 입력하신 알레르기입니다.' })
+  }
   for (const [name, label, key] of [['홍국', '홍국(모나콜린K)', '모나콜린K'], ['루테인', '루테인', '루테인']]) {
     const avoid = avoidReasons(name, p, items)
     if (avoid.length) out.push({ level: 'danger', title: `${label}${josa(name, '이', '가')} 든 제품은 피하십시오.`, detail: avoid.join(' '), keys: [key] })
@@ -436,6 +449,8 @@ export function checkWarnings(names: string[], p: UserProfile, items: Interprete
     w.push({ level: 'caution', title: '마그네슘 + 신장질환', detail: '콩팥 기능이 떨어져 있으면 마그네슘이 몸에 쌓일 수 있습니다. 복용 전 담당 의사와 상의하십시오.' })
   if (has('오메가-3') && p.allergies?.includes('갑각류'))
     w.push({ level: 'caution', title: '갑각류 알레르기', detail: '크릴오일 등 일부 오메가-3 제품은 갑각류가 원료입니다. 원료를 확인하십시오.' })
+  if (has('포스파티딜세린') && p.allergies?.includes('대두'))
+    w.push({ level: 'caution', title: '대두 알레르기', detail: '포스파티딜세린은 대두 레시틴으로 만듭니다. 대두 알레르기가 있으면 원재료를 확인하고 섭취에 주의하십시오.' })
   if (p.pregnant)
     w.push({ level: 'caution', title: '임신·수유 중', detail: '임신·수유 중에는 필요한 영양소와 피해야 할 성분이 다릅니다. 영양제는 산부인과 의사와 상의한 뒤 시작하십시오.' })
   if (items.some((i) => i.status === 'danger' && ['SBP', 'FBS', 'LDL', 'EGFR'].includes(i.code)))

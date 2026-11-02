@@ -226,6 +226,15 @@ def purchase_checks(user, described, med_classes, medications, taking):
     avoid: 든 제품은 피함, caution: 들어 있으면 먹기 전에 상담, amount: 이미 먹는 양과 합쳐 상한을 넘지 않는지 확인.
     ingredientKeys는 이 항목이 걸리는 성분 이름(supplements.json ingredients 키). 구매 탭이 고른 제품과 관계있는 항목만 앞에 보일 때 쓴다."""
     checks = []
+    # 알레르기: 어느 제품이든 포장의 알레르기 유발물질 표시를 확인하도록 맨 앞에 둔다(ingredientKeys 없음 = 모든 제품에 해당).
+    for rule in ref.ALLERGY_CHECKS:
+        if rule["allergy"] in user.get("allergies", []):
+            checks.append({"type": "avoid", "allergy": rule["allergy"], "ingredient": rule["allergy"], "ingredientKeys": [],
+                           "message": rule["message"], "check": rule["check"]})
+    for name in user.get("customAllergies", []):
+        checks.append({"type": "avoid", "allergy": name, "ingredient": name, "ingredientKeys": [],
+                       "message": "직접 입력하신 알레르기입니다.",
+                       "check": f"제품 포장의 알레르기 표시와 원재료명에 {name}{_josa(name, '이', '가')} 있으면 피하십시오."})
     for cid, info in ref.SUPPLEMENTS.items():
         if len(info["ingredients"]) > 1:
             continue  # 종합비타민처럼 여러 성분을 묶은 제품은 성분별 항목(비타민K·철분 등)으로 안내한다.
@@ -277,6 +286,9 @@ def supplement_warnings(cid, user, described, med_classes, medications):
     for rule in ref.DIAGNOSIS_CAUTIONS:
         if rule["supplement"] == cid and set(rule["conditions"]) & set(user.get("conditions", [])):
             warnings.append({"type": "diagnosis", "level": rule["level"], "message": rule["message"]})
+    for rule in ref.ALLERGY_CHECKS:
+        if cid in rule.get("supplements", []) and rule["allergy"] in user.get("allergies", []):
+            warnings.append({"type": "allergy", "level": "caution", "message": rule["supplementMessage"]})
     lifestyle = user.get("lifestyle", {})
     # 고시가 한 성별만 먹도록 정한 원료(쏘팔메토: 성인남성만 섭취).
     if info.get("sexOnly") and user.get("gender") and user["gender"] != info["sexOnly"]:

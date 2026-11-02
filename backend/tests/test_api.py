@@ -307,3 +307,20 @@ def test_new_notice_rules_for_ginseng_ginkgo_msm():
     assert by["홍삼"]["status"] == "keep" and any("당뇨약" in x for x in by["홍삼"]["cautions"]) and any("혈액항응고제" in x for x in by["홍삼"]["cautions"])
     assert any("항응고제" in x for x in by["은행잎 추출물"]["cautions"])
     assert any("신장 질환" in x for x in by["MSM"]["cautions"])
+
+
+def test_allergies_add_purchase_checks_for_every_product():
+    # 고시 3. 2-30·2-31·2-49(게·새우), 2-18·2-29(대두), 2-64(우유). 가입 때 고른 알레르기와 직접 입력한 알레르기를 구매 확인에 쓴다.
+    from app import logic
+    user = {"gender": "F", "medications": [], "conditions": [], "lifestyle": {},
+            "allergies": ["shellfish", "soy", "milk"], "customAllergies": ["땅콩"]}
+    r = logic.recommend(user, {}, ["phosphatidylserine"])
+    allergy = [c for c in r["purchaseChecks"] if c.get("allergy")]
+    assert [c["allergy"] for c in allergy] == ["shellfish", "soy", "milk", "땅콩"]
+    assert all(c["type"] == "avoid" and c["ingredientKeys"] == [] for c in allergy)
+    assert "키토산" in allergy[0]["message"] and "게·새우" in allergy[0]["check"]
+    assert "땅콩이 있으면" in allergy[3]["check"]
+    ps = next(c for c in r["current"] if c["name"] == "포스파티딜세린")
+    assert any("대두" in x for x in ps["cautions"])
+    none = logic.recommend({**user, "allergies": [], "customAllergies": []}, {}, [])
+    assert not [c for c in none["purchaseChecks"] if c.get("allergy")]
