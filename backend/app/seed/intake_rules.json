@@ -86,7 +86,11 @@
     {"supplement": "vitamin_d", "drugClass": "antibiotic", "level": "info", "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항 ('의약품 복용 시 전문가와 상담')"},
     {"supplement": "vitamin_d", "drugClass": "antidepressant", "level": "info", "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항 ('의약품 복용 시 전문가와 상담')"},
     {"supplement": "vitamin_d", "drugClass": "hormone", "level": "info", "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항 ('의약품 복용 시 전문가와 상담')"},
-    {"supplement": "vitamin_d", "drugClass": "anticonvulsant", "level": "info", "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항 ('의약품 복용 시 전문가와 상담')"}
+    {"supplement": "vitamin_d", "drugClass": "anticonvulsant", "level": "info", "message": "약을 먹고 있으면 비타민D 섭취 전에 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항 ('의약품 복용 시 전문가와 상담')"},
+    {"supplement": "red_ginseng", "drugClass": "antidiabetic", "level": "caution", "message": "홍삼은 당뇨약을 먹을 때 섭취에 주의해야 하는 원료입니다. 혈당을 자주 확인하고 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 3. 2-2 홍삼 섭취 시 주의사항: 당뇨치료제 및 혈액항응고제 복용 시 섭취에 주의"},
+    {"supplement": "red_ginseng", "drugClass": "anticoagulant", "level": "caution", "message": "홍삼은 혈액항응고제를 먹을 때 섭취에 주의해야 하는 원료입니다. 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 3. 2-2 홍삼 섭취 시 주의사항: 당뇨치료제 및 혈액항응고제 복용 시 섭취에 주의"},
+    {"supplement": "ginkgo", "drugClass": "anticoagulant", "level": "caution", "message": "은행잎 추출물은 항응고제를 먹고 있으면 전문가와 상담해야 하는 원료입니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 3. 2-13 은행잎 추출물 섭취 시 주의사항: 수술 전후, 의약품(항응고제) 복용 시 전문가와 상담할 것"},
+    {"supplement": "saw_palmetto", "drugClass": "anticoagulant", "level": "caution", "message": "쏘팔메토는 항응고제 등을 먹고 있으면 전문가와 상담해야 하는 원료입니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 3. 2-28 쏘팔메토 열매 추출물 섭취 시 주의사항: 수술 전후, 출혈성 질환이 있거나 항응고제 등 복용 시 전문가와 상담할 것"}
   ],
   "conditionCautions": [
     {"supplement": "garcinia", "items": ["alt", "ast"], "level": "avoid", "message": "간 수치가 기준치 밖일 때는 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다."},
@@ -143,7 +147,8 @@
     {"supplement": "garcinia", "conditions": ["liver", "kidney"], "level": "avoid", "message": "간·신장 질환이 있으면 가르시니아 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항 (간·신장·심장 질환 시 상담, 드물게 간 손상)"},
     {"supplement": "green_tea", "conditions": ["liver"], "level": "avoid", "message": "간 질환이 있으면 녹차추출물 섭취 전 의사 상담이 필요합니다. 추천에서 뺐습니다.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 섭취 시 주의사항"},
     {"supplement": "garcinia", "conditions": ["diabetes", "dyslipidemia"], "level": "caution", "message": "당뇨·고콜레스테롤혈증이 있으면 가르시니아 섭취에 주의가 필요합니다. 의사·약사와 상담하십시오.", "basis": "약학정보원 「가르시니아 캄보지아 추출물」"},
-    {"supplement": "vitamin_c", "conditions": ["kidney"], "level": "caution", "message": "신장 질환이 있으면 비타민C를 먹기 전에 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 제3. 1-14 섭취 시 주의사항"}
+    {"supplement": "vitamin_c", "conditions": ["kidney"], "level": "caution", "message": "신장 질환이 있으면 비타민C를 먹기 전에 의사·약사와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 제3. 1-14 섭취 시 주의사항"},
+    {"supplement": "msm", "conditions": ["kidney"], "level": "caution", "message": "신장 질환이 있으면 MSM을 먹기 전에 전문가와 상담하십시오.", "basis": "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」 3. 2-55 엠에스엠 섭취 시 주의사항: 신장질환이 있는 사람은 섭취 전 전문가와 상담할 것"}
   ],
   "_noRuleYet": {
     "_about": "근거를 찾았지만 경고로 만들지 않았거나, 근거를 찾지 못한 조합(2026-10-29 확인).",

@@ -48,7 +48,22 @@
     {"id": "lutein", "name": "루테인"},
     {"id": "milk_thistle", "name": "밀크씨슬"},
     {"id": "red_yeast_rice", "name": "홍국"},
-    {"id": "coq10", "name": "코엔자임Q10"}
+    {"id": "coq10", "name": "코엔자임Q10"},
+    {"id": "garcinia", "name": "가르시니아"},
+    {"id": "banaba", "name": "바나바잎 추출물"},
+    {"id": "green_tea", "name": "녹차추출물"},
+    {"id": "indigestible_dextrin", "name": "난소화성말토덱스트린"},
+    {"id": "red_ginseng", "name": "홍삼"},
+    {"id": "msm", "name": "MSM"},
+    {"id": "ginkgo", "name": "은행잎 추출물"},
+    {"id": "propolis", "name": "프로폴리스"},
+    {"id": "octacosanol", "name": "옥타코사놀"},
+    {"id": "saw_palmetto", "name": "쏘팔메토"},
+    {"id": "fos", "name": "프락토올리고당"},
+    {"id": "theanine", "name": "테아닌"},
+    {"id": "phosphatidylserine", "name": "포스파티딜세린"},
+    {"id": "astaxanthin", "name": "아스타잔틴"},
+    {"id": "hyaluronic_acid", "name": "히알루론산"}
   ],
   "lifestyle": [
     {"key": "smoking", "label": "흡연", "type": "choice", "options": [

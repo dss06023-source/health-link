@@ -471,3 +471,8 @@ button.li:hover { background: var(--hover); }
 /* 복용 시간대 이유 */
 .timing-why { margin: 6px 0 0; color: var(--muted); word-break: keep-all; }
 .timing-why b { color: var(--accent); }
+
+/* 구매 확인 창: 고른 제품과 관계없는 항목은 접어 둔다 */
+.more-checks { margin-top: 12px; }
+.more-checks summary { cursor: pointer; font-size: 14.5px; color: var(--muted); padding: 8px 0; }
+.more-checks[open] summary { margin-bottom: 4px; }

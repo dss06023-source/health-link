@@ -101,6 +101,7 @@ export interface Warning {
   level: 'info' | 'caution' | 'danger'
   title: string
   detail: string
+  keys?: string[] // 구매 확인 항목이 걸리는 성분 이름(supplements.json ingredients 키). 고른 제품과 관계있는지 가를 때 쓴다.
 }
 
 export interface Supplement {

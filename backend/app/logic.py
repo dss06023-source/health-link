@@ -223,12 +223,14 @@ def label_name(cid):
 
 def purchase_checks(user, described, med_classes, medications, taking):
     """영양제를 살 때 원재료 표시에서 확인할 성분. 같은 규칙표(약·검진 수치·진단 질환·임신, 함께 먹지 않는 원료, 하루 상한)에서 만든다.
-    avoid: 든 제품은 피함, caution: 들어 있으면 먹기 전에 상담, amount: 이미 먹는 양과 합쳐 상한을 넘지 않는지 확인."""
+    avoid: 든 제품은 피함, caution: 들어 있으면 먹기 전에 상담, amount: 이미 먹는 양과 합쳐 상한을 넘지 않는지 확인.
+    ingredientKeys는 이 항목이 걸리는 성분 이름(supplements.json ingredients 키). 구매 탭이 고른 제품과 관계있는 항목만 앞에 보일 때 쓴다."""
     checks = []
     for cid, info in ref.SUPPLEMENTS.items():
         if len(info["ingredients"]) > 1:
             continue  # 종합비타민처럼 여러 성분을 묶은 제품은 성분별 항목(비타민K·철분 등)으로 안내한다.
-        warnings = supplement_warnings(cid, user, described, med_classes, medications)
+        # 성별 원료(쏘팔메토)는 그 성별이 아니면 살 일이 거의 없어 구매 확인에서는 뺀다(이미 먹고 있으면 review_current가 알린다).
+        warnings = [w for w in supplement_warnings(cid, user, described, med_classes, medications) if w["type"] != "sex"]
         avoid = [_plain(w["message"]) for w in warnings if w["level"] == "avoid"]
         for group in ref.NOT_TOGETHER:
             with_it = [c for c in taking if c in group["supplements"] and c != cid]
@@ -238,10 +240,10 @@ def purchase_checks(user, described, med_classes, medications, taking):
         caution = [w["message"] for w in warnings if w["level"] == "caution"]
         name = label_name(cid)
         if avoid:
-            checks.append({"type": "avoid", "supplementId": cid, "ingredient": name, "message": " ".join(dict.fromkeys(avoid)),
+            checks.append({"type": "avoid", "supplementId": cid, "ingredient": name, "ingredientKeys": list(info["ingredients"]), "message": " ".join(dict.fromkeys(avoid)),
                            "check": f"{name}{_josa(ref.SUPPLEMENTS[cid]['name'], '이', '가')} 든 제품은 피하십시오."})
         elif caution:
-            checks.append({"type": "caution", "supplementId": cid, "ingredient": name, "message": " ".join(dict.fromkeys(caution)),
+            checks.append({"type": "caution", "supplementId": cid, "ingredient": name, "ingredientKeys": list(info["ingredients"]), "message": " ".join(dict.fromkeys(caution)),
                            "check": f"제품에 {name}{_josa(ref.SUPPLEMENTS[cid]['name'], '이', '가')} 들어 있으면 먹기 전에 의사·약사와 상의하십시오."})
     # 하루 상한에 가까워 같은 성분이 든 제품을 하나 더하면(목록에서 가장 많이 든 양 기준) 넘는 성분만 알린다.
     found = {}
@@ -257,7 +259,7 @@ def purchase_checks(user, described, med_classes, medications, taking):
         if entry["total"] + largest <= limit:
             continue
         names = ", ".join(entry["from"])
-        checks.append({"type": "amount", "ingredient": ingredient, "total": f"{entry['total']:g}{unit}", "upperLimit": f"{limit:g}{unit}",
+        checks.append({"type": "amount", "ingredient": ingredient, "ingredientKeys": [ingredient], "total": f"{entry['total']:g}{unit}", "upperLimit": f"{limit:g}{unit}",
                        "message": f"추천 구성과 드시는 영양제({names})만으로 하루 {entry['total']:g}{unit}이고, 하루 상한은 {limit:g}{unit}입니다.",
                        "check": f"제품에 {ingredient}{_josa(ingredient, '이', '가')} 들어 있으면 합친 양이 하루 상한을 넘지 않는지 확인하십시오."})
     return checks
@@ -276,6 +278,10 @@ def supplement_warnings(cid, user, described, med_classes, medications):
         if rule["supplement"] == cid and set(rule["conditions"]) & set(user.get("conditions", [])):
             warnings.append({"type": "diagnosis", "level": rule["level"], "message": rule["message"]})
     lifestyle = user.get("lifestyle", {})
+    # 고시가 한 성별만 먹도록 정한 원료(쏘팔메토: 성인남성만 섭취).
+    if info.get("sexOnly") and user.get("gender") and user["gender"] != info["sexOnly"]:
+        who = "남성" if info["sexOnly"] == "M" else "여성"
+        warnings.append({"type": "sex", "level": "avoid", "message": f"{info['name']}{_josa(info['name'], '은', '는')} 성인 {who}만 먹는 원료입니다. 추천에서 뺐습니다."})
     stages = [ref.LIFE_STAGE_LABELS[s] for s in info.get("lifeStageAvoid", []) if lifestyle.get(s)]
     if stages:
         warnings.append({"type": "lifeStage", "level": "avoid",

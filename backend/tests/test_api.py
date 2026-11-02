@@ -256,5 +256,54 @@ def test_purchase_checks_list_ingredients_to_look_for_on_labels():
     assert by_id["vitamin_k"]["type"] == "caution" and by_id["vitamin_k"]["check"].startswith("제품에 비타민K가 들어 있으면")
     assert "multivitamin" not in by_id  # 여러 성분을 묶은 제품은 성분별 항목으로 안내한다.
     assert by_id["HCA"]["type"] == "amount"  # 이미 고시 최대량(1500mg)을 먹고 있다.
+    # 구매 탭이 고른 제품과 관계있는 항목을 가르도록 걸리는 성분 이름을 함께 준다.
+    assert by_id["red_yeast_rice"]["ingredientKeys"] == ["모나콜린K"]
+    assert by_id["vitamin_k"]["ingredientKeys"] == ["비타민K"]
+    assert by_id["HCA"]["ingredientKeys"] == ["HCA"]
     # 부딪히는 규칙이 없으면 확인할 성분도 없다.
     assert logic.recommend({"gender": "F", "medications": [], "conditions": [], "lifestyle": {}}, {}, [])["purchaseChecks"] == []
+
+
+def test_frontend_product_ingredients_match_seed():
+    # 구매 탭의 제품별 성분표(frontend/src/data/product_ingredients.json)는 supplements.json에서 만든 복사본이다.
+    import json
+    from pathlib import Path
+    from app import reference as ref
+    front = Path(__file__).resolve().parents[2] / "frontend/src/data/product_ingredients.json"
+    assert json.loads(front.read_text(encoding="utf-8")) == {i["name"]: list(i["ingredients"]) for i in ref.SUPPLEMENTS.values()}
+
+
+def test_frontend_product_mixes_use_known_ingredient_names():
+    # 구매 탭의 '흔히 함께 든 성분'(product_mixes.json)은 성분표 이름으로만 적어야 확인 항목과 맞물린다.
+    import json
+    from pathlib import Path
+    from app import reference as ref
+    front = Path(__file__).resolve().parents[2] / "frontend/src/data/product_mixes.json"
+    mixes = json.loads(front.read_text(encoding="utf-8"))["items"]
+    names = {i["name"] for i in ref.SUPPLEMENTS.values()}
+    keys = {k for i in ref.SUPPLEMENTS.values() for k in i["ingredients"]}
+    assert set(mixes) <= names
+    assert all(set(v) <= keys for v in mixes.values())
+
+
+def test_saw_palmetto_is_for_adult_men_only():
+    # 고시 3. 2-28: 성인남성만 섭취할 것. 여성이 이미 먹고 있으면 피해야 할 조합으로 알린다.
+    from app import logic
+    woman = {"gender": "F", "medications": [], "conditions": [], "lifestyle": {}}
+    man = {"gender": "M", "medications": [], "conditions": [], "lifestyle": {}}
+    w = logic.recommend(woman, {}, ["saw_palmetto"])
+    assert [c["status"] for c in w["current"] if c["name"] == "쏘팔메토"] == ["conflict"]
+    assert "성인 남성만" in next(c["message"] for c in w["current"] if c["name"] == "쏘팔메토")
+    assert not [c for c in w["purchaseChecks"] if c["type"] == "avoid"]  # 구매 확인에는 성별 원료 경고를 띄우지 않는다.
+    m = logic.recommend(man, {}, ["saw_palmetto"])
+    assert [c["status"] for c in m["current"] if c["name"] == "쏘팔메토"] == ["keep"]
+
+
+def test_new_notice_rules_for_ginseng_ginkgo_msm():
+    from app import logic
+    user = {"gender": "M", "medications": ["와파린", "메트포르민"], "conditions": ["kidney"], "lifestyle": {}}
+    r = logic.recommend(user, {}, ["red_ginseng", "ginkgo", "msm"])
+    by = {c["name"]: c for c in r["current"]}
+    assert by["홍삼"]["status"] == "keep" and any("당뇨약" in x for x in by["홍삼"]["cautions"]) and any("혈액항응고제" in x for x in by["홍삼"]["cautions"])
+    assert any("항응고제" in x for x in by["은행잎 추출물"]["cautions"])
+    assert any("신장 질환" in x for x in by["MSM"]["cautions"])

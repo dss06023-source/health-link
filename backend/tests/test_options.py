@@ -17,7 +17,7 @@ def test_options_list_and_rule_flags(client):
     o = client.get("/api/options").json()
     groups = {g["id"]: g for g in o["medicationGroups"]}
     assert len(groups) == 8
-    assert len(o["supplements"]) == 16
+    assert len(o["supplements"]) == 31
     items = {i["name"]: i for g in groups.values() for i in g["items"]}
     assert items["와파린"]["rules"] is True
     assert items["항우울제"]["rules"] is True
