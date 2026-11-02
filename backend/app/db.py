@@ -49,6 +49,15 @@ CREATE TABLE IF NOT EXISTS intake_logs (
     taken INTEGER NOT NULL,
     UNIQUE (date, time_slot, supplement_id)
 );
+CREATE TABLE IF NOT EXISTS purchases (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    product TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    method TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    survey TEXT
+);
 CREATE TABLE IF NOT EXISTS measurements (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     type TEXT NOT NULL,
@@ -245,7 +254,7 @@ def init(reset=False):
 
 
 def delete_user(conn, user_id):
-    for table in ("intake_logs", "supplements", "checkups", "measurements"):
+    for table in ("intake_logs", "supplements", "checkups", "measurements", "purchases"):
         conn.execute(f"DELETE FROM {table} WHERE user_id = ?", (user_id,))
     conn.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
     conn.execute("DELETE FROM users WHERE id = ?", (user_id,))

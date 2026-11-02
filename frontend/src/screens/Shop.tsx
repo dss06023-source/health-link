@@ -7,6 +7,7 @@ import PRODUCT_MIXES from '../data/product_mixes.json'
 import { latestCheckup, useStore } from '../store'
 import type { InterpretedItem, Recommendation, Sex, Supplement, Warning } from '../types'
 import { CautionList, Sheet } from '../ui'
+import ConsultPdf from './ConsultPdf'
 
 // 제품을 사기 전에 원재료 표시에서 확인할 성분. 맞춤 추천 화면과 구매 탭이 같이 쓴다.
 export function ProductChecks({ checks }: { checks: Warning[] }) {
@@ -137,6 +138,7 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
           : <p className="muted">복용 관리에 넣은 영양제가 없습니다.</p>}
         <div className="actions"><button className="btn flat" onClick={() => go('intake')}>복용 관리 보기</button></div>
       </section>
+      <ConsultPdf />
 
       {picked && link && (
         <Sheet title={`${picked.name} 사기 전에 확인하십시오`} onClose={() => setPicked(null)}

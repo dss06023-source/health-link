@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from . import checkup_schedule as sched
-from . import auth, db, logic, measure, ocr, options, public_api, regions
+from . import auth, consult, db, logic, measure, ocr, options, public_api, regions
 from . import reference as ref
 
 TIME_SLOTS = ["morning", "lunch", "evening", "bedtime"]
@@ -39,6 +39,7 @@ app = FastAPI(title="건강잇다 시연용 API", version="0.1.0", lifespan=life
 app.add_middleware(auth.AuthGuard)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.include_router(auth.router)
+app.include_router(consult.router)
 
 
 # ---------- 공통 ----------
