@@ -67,6 +67,7 @@ export default function Intake() {
     }
     return { t, m }
   }).sort((a, b) => b.m - a.m)[0]
+  const [picked, setPicked] = useState<string | null>(null)
   const nowHM = `${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`
 
   // 달력: 이번 주 토요일까지 5주
@@ -79,6 +80,13 @@ export default function Intake() {
     const n = list.filter((x) => s.intake[k]?.[x.id]).length
     return n === list.length ? 'all' : n ? 'some' : 'none'
   }
+  // 누른 날짜의 정확한 복용 개수와 빠진 영양제
+  const dayDetail = (() => {
+    if (!picked) return null
+    const list = active.filter((x) => x.startDate <= picked)
+    const taken = list.filter((x) => s.intake[picked]?.[x.id])
+    return { k: picked, list, taken, missed: list.filter((x) => !taken.includes(x)) }
+  })()
 
   const remind = (t: Timing) => {
     const names = active.filter((x) => x.timing === t).map((x) => x.name)
@@ -146,13 +154,26 @@ export default function Intake() {
             {missedBy && missedBy.m > 0 && <> 가장 자주 빠진 때는 <b>{TIMING_LABEL[missedBy.t]}</b>입니다.</>}</p>
           <div className="cal">
             {WEEKDAYS.map((w) => <span key={w} className="wd">{w}</span>)}
-            {days.map((d) => <span key={ymd(d)} className={`d ${level(d)}${ymd(d) === key ? ' today' : ''}`}><i />{d.getDate()}</span>)}
+            {days.map((d) => {
+              const k = ymd(d), lv = level(d), cls = `d ${lv}${k === key ? ' today' : ''}${k === picked ? ' picked' : ''}`
+              return lv
+                ? <button key={k} type="button" className={cls} aria-pressed={k === picked} aria-label={`${md(k)} 복용 내용 보기`} onClick={() => setPicked(k === picked ? null : k)}><i />{d.getDate()}</button>
+                : <span key={k} className={cls}><i />{d.getDate()}</span>
+            })}
           </div>
           <div className="legend">
             <span><i style={{ background: 'var(--accent)' }} />모두 복용</span>
             <span><i style={{ background: 'linear-gradient(90deg, var(--accent) 50%, transparent 50%)', boxShadow: 'inset 0 0 0 1.5px var(--accent)' }} />일부 복용</span>
             <span><i style={{ boxShadow: 'inset 0 0 0 1.5px var(--muted)' }} />못 먹음</span>
           </div>
+          {dayDetail
+            ? <div className="day-detail" aria-live="polite">
+                <p><b>{md(dayDetail.k)}</b> · {dayDetail.list.length}개 중 <b className="num">{dayDetail.taken.length}</b>개 복용</p>
+                {dayDetail.missed.length
+                  ? <p className="small muted">{dayDetail.k === key ? '아직 안 드신 것' : '빠진 것'}: {dayDetail.missed.map((x) => `${x.name}(${TIMING_LABEL[x.timing]})`).join(', ')}</p>
+                  : <p className="small muted">계획한 영양제를 모두 드셨습니다.</p>}
+              </div>
+            : <p className="small muted">날짜를 누르면 그날 몇 개를 드셨는지 보입니다.</p>}
         </section>
 
         <div>

@@ -367,6 +367,11 @@ button.li:hover { background: var(--hover); }
 .cal .d.some i { background: linear-gradient(90deg, var(--accent) 50%, transparent 50%); box-shadow: inset 0 0 0 1.5px var(--accent); }
 .cal .d.none i { box-shadow: inset 0 0 0 1.5px var(--muted); }
 .cal .d.today { color: var(--fg); font-weight: 700; }
+.cal button.d { border: 0; background: none; cursor: pointer; border-radius: 10px; font-family: var(--num); font-size: 13px; color: var(--muted); }
+.cal button.d:hover { background: var(--accent-soft); }
+.cal .d.picked { background: var(--accent-soft); color: var(--fg); font-weight: 700; }
+.day-detail { margin-top: 10px; padding: 12px 14px; border-radius: 14px; background: var(--accent-soft); display: grid; gap: 4px; }
+.day-detail p { margin: 0; }
 .cal .d.today span { text-decoration: underline 2px; text-underline-offset: 3px; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: var(--muted); }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
