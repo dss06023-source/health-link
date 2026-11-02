@@ -32,6 +32,22 @@ FONT_DIR = Path(__file__).parent / "assets" / "fonts"
 STATUS_LABEL = {"normal": "정상", "caution": "경계", "danger": "질환의심"}
 LEVEL_LABEL = {"avoid": "피함", "caution": "주의", "info": "참고"}
 SUPPLEMENT_SOURCE = "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」"
+NO_SOURCE = "건강잇다 안내(공공 원문 확인 전)"
+
+
+def _intake(info):
+    """고시 1일 섭취량. 아래·위가 같으면 한 숫자로 쓴다(130~130mg → 130mg)."""
+    intake = info.get("dailyIntake")
+    if not intake:
+        return "성분마다 따로 정해짐(제품 표시 확인)"
+    lo, hi = intake["min"], intake["max"]
+    amount = f"{lo:g}" if lo == hi else f"{lo:g}~{hi:g}"
+    return f"{intake['ingredient']} {amount}{intake['unit']}"
+
+
+def _months_between(earlier, later):
+    a, b = datetime.fromisoformat(earlier), datetime.fromisoformat(later)
+    return (b.year - a.year) * 12 + b.month - a.month - (b.day < a.day)
 
 # 설문 보기. 답은 판단에 쓰지 않고 PDF에 '내가 적은 내용'으로 싣고 상담 질문을 만드는 데만 쓴다.
 OTC = ["진통제", "감기약", "소화제·위장약", "변비약", "수면유도제", "알레르기약", "한약", "기타"]
@@ -160,11 +176,10 @@ def gather(conn, survey=None):
     supplements = []
     for cid, state in [*((c, "먹는 중") for c in taking), *((c, "추천받음") for c in recommended)]:
         info = ref.SUPPLEMENTS[cid]
-        intake = info.get("dailyIntake") or {}
         supplements.append({
             "id": cid, "name": info["name"], "state": state,
             "ingredients": ", ".join(f"{k} {v}" for k, v in info["ingredients"].items()),
-            "dailyIntake": f"{intake['ingredient']} {intake['min']:g}~{intake['max']:g}{intake['unit']}" if intake else "",
+            "dailyIntake": _intake(info),
             "cautions": info.get("cautions", []),
         })
 
@@ -198,7 +213,8 @@ def gather(conn, survey=None):
                      "text": f"하루 합계 {w['total']}" + (f", 하루 상한 {w['upperLimit']}" if w["upperLimit"] else "") + ".",
                      "basis": "한국인 영양소 섭취기준 상한섭취량" if w["upperLimit"] else ""})
 
-    questions = []
+    s = survey or Survey()
+    questions = [f"(직접 적은 질문) {s.question.strip()}"] if s.question.strip() else []
     for r in rows:
         if r["kind"] == "약":
             questions.append(f"{r['supplement']}{logic._josa(r['supplement'], '을', '를')} {r['with']}{logic._josa(r['with'], '과', '와')} 함께 먹어도 되는지, 먹는다면 시간 간격을 둬야 하는지")
@@ -206,7 +222,6 @@ def gather(conn, survey=None):
             questions.append(f"{r['with']}인 상태에서 {r['supplement']}{logic._josa(r['supplement'], '을', '를')} 먹어도 되는지")
         elif r["kind"] in ("영양제끼리", "성분 중복"):
             questions.append(f"{r['supplement']}{logic._josa(r['supplement'], '을', '를')} 함께 먹어도 되는지, 하나를 줄여야 하는지")
-    s = survey or Survey()
     for x in s.products:
         questions.append(f"지금 먹는 제품 '{x.name}'{f'(하루 {x.perDay})' if x.perDay else ''}의 원료와 양이 지금 약과 함께 먹기에 괜찮은지")
     for x in s.otc:
@@ -225,8 +240,6 @@ def gather(conn, survey=None):
         questions.append("교대근무라 식사 시간이 일정하지 않은데 약·영양제 먹는 시간을 어떻게 맞추면 좋은지")
     questions = list(dict.fromkeys(questions))
     questions.append("지금 먹는 약·영양제 가운데 줄이거나 끊어야 할 것이 있는지")
-    if s.question.strip():
-        questions.append(f"(직접 적은 질문) {s.question.strip()}")
     if any(d["status"] == ref.DANGER for d in described.values()):
         questions.append("'질환의심'으로 나온 검진 항목을 병원에서 다시 확인해야 하는지")
 
@@ -252,10 +265,13 @@ def gather(conn, survey=None):
         answers.append(("임신·수유", PREGNANCY[s.pregnancy]))
 
     born = user.get("birthYear")
+    made_on = db.today().isoformat()
+    months = _months_between(checkup["date"], made_on)
     return {
         "lifestyle": lifestyle, "answers": answers,
         "name": user.get("name", ""), "age": (db.today().year - born) if born else None,
-        "gender": "남" if gender == "M" else "여", "madeOn": db.today().isoformat(), "checkupDate": checkup["date"],
+        "gender": "남" if gender == "M" else "여", "madeOn": made_on, "checkupDate": checkup["date"],
+        "checkupAge": (f"약 {months // 12}년" if months >= 24 else f"{months}개월") if months >= 12 else "",
         "medications": medications, "conditions": [labels.get(c, c) for c in user.get("conditions", [])],
         "allergies": user.get("allergies", []) + user.get("customAllergies", []),
         "items": [d for d in described.values() if d["status"] != ref.NORMAL],
@@ -274,9 +290,10 @@ def _fonts():
 
 
 def _safe(text):
-    # 글꼴(페이퍼로지)에 없는 글자는 비슷한 글자로 바꾼다: γ-GTP → GTP, μg → mcg, m² → m2.
-    text = re.sub(r"\(γ-GTP\)|γ-", "", str(text)).replace("μ", "mc").replace("µ", "mc").replace("²", "2")
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    # 글꼴(페이퍼로지)에 없는 글자는 비슷한 글자로 바꾼다: γ-GTP → GTP, μg → mcg, m² → 위첨자 2.
+    text = re.sub(r"\(γ-GTP\)|γ-", "", str(text)).replace("μ", "mc").replace("µ", "mc")
+    text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    return text.replace("²", "<super>2</super>")
 
 
 def build_pdf(d):
@@ -289,11 +306,11 @@ def build_pdf(d):
     _fonts()
     green, line, muted = colors.HexColor("#1f7a4d"), colors.HexColor("#cfd8d3"), colors.HexColor("#5b6660")
     level_color = {"avoid": colors.HexColor("#c2413a"), "caution": colors.HexColor("#8a5b00"), "info": muted}
-    base = ParagraphStyle("b", fontName="Paperlogy", fontSize=9.5, leading=14)
-    small = ParagraphStyle("s", parent=base, fontSize=8.5, leading=12, textColor=muted)
-    cell = ParagraphStyle("c", parent=base, fontSize=8.5, leading=12)
-    head = ParagraphStyle("h", parent=base, fontName="Paperlogy-Bold", fontSize=12.5, leading=18, spaceBefore=10, spaceAfter=4, textColor=green)
-    title = ParagraphStyle("t", parent=base, fontName="Paperlogy-Bold", fontSize=19, leading=25)
+    base = ParagraphStyle("b", fontName="Paperlogy", fontSize=9, leading=13)
+    small = ParagraphStyle("s", parent=base, fontSize=8, leading=11, textColor=muted)
+    cell = ParagraphStyle("c", parent=base, fontSize=8, leading=11)
+    head = ParagraphStyle("h", parent=base, fontName="Paperlogy-Bold", fontSize=11.5, leading=16, spaceBefore=7, spaceAfter=3, textColor=green)
+    title = ParagraphStyle("t", parent=base, fontName="Paperlogy-Bold", fontSize=17, leading=22)
     P = lambda t, s=base: Paragraph(_safe(t), s)
     B = lambda t, s=cell: Paragraph(f"<font name='Paperlogy-Bold'>{_safe(t)}</font>", s)
 
@@ -301,12 +318,12 @@ def build_pdf(d):
         t = Table([[B(h, cell) for h in header], *body], colWidths=[w * mm for w in widths], repeatRows=1)
         t.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#eaf4ee")),
                                ("LINEBELOW", (0, 0), (-1, -1), 0.5, line), ("VALIGN", (0, 0), (-1, -1), "TOP"),
-                               ("TOPPADDING", (0, 0), (-1, -1), 4), ("BOTTOMPADDING", (0, 0), (-1, -1), 4)]))
+                               ("TOPPADDING", (0, 0), (-1, -1), 2.5), ("BOTTOMPADDING", (0, 0), (-1, -1), 2.5)]))
         return t
 
     who = f"{d['name']} 님 · {d['age']}세 · {d['gender']}" if d["age"] else f"{d['name']} 님 · {d['gender']}"
-    story = [P("약국·병원 상담 준비 자료", title), Spacer(1, 3 * mm),
-             P(f"{who} · 작성일 {d['madeOn']} · 검진일 {d['checkupDate']}", small), Spacer(1, 3 * mm),
+    story = [P("약국·병원 상담 준비 자료", title), Spacer(1, 2 * mm),
+             P(f"{who} · 작성일 {d['madeOn']} · 검진일 {d['checkupDate']}", small), Spacer(1, 2 * mm),
              P("이 자료는 진단이나 처방이 아닙니다. 입력하신 정보와 공공 자료 원문(식약처 고시, 약·영양제 상호작용 자료 등)의 주의 문구를 "
                "나란히 모은 것입니다. 먹어도 되는지, 줄여야 하는지는 상담하시는 약사·의사가 판단합니다.", small)]
 
@@ -318,9 +335,17 @@ def build_pdf(d):
     ], [35, 135]))
 
     story.append(P("2. 내가 적은 생활 정보와 설문", head))
-    story.append(table(["구분", "내용"], [[P(k, cell), P(v, cell)] for k, v in d["answers"] + d["lifestyle"]], [35, 135]))
+    story.append(table(["구분", "내용"], [[P(k, cell), P(v, cell)] for k, v in d["answers"]], [35, 135]))
+    life = d["lifestyle"] + ([("", "")] if len(d["lifestyle"]) % 2 else [])
+    story.append(Spacer(1, 1.5 * mm))
+    story.append(table(["생활", "내용", "생활", "내용"],
+                       [[P(a, cell), P(b, cell), P(c, cell), P(e, cell)] for (a, b), (c, e) in zip(life[::2], life[1::2])],
+                       [30, 55, 30, 55]))
 
     story.append(P("3. 기준 범위를 벗어난 검진 항목", head))
+    if d.get("checkupAge"):
+        story.append(P(f"검진일({d['checkupDate']})이 작성일보다 {d['checkupAge']} 앞섭니다. 지금 수치와 다를 수 있습니다.", small))
+        story.append(Spacer(1, 1.5 * mm))
     if d["items"]:
         story.append(table(["항목", "수치", "기준 범위", "결과지 판정"], [
             [P(i["name"], cell), P(f"{i['value']:g} {i['unit']}", cell), P(i["normalRange"], cell),
@@ -340,20 +365,21 @@ def build_pdf(d):
         story += [Paragraph(n, small) for n in notes]
 
     story.append(P("5. 원문 대조표", head))
-    story.append(P("영양제와 약·검진 수치·질환·다른 영양제가 만나는 곳에 공공 자료가 남긴 문구입니다. 표시는 원문 규칙의 강도(피함·주의·참고)입니다.", small))
+    story.append(P("영양제와 약·검진 수치·질환·다른 영양제가 만나는 곳에 공공 자료가 남긴 문구입니다. 표시는 원문 규칙의 강도(피함·주의·참고)입니다. "
+                f"출처가 '{NO_SOURCE}'인 줄은 공공 자료 원문을 아직 확인하지 못한 문구입니다.", small))
     story.append(Spacer(1, 2 * mm))
     if d["rows"]:
         story.append(table(["영양제", "만나는 것", "표시", "원문 문구", "출처"], [
             [B(r["supplement"]), P(f"{r['kind']}: {r['with']}", cell),
              Paragraph(f"<font color='{level_color.get(r['level'], muted).hexval()}'>{LEVEL_LABEL.get(r['level'], r['level'])}</font>", cell),
-             P(r["text"], cell), P(r["basis"] or "-", ParagraphStyle("x", parent=small, fontSize=7.5, leading=10))]
+             P(r["text"], cell), P(r["basis"] or NO_SOURCE, ParagraphStyle("x", parent=small, fontSize=7.5, leading=10))]
             for r in d["rows"]], [26, 32, 13, 64, 35]))
     else:
         story.append(P("입력하신 약·질환·검진 수치와 겹치는 원문 규칙이 없습니다.", small))
 
     story.append(KeepTogether([P("6. 상담 때 여쭤볼 질문", head),
                                *[P(f"□ {q}", base) for q in d["questions"]]]))
-    story += [Spacer(1, 6 * mm),
+    story += [Spacer(1, 4 * mm),
               P(f"출처: {SUPPLEMENT_SOURCE}(2026-06-11 개정), 국가건강검진 판정 기준(「건강검진 실시기준」 별표 4), "
                 "식약처 의약품안전사용서비스(DUR)·e약은요, 표에 적은 개별 자료. 건강잇다 시연용 자료입니다.", small)]
 
