@@ -377,14 +377,14 @@ export function reviewCurrent(p: UserProfile, items: InterpretedItem[], recs: Re
 const ANTICOAG = ['와파린', '아스피린', '클로피도그렐', '기타 항응고제']
 export function purchaseChecks(p: UserProfile, items: InterpretedItem[]): Warning[] {
   const out: Warning[] = []
-  for (const [name, label] of [['홍국', '홍국(모나콜린K)'], ['루테인', '루테인']]) {
+  for (const [name, label, key] of [['홍국', '홍국(모나콜린K)', '모나콜린K'], ['루테인', '루테인', '루테인']]) {
     const avoid = avoidReasons(name, p, items)
-    if (avoid.length) out.push({ level: 'danger', title: `${label}${josa(name, '이', '가')} 든 제품은 피하십시오.`, detail: avoid.join(' ') })
+    if (avoid.length) out.push({ level: 'danger', title: `${label}${josa(name, '이', '가')} 든 제품은 피하십시오.`, detail: avoid.join(' '), keys: [key] })
   }
   if (p.medications.some((m) => ANTICOAG.includes(m))) {
-    out.push({ level: 'caution', title: '제품에 오메가-3(EPA·DHA)이 들어 있으면 먹기 전에 의사·약사와 상의하십시오.', detail: '항응고·항혈소판제와 함께 먹으면 출혈 경향이 커질 수 있습니다.' })
+    out.push({ level: 'caution', title: '제품에 오메가-3(EPA·DHA)이 들어 있으면 먹기 전에 의사·약사와 상의하십시오.', detail: '항응고·항혈소판제와 함께 먹으면 출혈 경향이 커질 수 있습니다.', keys: ['EPA·DHA'] })
     if (p.medications.includes('와파린'))
-      out.push({ level: 'caution', title: '제품에 비타민K가 들어 있으면 먹기 전에 의사·약사와 상의하십시오.', detail: '와파린 등 항응고제는 비타민K 양에 따라 효과가 달라집니다.' })
+      out.push({ level: 'caution', title: '제품에 비타민K가 들어 있으면 먹기 전에 의사·약사와 상의하십시오.', detail: '와파린 등 항응고제는 비타민K 양에 따라 효과가 달라집니다.', keys: ['비타민K'] })
   }
   return out
 }

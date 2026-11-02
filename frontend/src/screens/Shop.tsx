@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import type { Route } from '../App'
 import { avoidReasons, direction, interpret, purchaseChecks, recommend, STATUS_LABEL } from '../data/rules'
 import { DISCLOSURE, shopLink } from '../data/shopLinks'
+import PRODUCT_INGREDIENTS from '../data/product_ingredients.json'
 import { latestCheckup, useStore } from '../store'
 import type { InterpretedItem, Recommendation, Sex, Supplement, Warning } from '../types'
 import { CautionList, Sheet } from '../ui'
@@ -11,6 +12,32 @@ export function ProductChecks({ checks }: { checks: Warning[] }) {
   return checks.length
     ? <><p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제를 기준으로 했습니다. 제품 뒷면의 원재료명과 영양·기능정보에서 찾아보십시오.</p><CautionList items={checks} keywords /></>
     : <p className="small muted">입력하신 약·질환·검진 수치·이미 먹는 영양제와 부딪히는 성분이 없습니다. 제품의 1일 섭취량만 지키십시오.</p>
+}
+
+// 구매 탭에서 고른 영양제와 관계있는 확인 항목만 앞에 둔다. 그 영양제 성분(supplements.json ingredients)이 걸린 항목이 관계있는 것이다.
+// 다른 성분을 섞은 복합 제품도 있어 나머지는 접어 둔다. 종합비타민은 제품마다 성분이 크게 달라 전부 보여 준다.
+const MIXED = ['종합비타민']
+export function splitChecks(name: string, checks: Warning[]): { mine: Warning[]; rest: Warning[] } {
+  const keys = (PRODUCT_INGREDIENTS as Record<string, string[]>)[name]
+  if (!keys || MIXED.includes(name)) return { mine: checks, rest: [] }
+  const mine = checks.filter((c) => !c.keys || c.keys.some((k) => keys.includes(k)))
+  return { mine, rest: checks.filter((c) => !mine.includes(c)) }
+}
+function ChecksFor({ name, checks }: { name: string; checks: Warning[] }) {
+  const { mine, rest } = splitChecks(name, checks)
+  return (
+    <>
+      {mine.length
+        ? <><p className="small muted">{name} 성분과 입력하신 약·질환·검진 수치·이미 먹는 영양제를 기준으로 했습니다. 제품 뒷면의 원재료명과 영양·기능정보에서 찾아보십시오.</p><CautionList items={mine} keywords /></>
+        : <p className="small muted">{name} 한 가지만 든 제품이면 입력하신 약·질환·검진 수치·이미 먹는 영양제와 부딪히는 성분이 없습니다. 제품의 1일 섭취량만 지키십시오.</p>}
+      {rest.length > 0 && (
+        <details className="more-checks">
+          <summary>다른 성분을 섞은 복합 제품이면 함께 확인할 것 {rest.length}가지</summary>
+          <CautionList items={rest} keywords />
+        </details>
+      )}
+    </>
+  )
 }
 
 // 영양제 이름 위에 근거 수치를 판정 색으로 보여 준다("공복혈당 108mg/dL ▲ 높음 · 경계" → 바나바잎 추출물).
@@ -112,7 +139,7 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
         <Sheet title={`${picked.name} 사기 전에 확인하십시오`} onClose={() => setPicked(null)}
           actions={<><button className="btn flat" onClick={() => setPicked(null)}>닫기</button>
             <a className="btn flat strong" href={link.url} target="_blank" rel="noreferrer sponsored" onClick={() => setPicked(null)}>확인했습니다, 쿠팡으로 이동</a></>}>
-          <ProductChecks checks={checks} />
+          <ChecksFor name={picked.name} checks={checks} />
           {link.partner && <p className="small muted">{DISCLOSURE}</p>}
         </Sheet>
       )}

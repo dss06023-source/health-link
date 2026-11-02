@@ -74,7 +74,7 @@ interface RRec {
 }
 interface RRecs { recommendations: RRec[]; excluded: { name: string; message: string }[]; warnings: (RWarning & { supplementId?: string })[]; notes?: { message: string }[]
   current?: { name: string; status: 'keep' | 'conflict'; message: string; cautions: string[] }[]
-  purchaseChecks?: { type: 'avoid' | 'caution' | 'amount'; check: string; message: string }[] }
+  purchaseChecks?: { type: 'avoid' | 'caution' | 'amount'; check: string; message: string; ingredientKeys?: string[] }[] }
 
 export interface RemoteExtras {
   checkupIds: Record<string, number>
@@ -169,7 +169,7 @@ export async function loadAll() {
       }
     }),
     current: (recs?.current ?? []).map((c) => ({ name: c.name, status: c.status, message: c.message, cautions: c.cautions })),
-    purchaseChecks: (recs?.purchaseChecks ?? []).map((c): Warning => ({ level: CHECK_LEVEL[c.type], title: c.check, detail: c.message })),
+    purchaseChecks: (recs?.purchaseChecks ?? []).map((c): Warning => ({ level: CHECK_LEVEL[c.type], title: c.check, detail: c.message, keys: c.ingredientKeys })),
     warnings: [
       ...(recs?.excluded ?? []).map((e): Warning => ({ level: 'danger', title: `${e.name} 제외`, detail: e.message })),
       ...(recs?.warnings ?? []).map(mapWarning),

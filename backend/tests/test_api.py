@@ -256,5 +256,18 @@ def test_purchase_checks_list_ingredients_to_look_for_on_labels():
     assert by_id["vitamin_k"]["type"] == "caution" and by_id["vitamin_k"]["check"].startswith("제품에 비타민K가 들어 있으면")
     assert "multivitamin" not in by_id  # 여러 성분을 묶은 제품은 성분별 항목으로 안내한다.
     assert by_id["HCA"]["type"] == "amount"  # 이미 고시 최대량(1500mg)을 먹고 있다.
+    # 구매 탭이 고른 제품과 관계있는 항목을 가르도록 걸리는 성분 이름을 함께 준다.
+    assert by_id["red_yeast_rice"]["ingredientKeys"] == ["모나콜린K"]
+    assert by_id["vitamin_k"]["ingredientKeys"] == ["비타민K"]
+    assert by_id["HCA"]["ingredientKeys"] == ["HCA"]
     # 부딪히는 규칙이 없으면 확인할 성분도 없다.
     assert logic.recommend({"gender": "F", "medications": [], "conditions": [], "lifestyle": {}}, {}, [])["purchaseChecks"] == []
+
+
+def test_frontend_product_ingredients_match_seed():
+    # 구매 탭의 제품별 성분표(frontend/src/data/product_ingredients.json)는 supplements.json에서 만든 복사본이다.
+    import json
+    from pathlib import Path
+    from app import reference as ref
+    front = Path(__file__).resolve().parents[2] / "frontend/src/data/product_ingredients.json"
+    assert json.loads(front.read_text(encoding="utf-8")) == {i["name"]: list(i["ingredients"]) for i in ref.SUPPLEMENTS.values()}
