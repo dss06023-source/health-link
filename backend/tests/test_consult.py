@@ -109,3 +109,25 @@ def test_allergies_go_into_pdf_with_notice_basis(app):
         assert "땅콩 알레르기가 있는데" in text and "갑각류 알레르기가 있는데" in text
         # 출처 없는 직접 입력 알레르기는 대조표에 싣지 않고 질문으로만 남긴다.
         assert "알레르기:땅콩" not in flat
+
+
+def test_under_30_first_one_is_free_then_full_price(app):
+    # 시연 오늘 2026-10-28. 1997년생 = 29 → 첫 1회 무료, 이후 2,900원. 1996년생 = 30 → 지금처럼 첫 1,900원.
+    with TestClient(app) as c:
+        c.post("/api/auth/guest")
+        c.put("/api/users/me", json={"birthYear": 1997})
+        offer = c.get("/api/consult/offer").json()
+        assert offer["firstPrice"] == 0 and offer["amount"] == 0 and "무료" in offer["firstLabel"]
+        first = c.post("/api/consult/checkout", json={"method": "free", "amount": 0})
+        assert first.status_code == 201 and first.json()["method"] == "무료"
+        offer = c.get("/api/consult/offer").json()
+        assert offer["amount"] == 2900 and offer["purchases"][0]["method"] == "무료"
+        # 무료가 끝난 뒤 0원을 보내면 금액이 바뀌었다고 알린다.
+        assert c.post("/api/consult/checkout", json={"method": "free", "amount": 0}).status_code == 409
+        assert c.post("/api/consult/checkout", json={"method": "card", "amount": 2900}).status_code == 201
+    with TestClient(app) as d:
+        d.post("/api/auth/guest")
+        d.put("/api/users/me", json={"birthYear": 1996})
+        offer = d.get("/api/consult/offer").json()
+        assert offer["amount"] == 1900 and offer["firstLabel"] == "첫 구매 할인"
+        assert d.post("/api/consult/checkout", json={"method": "free", "amount": 0}).status_code == 409

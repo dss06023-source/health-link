@@ -26,7 +26,10 @@ router = APIRouter()
 
 PRODUCT = "consult_pdf"
 PRICE, FIRST_PRICE = 2900, 1900
+# 30세 미만(올해 − 출생연도, PDF에 적는 나이와 같은 계산)은 첫 1회 무료, 이후 정가.
+YOUNG_AGE, YOUNG_FIRST_PRICE = 30, 0
 METHODS = {"card": "신용·체크카드", "toss": "토스페이", "kakao": "카카오페이"}
+FREE = "free"
 KST = ZoneInfo("Asia/Seoul")
 FONT_DIR = Path(__file__).parent / "assets" / "fonts"
 STATUS_LABEL = {"normal": "정상", "caution": "경계", "danger": "질환의심"}
@@ -88,14 +91,19 @@ def _check_survey(s):
 def _purchases(conn):
     rows = conn.execute("SELECT id, amount, method, created_at FROM purchases WHERE user_id = ? AND product = ? ORDER BY id",
                         (db.uid(), PRODUCT)).fetchall()
-    return [{"id": r["id"], "amount": r["amount"], "method": METHODS.get(r["method"], r["method"]), "createdAt": r["created_at"]}
+    return [{"id": r["id"], "amount": r["amount"], "method": "무료" if r["method"] == FREE else METHODS.get(r["method"], r["method"]), "createdAt": r["created_at"]}
             for r in rows]
 
 
 def _offer(conn):
+    from .main import load_user
     bought = _purchases(conn)
-    return {"price": PRICE, "firstPrice": FIRST_PRICE, "firstPurchase": not bought,
-            "amount": PRICE if bought else FIRST_PRICE, "purchases": bought[::-1], "demo": True}
+    born = load_user(conn).get("birthYear")
+    young = bool(born) and db.today().year - born < YOUNG_AGE
+    first = YOUNG_FIRST_PRICE if young else FIRST_PRICE
+    return {"price": PRICE, "firstPrice": first, "firstPurchase": not bought,
+            "firstLabel": f"{YOUNG_AGE}세 미만 첫 1회 무료" if young else "첫 구매 할인",
+            "amount": PRICE if bought else first, "purchases": bought[::-1], "demo": True}
 
 
 @router.get("/api/consult/offer")
@@ -113,7 +121,7 @@ class Checkout(BaseModel):
 @router.post("/api/consult/checkout", status_code=201)
 def checkout(body: Checkout):
     """시연용 결제. 화면이 보여 준 금액과 서버가 계산한 금액이 다르면(그사이 다른 기기에서 샀으면) 다시 확인하게 한다."""
-    if body.method not in METHODS:
+    if body.method not in METHODS and not (body.method == FREE and body.amount == 0):
         raise HTTPException(422, "결제 수단을 골라 주십시오.")
     survey = body.survey or Survey()
     _check_survey(survey)
@@ -122,10 +130,11 @@ def checkout(body: Checkout):
         amount = _offer(conn)["amount"]
         if body.amount != amount:
             raise HTTPException(409, f"결제 금액이 {amount:,}원으로 바뀌었습니다. 다시 확인해 주십시오.")
+        method = FREE if amount == 0 else body.method
         now = datetime.now(KST).isoformat(timespec="seconds")
         cur = conn.execute("INSERT INTO purchases (user_id, product, amount, method, created_at, survey) VALUES (?, ?, ?, ?, ?, ?)",
-                           (db.uid(), PRODUCT, amount, body.method, now, survey.model_dump_json()))
-        return {"purchaseId": cur.lastrowid, "amount": amount, "method": METHODS[body.method], "createdAt": now, "demo": True}
+                           (db.uid(), PRODUCT, amount, method, now, survey.model_dump_json()))
+        return {"purchaseId": cur.lastrowid, "amount": amount, "method": "무료" if method == FREE else METHODS[method], "createdAt": now, "demo": True}
 
 
 def _require_checkup(conn):

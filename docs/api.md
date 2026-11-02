@@ -208,7 +208,7 @@
 
 | 메서드 | 경로 | 설명 |
 |---|---|---|
-| GET | `/api/consult/offer` | `{price: 2900, firstPrice: 1900, firstPurchase, amount, purchases[]}`. 첫 구매만 1,900원 |
+| GET | `/api/consult/offer` | `{price: 2900, firstPrice, firstLabel, firstPurchase, amount, purchases[]}`. 첫 구매만 1,900원, 30세 미만(올해−출생연도)은 첫 1회 무료(0원, 결제 때 `method: "free"`) |
 | POST | `/api/consult/checkout` | `{method: card\|toss\|kakao, amount, survey?}`. 서버가 계산한 금액과 다르면 409, 확정된 검진이 없으면 400, 설문 선택지가 목록에 없으면 422 |
 
 `survey`(선택): `products[{name, perDay}]`(12개까지), `timing`, `otc[]`·`otcNote`, `symptoms[]`, `pregnancy`(none·pregnant·breastfeeding·planning), `procedure`(none·surgery·endoscopy·dental·other)·`procedureNote`, `caffeine`(0~20), `shiftWork`, `question`(300자). 선택지 목록은 `GET /api/consult/offer`의 `survey`에 있습니다. 답은 판단에 쓰지 않고 PDF의 '내가 적은 생활 정보와 설문'과 상담 질문으로만 들어갑니다.

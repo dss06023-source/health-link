@@ -8,10 +8,10 @@ import './consult.css'
 // 약국·병원 상담 준비 자료(유료 PDF). 결제는 시연용이라 실제로 돈이 나가지 않는다(서버 consult.py).
 const BASE = import.meta.env.VITE_API_BASE ?? ''
 const METHODS: [string, string][] = [['card', '신용·체크카드'], ['toss', '토스페이'], ['kakao', '카카오페이']]
-const won = (n: number) => `${n.toLocaleString('ko-KR')}원`
+const won = (n: number) => (n === 0 ? '무료' : `${n.toLocaleString('ko-KR')}원`)
 
 interface Offer {
-  price: number; firstPrice: number; firstPurchase: boolean; amount: number
+  price: number; firstPrice: number; firstLabel: string; firstPurchase: boolean; amount: number
   purchases: { id: number; amount: number; method: string; createdAt: string }[]
   survey: SurveyChoices
 }
@@ -43,7 +43,7 @@ export default function ConsultPdf() {
   const pay = async () => {
     setBusy(true); setError(null)
     try {
-      const r = await send<{ purchaseId: number }>('/api/consult/checkout', { method: 'POST', body: JSON.stringify({ method, amount: offer.amount, survey: { ...survey, products: survey.products.filter((x) => x.name.trim()) } }) })
+      const r = await send<{ purchaseId: number }>('/api/consult/checkout', { method: 'POST', body: JSON.stringify({ method: free ? 'free' : method, amount: offer.amount, survey: { ...survey, products: survey.products.filter((x) => x.name.trim()) } }) })
       setPaid(r.purchaseId)
       setSurveying(false); setSurvey(EMPTY_SURVEY)
       load()
@@ -53,6 +53,7 @@ export default function ConsultPdf() {
     }
     setBusy(false)
   }
+  const free = offer.amount === 0
   const close = () => { setPaying(false); setPaid(null); setError(null) }
 
   return (
@@ -63,12 +64,12 @@ export default function ConsultPdf() {
         <ConsultSurvey value={survey} choices={offer.survey} female={female} onChange={setSurvey} />
         <div className="actions">
           <button className="btn flat" onClick={() => setSurveying(false)}>취소</button>
-          <button className="btn" onClick={() => setPaying(true)}>다음: 결제</button>
+          <button className="btn" onClick={() => setPaying(true)}>{free ? '다음: 무료로 받기' : '다음: 결제'}</button>
         </div>
       </>}
       {!surveying && <div className="consult-price">
         {offer.firstPurchase
-          ? <><s className="muted">{won(offer.price)}</s><b>{won(offer.firstPrice)}</b><span className="badge consult-badge">첫 구매 할인</span></>
+          ? <><s className="muted">{won(offer.price)}</s><b>{won(offer.firstPrice)}</b><span className="badge consult-badge">{offer.firstLabel}</span></>
           : <b>{won(offer.price)}</b>}
         <button className="btn" onClick={() => setSurveying(true)}>설문하고 구매하기</button>
       </div>}
@@ -86,23 +87,23 @@ export default function ConsultPdf() {
       <p className="small muted">내려받을 때마다 지금 입력된 정보로 새로 만듭니다.</p>
 
       {paying && (paid
-        ? <Sheet title="결제를 마쳤습니다" onClose={close}
+        ? <Sheet title={free || offer.purchases[0]?.amount === 0 ? '신청을 마쳤습니다' : '결제를 마쳤습니다'} onClose={close}
             actions={<><button className="btn flat" onClick={close}>닫기</button>
               <a className="btn flat strong" href={pdfUrl(paid)} download={FILE} onClick={close}>PDF 내려받기</a></>}>
             <p className="small muted">상담 준비 자료는 이 화면의 '구매한 자료'에서 언제든 다시 받을 수 있습니다.</p>
           </Sheet>
-        : <Sheet title="결제" onClose={close}
+        : <Sheet title={free ? '무료로 받기' : '결제'} onClose={close}
             actions={<><button className="btn flat" onClick={close}>취소</button>
-              <button className="btn flat strong" disabled={busy} onClick={pay}>{busy ? '결제 중' : `${won(offer.amount)} 결제하기`}</button></>}>
+              <button className="btn flat strong" disabled={busy} onClick={pay}>{busy ? '처리 중' : free ? '무료로 받기' : `${won(offer.amount)} 결제하기`}</button></>}>
             <dl className="consult-order">
               <dt>상품</dt><dd>약국·병원 상담 준비 자료(PDF) 1건</dd>
-              <dt>금액</dt><dd>{offer.firstPurchase ? <><s className="muted">{won(offer.price)}</s> <b>{won(offer.amount)}</b> (첫 구매 할인)</> : <b>{won(offer.amount)}</b>}</dd>
+              <dt>금액</dt><dd>{offer.firstPurchase ? <><s className="muted">{won(offer.price)}</s> <b>{won(offer.amount)}</b> ({offer.firstLabel})</> : <b>{won(offer.amount)}</b>}</dd>
             </dl>
-            <div className="chips" role="group" aria-label="결제 수단">
+            {!free && <div className="chips" role="group" aria-label="결제 수단">
               {METHODS.map(([v, label]) => <button key={v} type="button" className="chip" aria-pressed={method === v} onClick={() => setMethod(v)}>{label}</button>)}
-            </div>
+            </div>}
             {error && <p className="small" role="alert" style={{ color: 'var(--danger)' }}>{error}</p>}
-            <p className="small muted">시연용 결제입니다. 실제로 돈이 나가지 않습니다.</p>
+            <p className="small muted">{free ? `20대 국가건강검진을 응원하는 뜻으로 첫 1회는 결제 없이 받습니다. 다음부터는 ${won(offer.price)}입니다.` : '시연용 결제입니다. 실제로 돈이 나가지 않습니다.'}</p>
           </Sheet>)}
     </section>
   )
