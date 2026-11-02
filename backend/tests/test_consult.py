@@ -52,3 +52,22 @@ def test_purchase_needs_checkup_and_belongs_to_buyer(app):
         b.post("/api/auth/signup", json={"username": "bob_2", "password": "password2"})
         assert b.get(f"/api/consult/{pid}/pdf").status_code == 404
         assert b.post("/api/consult/checkout", json={"method": "card", "amount": 1900}).status_code == 400
+
+
+def test_survey_answers_go_into_pdf_as_questions(app):
+    survey = {"products": [{"name": "OO 오메가3 1000", "perDay": "2캡슐"}, {"name": " ", "perDay": ""}],
+              "timing": "약은 아침 식후, 영양제는 저녁", "otc": ["진통제"], "symptoms": ["속쓰림"],
+              "procedure": "endoscopy", "procedureNote": "11월 말", "caffeine": 4, "shiftWork": True,
+              "question": "오메가3를 저녁으로 옮겨도 되나요?"}
+    with TestClient(app) as c:
+        c.post("/api/auth/guest")
+        offer = c.get("/api/consult/offer").json()
+        assert "진통제" in offer["survey"]["otc"] and "임신 중" in offer["survey"]["pregnancy"].values()
+        bad = {**survey, "symptoms": ["두통이 심함"]}
+        assert c.post("/api/consult/checkout", json={"method": "card", "amount": 1900, "survey": bad}).status_code == 422
+        pid = c.post("/api/consult/checkout", json={"method": "card", "amount": 1900, "survey": survey}).json()["purchaseId"]
+        with pdfplumber.open(io.BytesIO(c.get(f"/api/consult/{pid}/pdf").content)) as pdf:
+            text = "".join(p.extract_text() for p in pdf.pages).replace("\n", "")
+        assert "OO 오메가3 1000" in text and "하루 2캡슐" in text and "약은 아침 식후" in text
+        assert "가끔 먹는 진통제를" in text and "속쓰림이" in text and "내시경(11월 말)" in text
+        assert "하루 4잔" in text and "교대근무" in text and "오메가3를 저녁으로 옮겨도 되나요?" in text

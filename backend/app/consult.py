@@ -11,12 +11,13 @@ import io
 import re
 from datetime import datetime
 from pathlib import Path
+from typing import List, Optional
 from urllib.parse import quote
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from . import db, logic, options
 from . import reference as ref
@@ -31,6 +32,40 @@ FONT_DIR = Path(__file__).parent / "assets" / "fonts"
 STATUS_LABEL = {"normal": "정상", "caution": "경계", "danger": "질환의심"}
 LEVEL_LABEL = {"avoid": "피함", "caution": "주의", "info": "참고"}
 SUPPLEMENT_SOURCE = "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」"
+
+# 설문 보기. 답은 판단에 쓰지 않고 PDF에 '내가 적은 내용'으로 싣고 상담 질문을 만드는 데만 쓴다.
+OTC = ["진통제", "감기약", "소화제·위장약", "변비약", "수면유도제", "알레르기약", "한약", "기타"]
+SYMPTOMS = ["속쓰림", "메스꺼움", "어지러움", "두근거림", "멍이 잘 듦", "변비·설사", "두드러기·가려움", "잠이 잘 안 옴", "피로감"]
+PREGNANCY = {"none": "해당 없음", "pregnant": "임신 중", "breastfeeding": "수유 중", "planning": "임신 계획 중"}
+PROCEDURE = {"none": "없음", "surgery": "수술", "endoscopy": "내시경", "dental": "치과 시술(발치·임플란트)", "other": "기타 시술"}
+SMOKING = {"never": "안 피움", "past": "과거에 피움", "current": "현재 피움"}
+DIET = {"skipBreakfast": "아침 거름", "salty": "짠 음식", "vegetarian": "채식", "noDairy": "유제품 안 먹음", "eatOut": "외식 잦음"}
+
+
+class Product(BaseModel):
+    name: str = Field(..., max_length=60)
+    perDay: str = Field("", max_length=30)
+
+
+class Survey(BaseModel):
+    products: List[Product] = Field(default_factory=list, max_length=12)
+    timing: str = Field("", max_length=200)
+    otc: List[str] = Field(default_factory=list)
+    otcNote: str = Field("", max_length=100)
+    symptoms: List[str] = Field(default_factory=list)
+    pregnancy: str = "none"
+    procedure: str = "none"
+    procedureNote: str = Field("", max_length=100)
+    caffeine: int = Field(0, ge=0, le=20)
+    shiftWork: bool = False
+    question: str = Field("", max_length=300)
+
+
+def _check_survey(s):
+    bad = [x for x in s.otc if x not in OTC] + [x for x in s.symptoms if x not in SYMPTOMS]
+    if bad or s.pregnancy not in PREGNANCY or s.procedure not in PROCEDURE:
+        raise HTTPException(422, "설문 답 가운데 고를 수 없는 보기가 있습니다.")
+    s.products = [x for x in s.products if x.name.strip()]
 
 
 # ---------- 가격·구매 ----------
@@ -51,12 +86,13 @@ def _offer(conn):
 @router.get("/api/consult/offer")
 def offer():
     with db.connect() as conn:
-        return _offer(conn)
+        return {**_offer(conn), "survey": {"otc": OTC, "symptoms": SYMPTOMS, "pregnancy": PREGNANCY, "procedure": PROCEDURE}}
 
 
 class Checkout(BaseModel):
     method: str
     amount: int
+    survey: Optional[Survey] = None
 
 
 @router.post("/api/consult/checkout", status_code=201)
@@ -64,14 +100,16 @@ def checkout(body: Checkout):
     """시연용 결제. 화면이 보여 준 금액과 서버가 계산한 금액이 다르면(그사이 다른 기기에서 샀으면) 다시 확인하게 한다."""
     if body.method not in METHODS:
         raise HTTPException(422, "결제 수단을 골라 주십시오.")
+    survey = body.survey or Survey()
+    _check_survey(survey)
     with db.connect() as conn:
         _require_checkup(conn)
         amount = _offer(conn)["amount"]
         if body.amount != amount:
             raise HTTPException(409, f"결제 금액이 {amount:,}원으로 바뀌었습니다. 다시 확인해 주십시오.")
         now = datetime.now(KST).isoformat(timespec="seconds")
-        cur = conn.execute("INSERT INTO purchases (user_id, product, amount, method, created_at) VALUES (?, ?, ?, ?, ?)",
-                           (db.uid(), PRODUCT, amount, body.method, now))
+        cur = conn.execute("INSERT INTO purchases (user_id, product, amount, method, created_at, survey) VALUES (?, ?, ?, ?, ?, ?)",
+                           (db.uid(), PRODUCT, amount, body.method, now, survey.model_dump_json()))
         return {"purchaseId": cur.lastrowid, "amount": amount, "method": METHODS[body.method], "createdAt": now, "demo": True}
 
 
@@ -86,11 +124,12 @@ def _require_checkup(conn):
 @router.get("/api/consult/{purchase_id}/pdf")
 def download(purchase_id: int):
     with db.connect() as conn:
-        row = conn.execute("SELECT id FROM purchases WHERE id = ? AND user_id = ? AND product = ?",
+        row = conn.execute("SELECT id, survey FROM purchases WHERE id = ? AND user_id = ? AND product = ?",
                            (purchase_id, db.uid(), PRODUCT)).fetchone()
         if not row:
             raise HTTPException(404, "구매 기록을 찾을 수 없습니다.")
-        data = gather(conn)
+        survey = Survey.model_validate_json(row["survey"]) if row["survey"] else Survey()
+        data = gather(conn, survey)
     pdf = build_pdf(data)
     name = f"상담준비자료_{data['madeOn'].replace('-', '')}.pdf"
     return Response(pdf, media_type="application/pdf",
@@ -104,7 +143,7 @@ def _strip(message):
     return logic._plain(message)
 
 
-def gather(conn):
+def gather(conn, survey=None):
     from .main import active_supplements, extra_supplements, load_user
     user = load_user(conn)
     checkup = _require_checkup(conn)
@@ -167,13 +206,54 @@ def gather(conn):
             questions.append(f"{r['with']}인 상태에서 {r['supplement']}{logic._josa(r['supplement'], '을', '를')} 먹어도 되는지")
         elif r["kind"] in ("영양제끼리", "성분 중복"):
             questions.append(f"{r['supplement']}{logic._josa(r['supplement'], '을', '를')} 함께 먹어도 되는지, 하나를 줄여야 하는지")
+    s = survey or Survey()
+    for x in s.products:
+        questions.append(f"지금 먹는 제품 '{x.name}'{f'(하루 {x.perDay})' if x.perDay else ''}의 원료와 양이 지금 약과 함께 먹기에 괜찮은지")
+    for x in s.otc:
+        name = s.otcNote if x == "기타" and s.otcNote else x
+        questions.append(f"가끔 먹는 {name}{logic._josa(name, '을', '를')} 지금 약·영양제와 함께 먹어도 되는지")
+    if s.symptoms:
+        questions.append(f"최근 느끼는 {', '.join(s.symptoms)}{logic._josa(s.symptoms[-1], '이', '가')} 지금 먹는 약·영양제와 관계가 있는지")
+    if s.pregnancy != "none":
+        questions.append(f"{PREGNANCY[s.pregnancy]}인데 지금 약·영양제를 계속 먹어도 되는지")
+    if s.procedure != "none":
+        what = PROCEDURE[s.procedure] + (f"({s.procedureNote})" if s.procedureNote else "")
+        questions.append(f"{what} 예정이 있는데 그 전에 멈춰야 할 약·영양제가 있는지, 언제부터 멈춰야 하는지")
+    if s.caffeine >= 3:
+        questions.append(f"커피·에너지음료를 하루 {s.caffeine}잔 마시는데 약·영양제를 먹는 시간과 띄워야 하는지")
+    if s.shiftWork:
+        questions.append("교대근무라 식사 시간이 일정하지 않은데 약·영양제 먹는 시간을 어떻게 맞추면 좋은지")
     questions = list(dict.fromkeys(questions))
     questions.append("지금 먹는 약·영양제 가운데 줄이거나 끊어야 할 것이 있는지")
+    if s.question.strip():
+        questions.append(f"(직접 적은 질문) {s.question.strip()}")
     if any(d["status"] == ref.DANGER for d in described.values()):
         questions.append("'질환의심'으로 나온 검진 항목을 병원에서 다시 확인해야 하는지")
 
+    life = user.get("lifestyle", {})
+    lifestyle = [
+        ("흡연", SMOKING.get(life.get("smoking"), "-")),
+        ("음주", f"주 {life.get('drinkingPerWeek', 0)}회, 한 번에 {life.get('drinksPerSession', 0)}잔" if life.get("drinkingPerWeek") else "안 마심"),
+        ("운동", f"주 {life.get('exercisePerWeek', 0)}회"),
+        ("수면", f"하루 {life.get('sleepHours'):g}시간" if life.get("sleepHours") is not None else "-"),
+        ("식사", ", ".join(DIET.get(x, x) for x in life.get("diet", [])) or "특이 사항 없음"),
+        ("햇빛", "낮 시간 대부분 실내" if life.get("lowSunlight") else "실내 생활이 길지 않음"),
+        ("커피·에너지음료", f"하루 {s.caffeine}잔"),
+        ("교대근무", "함" if s.shiftWork else "안 함"),
+    ]
+    answers = [
+        ("실제로 먹는 제품", "; ".join(f"{x.name}{f' (하루 {x.perDay})' if x.perDay else ''}" for x in s.products) or "적지 않음"),
+        ("먹는 시간", s.timing or "적지 않음"),
+        ("가끔 먹는 약", ", ".join((s.otcNote if x == "기타" and s.otcNote else x) for x in s.otc) or "없음"),
+        ("최근 불편한 점", ", ".join(s.symptoms) or "없음"),
+        ("예정된 수술·시술", "없음" if s.procedure == "none" else PROCEDURE[s.procedure] + (f" ({s.procedureNote})" if s.procedureNote else "")),
+    ]
+    if gender == "F" or s.pregnancy != "none":
+        answers.append(("임신·수유", PREGNANCY[s.pregnancy]))
+
     born = user.get("birthYear")
     return {
+        "lifestyle": lifestyle, "answers": answers,
         "name": user.get("name", ""), "age": (db.today().year - born) if born else None,
         "gender": "남" if gender == "M" else "여", "madeOn": db.today().isoformat(), "checkupDate": checkup["date"],
         "medications": medications, "conditions": [labels.get(c, c) for c in user.get("conditions", [])],
@@ -237,7 +317,10 @@ def build_pdf(d):
         [P("알레르기", cell), P(", ".join(d["allergies"]) or "없음", cell)],
     ], [35, 135]))
 
-    story.append(P("2. 기준 범위를 벗어난 검진 항목", head))
+    story.append(P("2. 내가 적은 생활 정보와 설문", head))
+    story.append(table(["구분", "내용"], [[P(k, cell), P(v, cell)] for k, v in d["answers"] + d["lifestyle"]], [35, 135]))
+
+    story.append(P("3. 기준 범위를 벗어난 검진 항목", head))
     if d["items"]:
         story.append(table(["항목", "수치", "기준 범위", "결과지 판정"], [
             [P(i["name"], cell), P(f"{i['value']:g} {i['unit']}", cell), P(i["normalRange"], cell),
@@ -246,7 +329,7 @@ def build_pdf(d):
     else:
         story.append(P("기준 범위를 벗어난 항목이 없습니다.", small))
 
-    story.append(P("3. 먹고 있거나 추천받은 영양제", head))
+    story.append(P("4. 먹고 있거나 추천받은 영양제", head))
     story.append(table(["영양제", "상태", "원료·함량(1회분)", "고시 1일 섭취량"], [
         [B(s["name"]), P(s["state"], cell), P(s["ingredients"], cell), P(s["dailyIntake"], cell)] for s in d["supplements"]
     ], [40, 22, 60, 48]) if d["supplements"] else P("없습니다.", small))
@@ -256,7 +339,7 @@ def build_pdf(d):
         story.append(P("고시에 적힌 섭취 시 주의사항", cell))
         story += [Paragraph(n, small) for n in notes]
 
-    story.append(P("4. 원문 대조표", head))
+    story.append(P("5. 원문 대조표", head))
     story.append(P("영양제와 약·검진 수치·질환·다른 영양제가 만나는 곳에 공공 자료가 남긴 문구입니다. 표시는 원문 규칙의 강도(피함·주의·참고)입니다.", small))
     story.append(Spacer(1, 2 * mm))
     if d["rows"]:
@@ -268,7 +351,7 @@ def build_pdf(d):
     else:
         story.append(P("입력하신 약·질환·검진 수치와 겹치는 원문 규칙이 없습니다.", small))
 
-    story.append(KeepTogether([P("5. 상담 때 여쭤볼 질문", head),
+    story.append(KeepTogether([P("6. 상담 때 여쭤볼 질문", head),
                                *[P(f"□ {q}", base) for q in d["questions"]]]))
     story += [Spacer(1, 6 * mm),
               P(f"출처: {SUPPLEMENT_SOURCE}(2026-06-11 개정), 국가건강검진 판정 기준(「건강검진 실시기준」 별표 4), "

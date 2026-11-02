@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { USE_API } from '../api'
+import { useStore } from '../store'
+import ConsultSurvey, { EMPTY_SURVEY, type Survey, type SurveyChoices } from './ConsultSurvey'
 import { Sheet } from '../ui'
 import './consult.css'
 
@@ -11,6 +13,7 @@ const won = (n: number) => `${n.toLocaleString('ko-KR')}원`
 interface Offer {
   price: number; firstPrice: number; firstPurchase: boolean; amount: number
   purchases: { id: number; amount: number; method: string; createdAt: string }[]
+  survey: SurveyChoices
 }
 
 async function send<T>(path: string, init?: RequestInit): Promise<T> {
@@ -24,6 +27,9 @@ const FILE = '상담준비자료.pdf'
 
 export default function ConsultPdf() {
   const [offer, setOffer] = useState<Offer | null>(null)
+  const female = useStore().profile?.sex === 'F'
+  const [surveying, setSurveying] = useState(false)
+  const [survey, setSurvey] = useState<Survey>(EMPTY_SURVEY)
   const [paying, setPaying] = useState(false)
   const [method, setMethod] = useState('card')
   const [busy, setBusy] = useState(false)
@@ -36,8 +42,9 @@ export default function ConsultPdf() {
   const pay = async () => {
     setBusy(true); setError(null)
     try {
-      const r = await send<{ purchaseId: number }>('/api/consult/checkout', { method: 'POST', body: JSON.stringify({ method, amount: offer.amount }) })
+      const r = await send<{ purchaseId: number }>('/api/consult/checkout', { method: 'POST', body: JSON.stringify({ method, amount: offer.amount, survey: { ...survey, products: survey.products.filter((x) => x.name.trim()) } }) })
       setPaid(r.purchaseId)
+      setSurveying(false); setSurvey(EMPTY_SURVEY)
       load()
     } catch (e) {
       setError(e instanceof Error ? e.message : '결제하지 못했습니다.')
@@ -51,12 +58,19 @@ export default function ConsultPdf() {
     <section className="sec">
       <div className="sec-head"><h2>약국·병원 상담 준비 자료</h2><span className="badge consult-badge">PDF</span></div>
       <p className="small muted">드시는 약·영양제·검진 수치와 공공 자료(식약처 고시 등) 원문의 주의 문구를 한데 모으고, 상담 때 여쭤볼 질문을 붙입니다. 판단은 상담하시는 약사·의사가 합니다.</p>
-      <div className="consult-price">
+      {surveying && <>
+        <ConsultSurvey value={survey} choices={offer.survey} female={female} onChange={setSurvey} />
+        <div className="actions">
+          <button className="btn flat" onClick={() => setSurveying(false)}>취소</button>
+          <button className="btn" onClick={() => setPaying(true)}>다음: 결제</button>
+        </div>
+      </>}
+      {!surveying && <div className="consult-price">
         {offer.firstPurchase
           ? <><s className="muted">{won(offer.price)}</s><b>{won(offer.firstPrice)}</b><span className="badge consult-badge">첫 구매 할인</span></>
           : <b>{won(offer.price)}</b>}
-        <button className="btn" onClick={() => setPaying(true)}>구매하기</button>
-      </div>
+        <button className="btn" onClick={() => setSurveying(true)}>설문하고 구매하기</button>
+      </div>}
       {offer.purchases.length > 0 && (
         <><p className="small"><b>구매한 자료</b></p>
         <ul className="list consult-bought">

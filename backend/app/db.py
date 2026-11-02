@@ -55,7 +55,8 @@ CREATE TABLE IF NOT EXISTS purchases (
     product TEXT NOT NULL,
     amount INTEGER NOT NULL,
     method TEXT NOT NULL,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    survey TEXT
 );
 CREATE TABLE IF NOT EXISTS measurements (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
