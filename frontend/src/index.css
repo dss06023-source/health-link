@@ -349,7 +349,7 @@ button.li:hover { background: var(--hover); }
   padding: 8px; margin: 0 -8px; width: calc(100% + 16px); border: 0; border-radius: 14px; background: none; text-align: left; cursor: pointer;
 }
 .take:hover { background: var(--hover); }
-.take small { display: block; font-size: 13.5px; color: var(--muted); }
+.take small { display: block; font-size: 8.5px; color: var(--muted); }
 .pouch .state { margin-top: auto; padding-top: 8px; font-size: 14.5px; color: var(--muted); }
 .pouch .state.done { color: var(--accent); font-weight: 700; }
 .pouch .state.missed { color: var(--caution); font-weight: 700; }
