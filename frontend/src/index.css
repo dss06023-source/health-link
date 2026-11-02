@@ -182,6 +182,7 @@ button.li:hover { background: var(--hover); }
 .because .ev.danger b, .because .ev.danger i { color: var(--danger); }
 .li-end { flex: none; display: inline-flex; align-items: center; gap: 2px; font-size: 14.5px; color: var(--muted); }
 .li-end.strong { color: var(--accent); font-weight: 700; }
+.li-end.danger { color: var(--danger); font-weight: 700; }
 .li-val { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .num-line { display: inline-flex; align-items: baseline; white-space: nowrap; }
 
