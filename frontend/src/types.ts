@@ -116,6 +116,19 @@ export interface Supplement {
   timingReason?: string
   altTimings?: Timing[] // 권장 시간대가 붐빌 때 옮겨도 되는 시간대. 여기로 바꿀 때는 다시 묻지 않는다.
   slotNote?: string | null // 붐벼서 altTimings로 나눠 둔 경우의 안내
+  pack?: Pack | null // '영양제 복용 시작'으로 등록한 한 통
+}
+
+// 영양제 복용 시작: 한 통 알 수·1회 알 수·시작일. 나머지는 계산 값(서버가 주거나 시연 모드에서 계산).
+export interface Pack {
+  count: number
+  perDose: number
+  startedAt: string
+  perDay?: number
+  remaining?: number
+  runOutDate?: string
+  daysLeft?: number
+  remindNow?: boolean
 }
 
 // 날짜(YYYY-MM-DD) → 영양제 id → 복용 여부

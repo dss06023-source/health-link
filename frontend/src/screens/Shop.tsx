@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Route } from '../App'
 import { avoidReasons, direction, interpret, purchaseChecks, recommend, STATUS_LABEL } from '../data/rules'
 import { DISCLOSURE, shopLink } from '../data/shopLinks'
@@ -7,6 +7,8 @@ import PRODUCT_MIXES from '../data/product_mixes.json'
 import { latestCheckup, useStore } from '../store'
 import type { InterpretedItem, Recommendation, Sex, Supplement, Warning } from '../types'
 import { CautionList, Sheet } from '../ui'
+import { md, packStatus, REMIND_DAYS } from '../data/pack'
+import PackSheet from './PackSheet'
 import ConsultPdf from './ConsultPdf'
 
 // 제품을 사기 전에 원재료 표시에서 확인할 성분. 맞춤 추천 화면과 구매 탭이 같이 쓴다.
@@ -95,6 +97,24 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
     || checks.some((c) => c.level === 'danger' && c.title.includes(m.name))
   const [picked, setPicked] = useState<{ name: string } | null>(null)
   const link = picked && shopLink(picked.name)
+  // 쿠팡에 다녀오면(이 탭으로 돌아오면) 샀는지 한 번 묻는다. 산 영양제는 '영양제 복용 시작'으로 다 떨어지는 날을 잡는다.
+  const [away, setAway] = useState<string | null>(null)
+  const [asked, setAsked] = useState<string | null>(null)
+  const [packing, setPacking] = useState<Supplement | null>(null)
+  useEffect(() => {
+    if (!away) return
+    const back = () => { if (document.visibilityState === 'visible') { setAsked(away); setAway(null) } }
+    addEventListener('focus', back); document.addEventListener('visibilitychange', back)
+    return () => { removeEventListener('focus', back); document.removeEventListener('visibilitychange', back) }
+  }, [away])
+  const mine = (name: string) => s.supplements.find((x) => x.name === name && !x.paused)
+  const runOut = (name: string) => { const x = mine(name); return x ? packStatus(x, s.intake) : null }
+  const RunOut = ({ name }: { name: string }) => {
+    const pk = runOut(name)
+    return pk?.remindNow ? <small className="run-out">{pk.daysLeft <= 0 ? '복용 중인 영양제가 다 소진되었습니다' : `복용 중인 영양제가 거의 소진되었습니다 · ${md(pk.runOutDate)}에 다 떨어집니다`}</small> : null
+  }
+  const takingSorted = [...taking].sort((a, b) => Number(!!runOut(b.name)?.remindNow) - Number(!!runOut(a.name)?.remindNow))
+  const askedRec = asked ? recs.find((r) => r.name === asked) : undefined
 
   return (
     <>
@@ -110,7 +130,7 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
                 <li key={r.id}><button type="button" className="li" onClick={() => setPicked(r)}>
                   <span className="li-main">
                     <Because items={evidence(r)} sex={p.sex} />
-                    <b>{r.name}</b><small>{r.ingredient} {r.dose}</small>
+                    <b>{r.name}</b><small>{r.ingredient} {r.dose}</small><RunOut name={r.name} />
                   </span>
                   <span className="li-end strong">쿠팡에서 보기</span>
                 </button></li>
@@ -124,14 +144,14 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
         <p className="small muted">복용 관리에 넣은 영양제입니다. 다 떨어져 가면 같은 성분으로 다시 고르십시오.</p>
         {taking.length
           ? <ul className="list">
-              {taking.map((m) => conflict(m)
+              {takingSorted.map((m) => conflict(m)
                 ? <li key={m.id}><div className="li">
                     <span className="li-main"><b>{m.name}</b><small>{m.ingredient} {m.dose}</small>
                       <small className="muted">입력하신 약·질환·검진 수치와 맞지 않는 조합이라 링크를 띄우지 않습니다. 계속 드실지 의사·약사와 상의하십시오.</small></span>
                     <span className="li-end danger">상의 필요</span>
                   </div></li>
                 : <li key={m.id}><button type="button" className="li" onClick={() => setPicked(m)}>
-                    <span className="li-main"><b>{m.name}</b><small>{m.ingredient} {m.dose}</small></span>
+                    <span className="li-main"><b>{m.name}</b><small>{m.ingredient} {m.dose}</small><RunOut name={m.name} /></span>
                     <span className="li-end strong">쿠팡에서 보기</span>
                   </button></li>)}
             </ul>
@@ -143,11 +163,23 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
       {picked && link && (
         <Sheet title={`${picked.name} 사기 전에 확인하십시오`} onClose={() => setPicked(null)}
           actions={<><button className="btn flat" onClick={() => setPicked(null)}>닫기</button>
-            <a className="btn flat strong" href={link.url} target="_blank" rel="noreferrer sponsored" onClick={() => setPicked(null)}>확인했습니다, 쿠팡으로 이동</a></>}>
+            <a className="btn flat strong" href={link.url} target="_blank" rel="noreferrer sponsored" onClick={() => { setAway(picked.name); setPicked(null) }}>확인했습니다, 쿠팡으로 이동</a></>}>
           <ChecksFor name={picked.name} checks={checks} />
           {link.partner && <p className="small muted">{DISCLOSURE}</p>}
         </Sheet>
       )}
+      {asked && (
+        <Sheet title={`${asked} 구매하셨습니까?`} onClose={() => setAsked(null)}
+          actions={<><button className="btn flat" onClick={() => setAsked(null)}>아직입니다</button>
+            {mine(asked)
+              ? <button className="btn flat strong" onClick={() => { setPacking(mine(asked)!); setAsked(null) }}>영양제 복용 시작</button>
+              : askedRec && <button className="btn flat strong" onClick={() => { s.addSupplements([askedRec]); setAsked(null); go('intake') }}>복용 관리에 넣기</button>}</>}>
+          {mine(asked)
+            ? <p className="small muted">받아서 새 통을 뜯는 날 '영양제 복용 시작'을 누르십시오. 지금 눌러도 되고, 나중에 복용 관리에서 눌러도 됩니다. 다 떨어지기 {REMIND_DAYS}일 전에 알려 드립니다.</p>
+            : <p className="small muted">복용 관리에 넣어 두고, 받아서 새 통을 뜯는 날 '영양제 복용 시작'을 누르십시오. 다 떨어지기 {REMIND_DAYS}일 전에 알려 드립니다.</p>}
+        </Sheet>
+      )}
+      {packing && <PackSheet x={packing} onClose={() => setPacking(null)} />}
     </>
   )
 }

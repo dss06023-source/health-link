@@ -6,6 +6,7 @@ import { latestCheckup, useStore, ymd } from '../store'
 import type { CancerScreening, CheckupCenter } from '../types'
 import { Disclaimer, Icon, Sheet } from '../ui'
 import CenterSheet from './CenterSheet'
+import { md, packStatus } from '../data/pack'
 
 const CANCER_STATUS: Record<CancerScreening['status'], string> = {
   target: '올해 대상', highRiskOnly: '해당 없음', maybe: '확인 필요', excluded: '대상 제외', notThisYear: '내년 대상',
@@ -49,6 +50,12 @@ export default function Home({ go }: { go: (r: Route) => void }) {
     { done: active.length > 0 && takenToday === active.length, title: `오늘 영양제 ${takenToday} / ${active.length}개 먹음`, sub: active.length ? '시간대별로 체크합니다.' : '추천을 받고 복용을 시작하면 여기에 표시됩니다.', act: { label: active.length ? '복용 체크' : '추천 받기', to: active.length ? 'intake' : 'recommend' } },
     { done: !!s.followup, title: s.followup ? '중간 점검 결과 도착' : '복용 6개월 뒤 중간 점검', sub: s.followup ? `${s.followup.date} · 변화 리포트에서 비교합니다.` : '약국 간이검사(혈당·지질)로 변화를 미리 확인합니다.', act: { label: '리포트', to: 'report' } },
   ]
+
+  // 다 떨어지기 7일 전부터 재구매 안내('영양제 복용 시작'으로 등록한 영양제만)
+  for (const x of active) {
+    const pk = packStatus(x, s.intake)
+    if (pk?.remindNow) todo.push({ done: false, title: pk.daysLeft <= 0 ? `${x.name} · 복용 중인 영양제가 다 소진되었습니다` : `${x.name} · 복용 중인 영양제가 거의 소진되었습니다`, sub: pk.daysLeft <= 0 ? '새로 주문하십시오.' : `${md(pk.runOutDate)}에 다 떨어집니다(${pk.daysLeft}일 남음). 미리 주문하십시오.`, act: { label: '구매', to: 'shop' } })
+  }
 
   const toCenters = () => document.getElementById('centers')?.scrollIntoView({ behavior: 'smooth' })
 

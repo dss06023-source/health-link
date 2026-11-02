@@ -165,3 +165,33 @@ def test_many_supplements_allow_four_per_slot(client):
     assert client.post("/api/supplements", json={"supplementId": "coq10"}).json()["timeSlots"] == ["morning"]
     # 아침이 4개가 되면 다음 것은 덜 붐비는 점심(1개)으로 간다.
     assert client.post("/api/supplements", json={"supplementId": "lutein"}).json()["timeSlots"] == ["lunch"]
+
+
+# ---------- 영양제 복용 시작(재구매 안내) ----------
+
+def test_pack_run_out_date_and_remind(client):
+    s = next(x for x in client.get("/api/supplements").json() if len(x["timeSlots"]) == 1)
+    assert s["pack"] is None
+    # 10월 28일에 60정 한 통, 1회 1정, 하루 1번 → 마지막 알 12월 26일, 다 떨어지는 날 12월 27일
+    p = client.put(f"/api/supplements/{s['id']}/pack", json={"count": 60, "perDose": 1}).json()["pack"]
+    assert p["startedAt"] == "2026-10-28" and p["perDay"] == 1
+    assert p["runOutDate"] == "2026-12-27" and p["remindDate"] == "2026-12-20" and p["remindNow"] is False
+    # 오늘 먹고 체크해도 다 떨어지는 날은 그대로다.
+    client.post("/api/intake-logs", json={"supplementId": s["id"], "timeSlot": s["timeSlots"][0]})
+    p = next(x for x in client.get("/api/supplements").json() if x["id"] == s["id"])["pack"]
+    assert p["remaining"] == 59 and p["runOutDate"] == "2026-12-27"
+
+
+def test_pack_uses_per_dose_and_slots_and_reminds_within_7_days(client):
+    s = next(x for x in client.get("/api/supplements").json() if len(x["timeSlots"]) == 1)
+    client.patch(f"/api/supplements/{s['id']}", json={"timeSlots": ["morning", "evening"]})
+    # 1회 2정 × 하루 2번 = 하루 4정. 30정이면 버림(30/4)=7일 → 11월 4일에 떨어지고 지금 안내한다.
+    p = client.put(f"/api/supplements/{s['id']}/pack", json={"count": 30, "perDose": 2}).json()["pack"]
+    assert p["perDay"] == 4 and p["runOutDate"] == "2026-11-04" and p["daysLeft"] == 7 and p["remindNow"] is True
+    assert client.delete(f"/api/supplements/{s['id']}/pack").json()["pack"] is None
+
+
+def test_pack_rejects_bad_input(client):
+    s = client.get("/api/supplements").json()[0]
+    assert client.put(f"/api/supplements/{s['id']}/pack", json={"count": 0}).status_code == 422
+    assert client.put(f"/api/supplements/{s['id']}/pack", json={"count": 60, "startedAt": "11/2"}).status_code == 422

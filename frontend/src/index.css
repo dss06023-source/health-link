@@ -476,3 +476,6 @@ button.li:hover { background: var(--hover); }
 .more-checks { margin-top: 12px; }
 .more-checks summary { cursor: pointer; font-size: 14.5px; color: var(--muted); padding: 8px 0; }
 .more-checks[open] summary { margin-bottom: 4px; }
+
+/* 재구매 안내: 다 떨어지기 7일 전부터 영양제 이름 아래에 */
+.run-out { display: block; color: var(--caution); font-weight: 700; }

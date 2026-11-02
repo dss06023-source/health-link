@@ -16,7 +16,7 @@ from urllib.parse import quote
 from starlette.concurrency import run_in_threadpool
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from . import checkup_schedule as sched
 from . import auth, consult, db, logic, measure, ocr, options, public_api, regions
@@ -99,7 +99,7 @@ def default_slots(conn, catalog_id):
     return [best] if counts[best] < counts[slots[0]] else slots
 
 
-def supplement_row(row):
+def supplement_row(row, conn=None):
     info = ref.SUPPLEMENTS[row["catalog_id"]]
     slots = json.loads(row["time_slots"])
     return {
@@ -118,13 +118,40 @@ def supplement_row(row):
         "startedAt": row["started_at"],
         "endedAt": row["ended_at"],
         "source": row["source"],
+        "pack": pack_status(conn, row, slots) if conn is not None else None,
     }
+
+
+REMIND_DAYS = 7  # 다 떨어지기 며칠 전부터 재구매를 안내할지
+
+
+def pack_status(conn, row, slots):
+    """'영양제 복용 시작'으로 등록한 한 통이 언제 다 떨어지는지.
+    하루 먹는 알 수 = 1회 알 수 × 하루 횟수(시간대 수). 남은 알 = 한 통 알 수 − 시작일부터 체크한 복용 × 1회 알 수.
+    다 떨어지는 날 = 오늘 + 버림((남은 알 + 오늘 이미 먹은 알) ÷ 하루 먹는 알 수). 빼먹은 날만큼 뒤로 밀린다."""
+    keys = row.keys() if hasattr(row, "keys") else []
+    if "pack_count" not in keys or not row["pack_count"]:
+        return None
+    count, per_dose, started = row["pack_count"], row["pack_per_dose"] or 1, row["pack_started"]
+    per_day = per_dose * max(len(slots), 1)
+    today = db.today()
+    logs = conn.execute("SELECT date FROM intake_logs WHERE supplement_id = ? AND user_id = ? AND taken = 1 AND date >= ?",
+                        (row["id"], db.uid(), started)).fetchall()
+    taken = len(logs) * per_dose
+    taken_today = sum(1 for r in logs if r["date"] == today.isoformat()) * per_dose
+    remaining = max(count - taken, 0)
+    start = max(date.fromisoformat(started), today)
+    run_out = start + timedelta(days=(remaining + (taken_today if start == today else 0)) // per_day)
+    days_left = (run_out - today).days
+    return {"count": count, "perDose": per_dose, "perDay": per_day, "startedAt": started, "remaining": remaining,
+            "runOutDate": run_out.isoformat(), "daysLeft": days_left,
+            "remindDate": (run_out - timedelta(days=REMIND_DAYS)).isoformat(), "remindNow": days_left <= REMIND_DAYS}
 
 
 def active_supplements(conn, include_paused=True):
     rows = conn.execute("SELECT * FROM supplements WHERE ended_at IS NULL AND user_id = ? ORDER BY id",
                         (db.uid(),)).fetchall()
-    items = [supplement_row(r) for r in rows]
+    items = [supplement_row(r, conn) for r in rows]
     return items if include_paused else [s for s in items if not s["paused"]]
 
 
@@ -662,7 +689,7 @@ def supplement_catalog():
 def list_supplements(includeEnded: bool = False):
     with db.connect() as conn:
         if includeEnded:
-            return [supplement_row(r) for r in conn.execute("SELECT * FROM supplements WHERE user_id = ? ORDER BY id",
+            return [supplement_row(r, conn) for r in conn.execute("SELECT * FROM supplements WHERE user_id = ? ORDER BY id",
                                                                  (db.uid(),)).fetchall()]
         return active_supplements(conn)
 
@@ -696,6 +723,13 @@ class SupplementCreate(BaseModel):
     source: str = "recommendation"
 
 
+class PackStart(BaseModel):
+    """영양제 복용 시작: 새로 뜯은 한 통."""
+    count: int = Field(ge=1, le=1000)
+    perDose: int = Field(1, ge=1, le=20)
+    startedAt: Optional[str] = None
+
+
 class SupplementUpdate(BaseModel):
     timeSlots: Optional[list[str]] = None
     paused: Optional[bool] = None
@@ -720,7 +754,7 @@ def add_supplement(body: SupplementCreate):
             "INSERT INTO supplements (user_id, catalog_id, time_slots, started_at, source) VALUES (?, ?, ?, ?, ?)",
             (db.uid(), body.supplementId, json.dumps(slots), db.today().isoformat(), body.source),
         )
-        return supplement_row(conn.execute("SELECT * FROM supplements WHERE id = ?", (cur.lastrowid,)).fetchone())
+        return supplement_row(conn.execute("SELECT * FROM supplements WHERE id = ?", (cur.lastrowid,)).fetchone(), conn)
 
 
 def get_supplement_row(conn, sid):
@@ -740,7 +774,30 @@ def update_supplement(sid: int, body: SupplementUpdate):
             conn.execute("UPDATE supplements SET time_slots = ? WHERE id = ?", (json.dumps(body.timeSlots), sid))
         if body.paused is not None:
             conn.execute("UPDATE supplements SET paused = ? WHERE id = ?", (int(body.paused), sid))
-        return supplement_row(get_supplement_row(conn, sid))
+        return supplement_row(get_supplement_row(conn, sid), conn)
+
+
+@app.put("/api/supplements/{sid}/pack")
+def start_pack(sid: int, body: PackStart):
+    """영양제 복용 시작: 새 통의 알 수·1회 알 수·시작일을 저장한다. 다시 누르면 새 통으로 바꾼다."""
+    started = body.startedAt or db.today().isoformat()
+    try:
+        date.fromisoformat(started)
+    except ValueError:
+        raise HTTPException(422, "시작일은 YYYY-MM-DD 형식이어야 합니다.")
+    with db.connect() as conn:
+        get_supplement_row(conn, sid)
+        conn.execute("UPDATE supplements SET pack_count = ?, pack_per_dose = ?, pack_started = ? WHERE id = ?",
+                     (body.count, body.perDose, started, sid))
+        return supplement_row(get_supplement_row(conn, sid), conn)
+
+
+@app.delete("/api/supplements/{sid}/pack")
+def clear_pack(sid: int):
+    with db.connect() as conn:
+        get_supplement_row(conn, sid)
+        conn.execute("UPDATE supplements SET pack_count = NULL, pack_per_dose = NULL, pack_started = NULL WHERE id = ?", (sid,))
+        return supplement_row(get_supplement_row(conn, sid), conn)
 
 
 @app.delete("/api/supplements/{sid}")
@@ -749,7 +806,7 @@ def stop_supplement(sid: int):
     with db.connect() as conn:
         get_supplement_row(conn, sid)
         conn.execute("UPDATE supplements SET ended_at = ? WHERE id = ?", (db.today().isoformat(), sid))
-        return supplement_row(get_supplement_row(conn, sid))
+        return supplement_row(get_supplement_row(conn, sid), conn)
 
 
 class IntakeLog(BaseModel):
@@ -811,7 +868,7 @@ def today_intake(day: Optional[str] = Query(None, alias="date")):
 
 
 def intake_history(conn, start, end):
-    supplements = [supplement_row(r) for r in conn.execute("SELECT * FROM supplements WHERE user_id = ?", (db.uid(),)).fetchall()]
+    supplements = [supplement_row(r, conn) for r in conn.execute("SELECT * FROM supplements WHERE user_id = ?", (db.uid(),)).fetchall()]
     rows = conn.execute(
         "SELECT * FROM intake_logs WHERE date BETWEEN ? AND ? AND user_id = ? ORDER BY date",
         (start.isoformat(), end.isoformat(), db.uid()),
@@ -869,7 +926,7 @@ def compare_report(from_: Optional[int] = Query(None, alias="from"), to: Optiona
         intake = intake_history(conn, start, end)
         records = measure.load(conn, user.get("heightCm"), before["date"], after["date"])
         during = [
-            supplement_row(r) for r in conn.execute(
+            supplement_row(r, conn) for r in conn.execute(
                 "SELECT * FROM supplements WHERE started_at <= ? AND (ended_at IS NULL OR ended_at >= ?) AND user_id = ?",
                 (after["date"], before["date"], db.uid()),
             ).fetchall()

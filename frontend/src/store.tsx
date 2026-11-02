@@ -111,6 +111,7 @@ interface Actions {
   addSupplements: (recs: Recommendation[]) => void
   updateSupplement: (id: string, patch: Partial<Supplement>) => void
   removeSupplement: (id: string) => void
+  startPack: (id: string, pack: { count: number; perDose: number; startedAt: string }) => void
   toggleIntake: (date: string, id: string) => void
   reserve: (name: string, slot: string) => void
   addFollowup: () => void
@@ -229,6 +230,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         profile: x.profile && { ...x.profile, currentSupplements: x.profile.currentSupplements.filter((n) => n !== name) },
       }
     }),
+    startPack: (id, pack) => set((x) => ({ ...x, supplements: x.supplements.map((s) => (s.id === id ? { ...s, pack } : s)) })),
     toggleIntake: (date, id) => set((x) => ({ ...x, intake: { ...x.intake, [date]: { ...x.intake[date], [id]: !x.intake[date]?.[id] } } })),
     reserve: (name, slot) => set((x) => ({ ...x, reservedCenter: { name, slot } })),
     addFollowup: () => set((x) => ({ ...x, followup: { id: `f${Date.now()}`, date: ymd(new Date()), source: 'followup', label: '6개월 중간 점검(가상)', items: FOLLOWUP_ITEMS } })),
@@ -272,6 +274,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     addSupplements: (recs) => run(recs.reduce<Promise<unknown>>((p, r) => p.then(() => remote.addSupplement(r.id)), Promise.resolve())),
     updateSupplement: (id, patch) => { local.updateSupplement(id, patch); run(remote.patchSupplement(id, patch)) },
     removeSupplement: (id) => { local.removeSupplement(id); run(remote.removeSupplement(id)) },
+    startPack: (id, pack) => { local.startPack(id, pack); run(remote.startPack(id, pack)) },
     // 체크는 화면에 바로 반영하고 저장 요청만 보낸다(전체 다시 불러오기 없음). 실패하면 되돌린다.
     toggleIntake: (date, id) => {
       const x = current.current
