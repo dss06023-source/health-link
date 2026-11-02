@@ -32,7 +32,6 @@ FONT_DIR = Path(__file__).parent / "assets" / "fonts"
 STATUS_LABEL = {"normal": "정상", "caution": "경계", "danger": "질환의심"}
 LEVEL_LABEL = {"avoid": "피함", "caution": "주의", "info": "참고"}
 SUPPLEMENT_SOURCE = "식약처 고시 제2026-43호 「건강기능식품의 기준 및 규격」"
-NO_SOURCE = "건강잇다 안내(공공 원문 확인 전)"
 
 
 def _intake(info):
@@ -211,7 +210,9 @@ def gather(conn, survey=None):
         rows.append({"supplement": ", ".join(ref.SUPPLEMENTS[c]["name"] for c in w["supplements"]), "with": f"{w['ingredient']} 합계",
                      "kind": "성분 중복", "level": w["level"],
                      "text": f"하루 합계 {w['total']}" + (f", 하루 상한 {w['upperLimit']}" if w["upperLimit"] else "") + ".",
-                     "basis": "한국인 영양소 섭취기준 상한섭취량" if w["upperLimit"] else ""})
+                     "basis": "한국인 영양소 섭취기준 상한섭취량" if w["upperLimit"] else "입력하신 영양제 함량의 합계"})
+    # 원문 대조표에는 출처를 확인한 규칙만 싣는다(출처 없는 규칙은 앱 화면 경고에만 남는다).
+    rows = [r for r in rows if r["basis"]]
 
     s = survey or Survey()
     questions = [f"(직접 적은 질문) {s.question.strip()}"] if s.question.strip() else []
@@ -365,14 +366,13 @@ def build_pdf(d):
         story += [Paragraph(n, small) for n in notes]
 
     story.append(P("5. 원문 대조표", head))
-    story.append(P("영양제와 약·검진 수치·질환·다른 영양제가 만나는 곳에 공공 자료가 남긴 문구입니다. 표시는 원문 규칙의 강도(피함·주의·참고)입니다. "
-                f"출처가 '{NO_SOURCE}'인 줄은 공공 자료 원문을 아직 확인하지 못한 문구입니다.", small))
+    story.append(P("영양제와 약·검진 수치·질환·다른 영양제가 만나는 곳에 공공 자료가 남긴 문구입니다. 표시는 원문 규칙의 강도(피함·주의·참고)입니다.", small))
     story.append(Spacer(1, 2 * mm))
     if d["rows"]:
         story.append(table(["영양제", "만나는 것", "표시", "원문 문구", "출처"], [
             [B(r["supplement"]), P(f"{r['kind']}: {r['with']}", cell),
              Paragraph(f"<font color='{level_color.get(r['level'], muted).hexval()}'>{LEVEL_LABEL.get(r['level'], r['level'])}</font>", cell),
-             P(r["text"], cell), P(r["basis"] or NO_SOURCE, ParagraphStyle("x", parent=small, fontSize=7.5, leading=10))]
+             P(r["text"], cell), P(r["basis"], ParagraphStyle("x", parent=small, fontSize=7.5, leading=10))]
             for r in d["rows"]], [26, 32, 13, 64, 35]))
     else:
         story.append(P("입력하신 약·질환·검진 수치와 겹치는 원문 규칙이 없습니다.", small))

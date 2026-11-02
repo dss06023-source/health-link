@@ -91,5 +91,5 @@ def test_pdf_fits_two_pages_and_reads_cleanly(app):
         # 직접 적은 질문이 질문 목록 맨 앞에 온다.
         questions = text.split("여쭤볼 질문", 1)[1]
         assert questions.index("직접 적은 질문") < questions.index("함께 먹어도 되는지")
-        # 출처가 비어 있는 줄은 '-' 대신 확인 전이라고 밝힌다.
-        assert "건강잇다안내(공공원문확인전)" in text.replace(" ", "")
+        # 출처를 확인하지 못한 규칙(식물스테롤×스타틴 등)은 원문 대조표에 싣지 않는다.
+        assert "콜레스테롤 약을 대신하지" not in text and "식물스테롤을 아토르바스타틴" not in text
