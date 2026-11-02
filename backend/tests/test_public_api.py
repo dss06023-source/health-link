@@ -79,6 +79,11 @@ def test_real_checkup_centers_sorted_by_distance(client, keys):
     assert centers[0]["distanceKm"] < 0.2
 
 
+def test_region_without_nhis_data_returns_empty_list(client, keys, monkeypatch):
+    monkeypatch.setattr(public_api, "checkup_centers", lambda lat, lng: [])
+    assert client.get("/api/checkup-centers", params={"lat": 35.0036, "lng": 128.0642}).json() == []
+
+
 def test_real_drug_search_merges_dur_and_easy_guide(client, keys):
     body = client.get("/api/drugs/search", params={"q": "쿠파린"}).json()
     drug = body["items"][0]
