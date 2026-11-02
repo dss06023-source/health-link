@@ -35,6 +35,14 @@ export function judge(code: string, v: number, sex: Sex): Status {
   return pickSex(c.high, sex).find((b) => hits(b, v))?.status ?? 'danger'
 }
 
+// 기준치를 벗어난 방향. 낮은 쪽 판정 구간(HDL·혈색소·BMI·e-GFR)에 걸리면 'low', 그 밖에 정상이 아니면 'high'.
+export function direction(code: string, v: number, sex: Sex): 'high' | 'low' | null {
+  const c = CRITERIA[code.toLowerCase()]
+  if (!c) return null
+  if (c.low && pickSex(c.low, sex).some((b) => hits(b, v))) return 'low'
+  return judge(code, v, sex) === 'normal' ? null : 'high'
+}
+
 const rangeText = (code: string, sex: Sex) => {
   const c = CRITERIA[code.toLowerCase()]
   return c ? pickSex(c.normalRange, sex) : ''

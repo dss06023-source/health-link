@@ -173,6 +173,13 @@ button.li:hover { background: var(--hover); }
 .li-main small { display: block; font-size: 14px; color: var(--muted); line-height: 1.5; }
 .li-main small.flag { color: var(--fg); }
 .li-main .picked-line { color: var(--accent); font-weight: 700; }
+.li-main .because { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; font-size: 14px; color: var(--muted); }
+.because .ev { display: flex; flex-direction: column; line-height: 1.4; }
+.because .ev small { display: inline-block; margin-left: 8px; font-size: 13px; white-space: nowrap; }
+.because .ev b { font-family: var(--num); font-variant-numeric: tabular-nums; font-size: 18px; font-weight: 700; margin-right: 2px; }
+.because .ev i { font-style: normal; font-weight: 700; margin-left: 6px; white-space: nowrap; }
+.because .ev.caution b, .because .ev.caution i { color: var(--caution); }
+.because .ev.danger b, .because .ev.danger i { color: var(--danger); }
 .li-end { flex: none; display: inline-flex; align-items: center; gap: 2px; font-size: 14.5px; color: var(--muted); }
 .li-end.strong { color: var(--accent); font-weight: 700; }
 .li-val { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
