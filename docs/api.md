@@ -202,6 +202,16 @@
 
 `sync` 응답: `importedCheckups[{id, date, institution}]`(2022-10-18 검진 1건, `source: "mydata"`), `skippedCheckups`(이미 있는 2024-10-15), `prescriptions[{name, dispensedAt, days, institution, drugClass, alreadyRegistered}]`(아토르바스타틴, 암로디핀), `medications`(현재 복용 약), `message`. `applyMedications: true` 면 목록에 없는 처방 약을 복용 약에 추가합니다. 가져온 검진은 해석 화면 `history`(추이 그래프)에 바로 나타납니다.
 
+## 6-4. 상담 준비 자료 (유료 PDF, 시연용 결제)
+
+판단을 내려 주는 보고서가 아니라, 먹는 약·영양제·기준 밖 검진 항목과 공공 자료 원문(식약처 고시, 상호작용 규칙의 `basis`)의 주의 문구를 나란히 모으고 상담 때 여쭤볼 질문을 붙인 PDF다. 화면용 판단 문구("추천에서 뺐습니다")는 넣지 않는다. 결제는 시연용이라 결제대행사를 부르지 않고 구매 기록(`purchases` 표)만 남긴다.
+
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| GET | `/api/consult/offer` | `{price: 2900, firstPrice: 1900, firstPurchase, amount, purchases[]}`. 첫 구매만 1,900원 |
+| POST | `/api/consult/checkout` | `{method: card\|toss\|kakao, amount}`. 서버가 계산한 금액과 다르면 409, 확정된 검진이 없으면 400 |
+| GET | `/api/consult/{purchaseId}/pdf` | 내려받을 때마다 지금 정보로 새로 만든다. 남의 구매 번호는 404 |
+
 ## 7. 시연 도구
 
 | 메서드 | 경로 | 설명 |

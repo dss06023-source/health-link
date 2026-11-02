@@ -27,4 +27,4 @@ def _postgres(monkeypatch):
     import psycopg
 
     with psycopg.connect(url, autocommit=True) as conn:
-        conn.execute("DROP TABLE IF EXISTS users, sessions, checkups, supplements, intake_logs, measurements")
+        conn.execute("DROP TABLE IF EXISTS users, sessions, checkups, supplements, intake_logs, measurements, purchases")

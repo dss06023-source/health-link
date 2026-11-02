@@ -1,0 +1,9 @@
+/* 상담 준비 자료(유료 PDF) 구매 구역과 결제 창 */
+.consult-price { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.consult-price b { font-size: 20px; font-weight: 700; }
+.consult-price .btn { margin-left: auto; }
+.consult-order { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 4px 0 14px; }
+.consult-order dt { color: var(--muted); }
+.consult-order dd { margin: 0; }
+.consult-badge { background: var(--accent-soft); color: var(--accent); }
+.consult-bought a.li { color: inherit; text-decoration: none; }
