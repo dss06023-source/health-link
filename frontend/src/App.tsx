@@ -64,7 +64,7 @@ function heroOf(route: Route, s: AppStore): { title: string; sub: string } {
       if (!active.length) return { title: '복용 관리', sub: '추천 구성을 고르면 여기서 챙깁니다' }
       return { title: left ? `오늘 ${left}개 남았습니다` : '오늘 다 챙기셨습니다', sub: `영양제 ${active.length}가지 · 시간대별 알림` }
     }
-    case 'shop': return { title: '영양제 구매', sub: '추천받은 영양제를 쿠팡에서 찾아봅니다' }
+    case 'shop': return { title: '영양제 구매', sub: '추천받은 영양제와 먹고 있는 영양제를 쿠팡에서 찾아봅니다' }
     case 'measure': return { title: '중간 점검', sub: '집에서 잰 혈압·혈당·체중으로 변화를 봅니다' }
     case 'report': return { title: '변화 리포트', sub: '복용 전후 검진 수치를 비교합니다' }
   }

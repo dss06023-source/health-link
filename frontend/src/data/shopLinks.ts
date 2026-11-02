@@ -15,6 +15,16 @@ export const PARTNER_LINKS: Record<string, string> = {
   '가르시니아': 'https://link.coupang.com/a/ihljHJlC2e',
   '녹차추출물': 'https://link.coupang.com/a/ihlkbaXdNQ',
   '종합비타민': 'https://link.coupang.com/a/ihlkyzlJD2',
+  // 2026-11-02 추가(복용 중인 영양제용). 비타민B군은 '비타민B' 검색 결과로 간다.
+  '비타민B군': 'https://link.coupang.com/a/ilp5kGD6Jg',
+  '비타민C': 'https://link.coupang.com/a/ilpSOBhLZA',
+  '비타민K': 'https://link.coupang.com/a/ilpTuRfmy4',
+  '칼슘': 'https://link.coupang.com/a/ilpUcalkke',
+  '마그네슘': 'https://link.coupang.com/a/ilpUI4F1hY',
+  '아연': 'https://link.coupang.com/a/ilpVfoPqkC',
+  '엽산': 'https://link.coupang.com/a/ilpVIZMLwy',
+  '유산균': 'https://link.coupang.com/a/ilpWXnbBf2',
+  '루테인': 'https://link.coupang.com/a/ilpXpyiEQ8',
 }
 
 // 검색어가 영양제 이름과 다른 것만 적는다(철분 → 철분제 등).

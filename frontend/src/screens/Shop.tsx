@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import type { Route } from '../App'
-import { direction, interpret, purchaseChecks, recommend, STATUS_LABEL } from '../data/rules'
+import { avoidReasons, direction, interpret, purchaseChecks, recommend, STATUS_LABEL } from '../data/rules'
 import { DISCLOSURE, shopLink } from '../data/shopLinks'
 import { latestCheckup, useStore } from '../store'
-import type { InterpretedItem, Recommendation, Sex, Warning } from '../types'
+import type { InterpretedItem, Recommendation, Sex, Supplement, Warning } from '../types'
 import { CautionList, Sheet } from '../ui'
 
 // 제품을 사기 전에 원재료 표시에서 확인할 성분. 맞춤 추천 화면과 구매 탭이 같이 쓴다.
@@ -42,7 +42,7 @@ export function saveOff(ids: string[]) {
   try { sessionStorage.setItem(OFF_KEY, JSON.stringify(ids)) } catch { /* 저장 못 해도 추천 화면은 그대로 동작 */ }
 }
 
-// 영양제 구매: 맞춤 추천에 든 영양제만 쿠팡 링크로 보여 준다. 링크를 누르면 확인할 성분 창이 먼저 뜬다.
+// 영양제 구매: 맞춤 추천에 든 영양제와 복용 관리에 있는 영양제를 쿠팡 링크로 보여 준다. 링크를 누르면 확인할 성분 창이 먼저 뜬다.
 export default function Shop({ go }: { go: (r: Route) => void }) {
   const s = useStore()
   const p = s.profile!
@@ -55,7 +55,14 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
   const recs = (s.remote?.recs ?? local).filter((r) => !r.skipped && !off.includes(r.id) && !blocked(r))
   // 추천 근거가 된 검진 수치. 근거 코드 중 검진 항목이 아닌 것(흡연 등)은 이유 문장으로 대신한다.
   const evidence = (r: Recommendation) => r.reasonCodes.map((c) => items.find((i) => i.code === c)).filter((x): x is InterpretedItem => !!x)
-  const [picked, setPicked] = useState<Recommendation | null>(null)
+  // 복용 관리에 있는 영양제(다 떨어져 가면 다시 사도록). 위 추천 목록에 이미 있는 것은 빼고, 쉬는 중인 것도 뺀다.
+  // 피해야 할 조합(예: 스타틴+홍국)이면 계속 드실지 의사·약사와 상의할 때까지 링크를 띄우지 않는다.
+  const taking = s.supplements.filter((m) => !m.paused && !recs.some((r) => r.name === m.name || r.id === m.id))
+  const conflict = (m: Supplement) =>
+    s.remote?.current?.some((c) => c.name === m.name && c.status === 'conflict')
+    || avoidReasons(m.name, p, items).length > 0
+    || checks.some((c) => c.level === 'danger' && c.title.includes(m.name))
+  const [picked, setPicked] = useState<{ name: string } | null>(null)
   const link = picked && shopLink(picked.name)
 
   return (
@@ -80,6 +87,25 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
             </ul>
           : <p className="muted">지금 추천받은 영양제가 없습니다.</p>}
         <div className="actions"><button className="btn flat" onClick={() => go('recommend')}>맞춤 추천 보기</button></div>
+      </section>
+      <section className="sec">
+        <div className="sec-head"><h2>복용 중인 영양제 {taking.length}가지</h2></div>
+        <p className="small muted">복용 관리에 넣은 영양제입니다. 다 떨어져 가면 같은 성분으로 다시 고르십시오.</p>
+        {taking.length
+          ? <ul className="list">
+              {taking.map((m) => conflict(m)
+                ? <li key={m.id}><div className="li">
+                    <span className="li-main"><b>{m.name}</b><small>{m.ingredient} {m.dose}</small>
+                      <small className="muted">입력하신 약·질환·검진 수치와 맞지 않는 조합이라 링크를 띄우지 않습니다. 계속 드실지 의사·약사와 상의하십시오.</small></span>
+                    <span className="li-end danger">상의 필요</span>
+                  </div></li>
+                : <li key={m.id}><button type="button" className="li" onClick={() => setPicked(m)}>
+                    <span className="li-main"><b>{m.name}</b><small>{m.ingredient} {m.dose}</small></span>
+                    <span className="li-end strong">쿠팡에서 보기</span>
+                  </button></li>)}
+            </ul>
+          : <p className="muted">복용 관리에 넣은 영양제가 없습니다.</p>}
+        <div className="actions"><button className="btn flat" onClick={() => go('intake')}>복용 관리 보기</button></div>
       </section>
 
       {picked && link && (
