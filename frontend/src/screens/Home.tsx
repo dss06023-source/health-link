@@ -11,6 +11,9 @@ import { md, packStatus } from '../data/pack'
 const CANCER_STATUS: Record<CancerScreening['status'], string> = {
   target: '올해 대상', highRiskOnly: '해당 없음', maybe: '확인 필요', excluded: '대상 제외', notThisYear: '내년 대상',
 }
+// 본인 부담. 일반건강검진·대장암(분변잠혈)·자궁경부암은 공단 전액 부담, 나머지 암검진은 본인 10%(checkupGuide.ts 문구와 같음).
+const FREE_CANCERS = ['colorectal', 'cervical']
+const cancerCost = (id: string) => (FREE_CANCERS.includes(id) ? '무료' : '본인 10%')
 
 // 주소 뒤 안내: [기관 종류] <검진 종류> … 예) [치과의원] <구강>
 function centerLabel(c: CheckupCenter) {
@@ -106,19 +109,21 @@ export default function Home({ go }: { go: (r: Route) => void }) {
       </div>
 
       <div>
-        <h2 className="subhead">{t.year}년 검진 항목 <span>공단 검진대상조회 안내 기준</span></h2>
+        <h2 className="subhead">{t.year}년 검진 항목 <span>일반검진 무료 · 공단 검진대상조회 안내 기준</span></h2>
         <ul className="list">
           {t.isTarget && (
             <li className="li"><span className="li-main"><b>일반건강검진 공통</b>
-              <small>진찰·상담, 신체계측, 시력·청력, 혈압, 흉부방사선, 혈액·요검사, 구강검진</small></span></li>
+              <small>진찰·상담, 신체계측, 시력·청력, 혈압, 흉부방사선, 혈액·요검사, 구강검진</small></span>
+              <span className="li-end strong">무료</span></li>
           )}
           {t.items.map((i) => (
             <li key={i.name + (i.note ?? '')} className="li"><span className="li-main"><b>{i.name}</b>
-              <small>{t.year - p.birthYear}세 대상{i.note ? ` · ${i.note}` : ''}</small></span></li>
+              <small>{t.year - p.birthYear}세 대상{i.note ? ` · ${i.note}` : ''}</small></span>
+              <span className="li-end strong">무료</span></li>
           ))}
           {t.cancers.map((c) => (
             <li key={c.id} className="li"><span className="li-main"><b>{c.name} 검진 · {c.test}</b>
-              {(c.note || c.nextYear) && <small>{c.note ?? `2년 주기라 ${c.nextYear}년에 받습니다.`}</small>}</span>
+              <small>{cancerCost(c.id)}{(c.note || c.nextYear) && ` · ${c.note ?? `2년 주기라 ${c.nextYear}년에 받습니다.`}`}</small></span>
               <span className={`li-end${c.status === 'target' ? ' strong' : ''}`}>{CANCER_STATUS[c.status]}</span></li>
           ))}
           {!t.isTarget && !t.cancers.length && <li className="li muted">올해 받을 국가검진 항목이 없습니다.</li>}
