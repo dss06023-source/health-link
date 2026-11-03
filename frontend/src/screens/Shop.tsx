@@ -169,7 +169,7 @@ export default function Shop({ go }: { go: (r: Route) => void }) {
       {picked && link && (
         <Sheet title={`${picked.name} 사기 전에 확인하십시오`} onClose={() => setPicked(null)}
           actions={<><button className="btn flat" onClick={() => setPicked(null)}>닫기</button>
-            <a className="btn flat strong" href={link.url} target="_blank" rel="noreferrer sponsored" onClick={() => { setAway(picked.name); setPicked(null) }}>확인했습니다, 쿠팡으로 이동</a></>}>
+            <a className="btn flat strong" href={link.url} target="_blank" rel="noopener sponsored" onClick={() => { setAway(picked.name); setPicked(null) }}>확인했습니다, 쿠팡으로 이동</a></>}>
           <ChecksFor name={picked.name} checks={checks} />
           {link.partner && <p className="small muted">{DISCLOSURE}</p>}
         </Sheet>
