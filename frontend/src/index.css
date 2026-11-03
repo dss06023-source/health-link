@@ -24,8 +24,8 @@
   --danger: #c2413a;
   --danger-ink: #ffffff;
   --danger-soft: #f9e1de;
-  /* 변화 리포트 변화량 색: 정상 쪽으로(파랑), 판정이 나빠짐(빨강, --danger), 판정은 같고 조금 나빠짐(갈색) */
-  --toward: #2563eb;
+  /* 변화 리포트 변화량 색: 정상 쪽으로(초록, 2026-11-03 사용자 결정), 판정이 나빠짐(빨강, --danger), 판정은 같고 조금 나빠짐(갈색) */
+  --toward: #1f7a4d;
   --slightly-worse: #8b5a2b;
   --snack-bg: #2c332e;
   --snack-fg: #ffffff;
@@ -47,7 +47,7 @@
     --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25; --seg-on: #3a443d; --block-edge: #2b3d31; --mint: #a8f5c4; --wm-red: #f07a6f;
     --accent: #5cc48d; --accent-ink: #0d1a12; --accent-soft: #1d3a29;
     --caution: #e2a948; --caution-soft: #3a2e17; --danger: #ef7d74; --danger-ink: #1a0d0c; --danger-soft: #3d1f1d;
-    --toward: #6ea8ff; --slightly-worse: #d2a679;
+    --toward: #5cc48d; --slightly-worse: #d2a679;
     --snack-bg: #e1e8e3; --snack-fg: #111814; --snack-act: #1f7a4d;
     color-scheme: dark;
   }
@@ -57,7 +57,7 @@
   --hover: rgba(255, 255, 255, .07); --chip-bg: #262e29; --seg-bg: #212823; --input-bg: #232a25; --seg-on: #3a443d; --block-edge: #2b3d31; --mint: #a8f5c4; --wm-red: #f07a6f;
   --accent: #5cc48d; --accent-ink: #0d1a12; --accent-soft: #1d3a29;
   --caution: #e2a948; --caution-soft: #3a2e17; --danger: #ef7d74; --danger-ink: #1a0d0c; --danger-soft: #3d1f1d;
-  --toward: #6ea8ff; --slightly-worse: #d2a679;
+  --toward: #5cc48d; --slightly-worse: #d2a679;
   --snack-bg: #e1e8e3; --snack-fg: #111814; --snack-act: #1f7a4d;
   color-scheme: dark;
 }
