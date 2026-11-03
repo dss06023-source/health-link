@@ -15,6 +15,7 @@ import Onboarding from './screens/Onboarding'
 import Login from './screens/Login'
 import Measure from './screens/Measure'
 import ConsultPdf from './screens/ConsultPdf'
+import SiteQr from './screens/SiteQr'
 import { ReminderWatcher } from './reminders'
 
 export type Route = 'home' | 'guide' | 'upload' | 'results' | 'recommend' | 'intake' | 'shop' | 'measure' | 'report' | 'consult'
@@ -167,6 +168,7 @@ function Shell() {
           </span>}
         </footer>
       </main>
+      {route === 'home' && <SiteQr />}
       <ReminderWatcher />
     </>
   )
