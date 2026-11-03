@@ -425,6 +425,28 @@ button.li:hover { background: var(--hover); }
 .snack-x { flex: none; width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: inherit; opacity: .75; cursor: pointer; display: grid; place-items: center; }
 .snack-act:hover, .snack-x:hover { background: rgba(127, 127, 127, .2); }
 
+/* ---- 홈의 휴대폰 열기 QR(PC 시연용). 스크롤해도 오른쪽 아래에 붙어 있다 ---- */
+.site-qr, .site-qr-pill { display: none; }
+@media (min-width: 821px) {
+  .site-qr {
+    position: fixed; z-index: 40; right: 16px; bottom: 16px; width: 168px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 16px 12px 12px;
+    background: var(--block); border: 1px solid var(--block-edge); border-radius: var(--rb);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .10); text-align: center; animation: rise .22s ease-out;
+  }
+  /* 어두운 모드에서도 QR 자체는 흰 바탕+검은 칸이어야 카메라가 읽는다 */
+  .site-qr-code { width: 136px; height: 136px; border-radius: 12px; margin-bottom: 8px; }
+  .site-qr b { font-size: 16px; font-weight: 700; }
+  .site-qr span { font-size: 13px; color: var(--muted); }
+  .site-qr-x { position: absolute; top: 4px; right: 4px; width: 28px; height: 28px; border: 0; border-radius: 50%; background: var(--block); color: var(--muted); cursor: pointer; display: grid; place-items: center; }
+  .site-qr-x:hover { background: var(--hover); }
+  .site-qr-pill {
+    position: fixed; z-index: 40; right: 16px; bottom: 16px; display: inline-flex; align-items: center; gap: 6px;
+    padding: 10px 16px; border: 1px solid var(--block-edge); border-radius: 999px; background: var(--block); color: var(--accent);
+    font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(0, 0, 0, .08);
+  }
+}
+
 /* ---- 화면 폭별 ---- */
 @media (max-width: 1080px) {
   .cols, .cols.even { grid-template-columns: minmax(0, 1fr); }
