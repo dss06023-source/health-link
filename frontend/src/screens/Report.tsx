@@ -70,7 +70,7 @@ export default function Report({ go }: { go: (r: Route) => void }) {
     const a = iAfter.find((i) => i.code === k.code)!
     const points = series.map((c) => c.items.find((i) => i.code === k.code)!.value)
     const better = k.higherBetter ? a.value > b.value : a.value < b.value
-    // 변화량 색(2026-10-29 사용자 결정): 경계·이상이던 수치가 정상 쪽으로 움직이면 파랑,
+    // 변화량 색(2026-10-29 사용자 결정): 경계·이상이던 수치가 정상 쪽으로 움직이면 초록(2026-11-03 파랑에서 바꿈),
     // 판정이 한 단계 이상 나빠지면 빨강, 판정은 같은데 수치만 나빠지면 갈색.
     const worse = a.value !== b.value && !better
     const tone: Tone = b.status !== 'normal' && better ? 'toward'
